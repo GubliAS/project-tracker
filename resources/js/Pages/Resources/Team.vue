@@ -1,17 +1,8 @@
-﻿<script setup>
+<script setup>
+import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+import PageHeader from '@/Components/ui/PageHeader.vue';
+defineProps({ title: { type: String, default: 'Team Resources' }, resources: { type: Array, default: () => [] } });
+function update(resource, status) { router.put(`/resources/${resource.id}`, { availability_status: status }, { preserveScroll: true }); }
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Manage people, roles, rates, and availability" /><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"><article v-for="resource in resources" :key="resource.id" class="box mb-0"><div class="box-body"><div class="flex justify-between gap-3"><span class="avatar avatar-md bg-primary/10 text-primary"><i class="ri-user-line"></i></span><span class="badge capitalize" :class="resource.availability_status === 'available' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'">{{ resource.availability_status }}</span></div><h5 class="mt-4 mb-1">{{ resource.name }}</h5><p class="text-textmuted mb-4">{{ resource.role_or_category || 'Team member' }}</p><div class="flex justify-between text-sm mb-3"><span>Hourly cost</span><strong>${{ resource.cost_per_hour }}</strong></div><select class="ti-form-select" :value="resource.availability_status" @change="update(resource, $event.target.value)"><option>available</option><option>allocated</option><option>unavailable</option></select></div></article><div v-if="!resources.length" class="col-span-full box"><div class="box-body py-12 text-center text-textmuted">No human resources are available.</div></div></div></AppLayout></template>

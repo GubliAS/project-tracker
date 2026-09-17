@@ -1,8 +1,19 @@
 <script setup>
-import { onMounted, nextTick, ref } from 'vue';
+import { computed, onMounted, nextTick, ref } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import AppHeader from '@/Components/Partials/AppHeader.vue';
 import AppSidebar from '@/Components/Partials/AppSidebar.vue';
 import AppFooter from '@/Components/Partials/AppFooter.vue';
+
+const props = defineProps({
+    title: {
+        type: String,
+        default: '',
+    },
+});
+
+const page = usePage();
+const pageTitle = computed(() => props.title || page.props.title || '');
 
 const isDarkMode = ref(false);
 
@@ -29,6 +40,7 @@ onMounted(() => {
 
 <template>
     <div class="page" :class="{ dark: isDarkMode }">
+        <Head :title="pageTitle" />
         <AppHeader @toggle-dark="toggleDarkMode" />
         <AppSidebar />
 

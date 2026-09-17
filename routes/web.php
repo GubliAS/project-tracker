@@ -1,20 +1,28 @@
 <?php
 
 use App\Http\Controllers\AgileController;
-use App\Http\Controllers\CommunicationController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ChangelogController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InitiationController;
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QualityController;
+use App\Http\Controllers\QualityTestingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\RiskController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/', fn () => Inertia::render('Dashboard'))->name('home');
+Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+Route::get('/projects', fn () => Inertia::render('Projects'))->name('projects.index');
+Route::get('/initiation', fn () => Inertia::render('Initiation'))->name('initiation.index');
+Route::get('/agile', fn () => Inertia::render('Agile'))->name('agile.index');
 
 Route::prefix('projects')->name('projects.')->group(function () {
-    Route::get('/', [ProjectController::class, 'index'])->name('index');
     Route::get('/create', [ProjectController::class, 'create'])->name('create');
     Route::get('/{id}', [ProjectController::class, 'show'])->name('show');
 });
@@ -32,28 +40,61 @@ Route::prefix('agile')->name('agile.')->group(function () {
 
 Route::prefix('tasks')->name('tasks.')->group(function () {
     Route::get('/', [TaskController::class, 'index'])->name('index');
+    Route::post('/', [TaskController::class, 'store'])->name('store');
     Route::get('/kanban', [TaskController::class, 'kanban'])->name('kanban');
     Route::get('/workflows', [TaskController::class, 'workflows'])->name('workflows');
+    Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+    Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('resources')->name('resources.')->group(function () {
+    Route::get('/', [ResourceController::class, 'index'])->name('index');
+    Route::post('/', [ResourceController::class, 'store'])->name('store');
     Route::get('/team', [ResourceController::class, 'team'])->name('team');
     Route::get('/time-tracking', [ResourceController::class, 'timeTracking'])->name('time-tracking');
+    Route::post('/time-tracking', [ResourceController::class, 'storeTime'])->name('time-tracking.store');
+    Route::delete('/time-tracking/{timeEntry}', [ResourceController::class, 'destroyTime'])->name('time-tracking.destroy');
     Route::get('/budget', [ResourceController::class, 'budget'])->name('budget');
     Route::get('/milestones', [ResourceController::class, 'milestones'])->name('milestones');
+    Route::post('/milestones', [ResourceController::class, 'storeMilestone'])->name('milestones.store');
+    Route::put('/milestones/{milestone}', [ResourceController::class, 'updateMilestone'])->name('milestones.update');
+    Route::delete('/milestones/{milestone}', [ResourceController::class, 'destroyMilestone'])->name('milestones.destroy');
     Route::get('/gantt', [ResourceController::class, 'gantt'])->name('gantt');
+    Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
+    Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('quality')->name('quality.')->group(function () {
-    Route::get('/qa-testing', [QualityController::class, 'qaTesting'])->name('qa-testing');
-    Route::get('/risks', [QualityController::class, 'risks'])->name('risks');
-    Route::get('/change-log', [QualityController::class, 'changeLog'])->name('change-log');
+    Route::get('/', [QualityController::class, 'index'])->name('index');
+    Route::post('/', [QualityController::class, 'store'])->name('store');
+    Route::get('/testing', [QualityTestingController::class, 'index'])->name('testing.index');
+    Route::get('/qa-testing', [QualityTestingController::class, 'index'])->name('qa-testing');
+    Route::post('/testing', [QualityTestingController::class, 'store'])->name('testing.store');
+    Route::put('/testing/{qualityCheck}', [QualityTestingController::class, 'update'])->name('testing.update');
+    Route::get('/risks', [RiskController::class, 'index'])->name('risks.index');
+    Route::post('/risks', [RiskController::class, 'store'])->name('risks.store');
+    Route::put('/risks/{risk}', [RiskController::class, 'update'])->name('risks.update');
+    Route::delete('/risks/{risk}', [RiskController::class, 'destroy'])->name('risks.destroy');
+    Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');
+    Route::post('/changelog', [ChangelogController::class, 'store'])->name('changelog.store');
+    Route::put('/changelog/{changelog}', [ChangelogController::class, 'update'])->name('changelog.update');
+    Route::delete('/changelog/{changelog}', [ChangelogController::class, 'destroy'])->name('changelog.destroy');
+    Route::put('/{qualityCheck}', [QualityController::class, 'update'])->name('update');
+    Route::delete('/{qualityCheck}', [QualityController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::get('/analytics', [ReportController::class, 'analytics'])->name('analytics');
-    Route::get('/documents', [ReportController::class, 'documents'])->name('documents');
-    Route::get('/lessons-learned', [ReportController::class, 'lessonsLearned'])->name('lessons-learned');
+    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
+    Route::post('/lessons', [LessonController::class, 'store'])->name('lessons.store');
+    Route::put('/lessons/{lesson}', [LessonController::class, 'update'])->name('lessons.update');
+    Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy'])->name('lessons.destroy');
 });
 
-Route::get('/chat', [CommunicationController::class, 'chat'])->name('chat');
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');

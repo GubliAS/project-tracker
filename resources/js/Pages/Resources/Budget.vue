@@ -1,17 +1,8 @@
-﻿<script setup>
+<script setup>
+import { computed } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+import PageHeader from '@/Components/ui/PageHeader.vue';
+const props = defineProps({ title: { type: String, default: 'Budget' }, resources: { type: Array, default: () => [] }, summary: { type: Object, default: () => ({ total_hourly_cost: 0, allocated_hourly_cost: 0 }) } });
+const percentage = computed(() => props.summary.total_hourly_cost ? Math.round((props.summary.allocated_hourly_cost / props.summary.total_hourly_cost) * 100) : 0);
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Monitor resource cost rates and allocation exposure" /><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><div class="box"><div class="box-body"><p class="text-textmuted">Total hourly capacity</p><h3>${{ Number(summary.total_hourly_cost).toFixed(2) }}</h3></div></div><div class="box"><div class="box-body"><p class="text-textmuted">Allocated hourly cost</p><h3>${{ Number(summary.allocated_hourly_cost).toFixed(2) }}</h3></div></div><div class="box"><div class="box-body"><p class="text-textmuted">Allocation rate</p><h3>{{ percentage }}%</h3><div class="progress progress-xs mt-3"><div class="progress-bar bg-primary" :style="{ width: `${percentage}%` }"></div></div></div></div></div><div class="box"><div class="box-header"><h6 class="box-title">Resource Cost Breakdown</h6></div><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Resource</th><th>Category</th><th>Rate</th><th>Availability</th></tr></thead><tbody><tr v-for="resource in resources" :key="resource.id"><td class="font-medium">{{ resource.name }}</td><td class="capitalize">{{ resource.type }}</td><td>${{ resource.cost_per_hour }}/hr</td><td class="capitalize">{{ resource.availability_status }}</td></tr><tr v-if="!resources.length"><td colspan="4" class="py-8 text-center text-textmuted">No resource costs available.</td></tr></tbody></table></div></div></div></AppLayout></template>

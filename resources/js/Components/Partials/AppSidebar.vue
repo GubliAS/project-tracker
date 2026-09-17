@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 
 const page = usePage()
@@ -10,7 +10,7 @@ const menuItems = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: 'ri-home-line',
-    to: '/'
+    to: '/dashboard'
   },
   {
     id: 'projects',
@@ -46,8 +46,8 @@ const menuItems = [
     label: 'Tasks',
     icon: 'ri-checkbox-circle-line',
     children: [
-      { label: 'Task List', to: '/tasks' },
-      { label: 'Kanban Board', to: '/tasks/kanban' },
+      { label: 'Kanban Board', to: '/tasks' },
+      { label: 'Task List', to: '/tasks/kanban' },
       { label: 'Workflows', to: '/tasks/workflows' }
     ]
   },
@@ -56,6 +56,7 @@ const menuItems = [
     label: 'Resources',
     icon: 'ri-team-line',
     children: [
+      { label: 'Resource Pool', to: '/resources' },
       { label: 'Team', to: '/resources/team' },
       { label: 'Time Tracking', to: '/resources/time-tracking' },
       { label: 'Budget', to: '/resources/budget' },
@@ -68,6 +69,7 @@ const menuItems = [
     label: 'Quality',
     icon: 'ri-shield-check-line',
     children: [
+      { label: 'Quality Control', to: '/quality' },
       { label: 'QA & Testing', to: '/quality/qa-testing' },
       { label: 'Risks & Issues', to: '/quality/risks' },
       { label: 'Change Log', to: '/quality/change-log' }
@@ -78,7 +80,7 @@ const menuItems = [
     label: 'Reports',
     icon: 'ri-bar-chart-box-line',
     children: [
-      { label: 'Analytics', to: '/reports/analytics' },
+      { label: 'Analytics', to: '/reports' },
       { label: 'Documents', to: '/reports/documents' },
       { label: 'Lessons Learned', to: '/reports/lessons-learned' }
     ]
@@ -109,12 +111,18 @@ const isMenuOpen = (menuId) => {
   return openMenus.value.includes(menuId)
 }
 
+const currentPath = () => page.url.split('?')[0]
+
 const isActive = (path) => {
-  return (page.url.split('?')[0]) === path
+  const current = currentPath()
+  if (path === '/dashboard' || path === '/') {
+    return current === '/' || current === '/dashboard'
+  }
+  return current === path
 }
 
 const isChildActive = (children) => {
-  return children?.some(child => (page.url.split('?')[0]) === child.to)
+  return children?.some(child => isActive(child.to))
 }
 </script>
 
@@ -238,5 +246,3 @@ const isChildActive = (children) => {
   background-color: rgba(92, 97, 242, 0.08) !important;
 }
 </style>
-
-

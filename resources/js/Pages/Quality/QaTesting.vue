@@ -1,17 +1,5 @@
-﻿<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+<script setup>
+import Testing from './Testing.vue';
+defineProps({ title: String, testCases: Array, projects: Array, summary: Object });
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><Testing :title="title || 'QA & Testing'" :test-cases="testCases" :projects="projects" :summary="summary" /></template>

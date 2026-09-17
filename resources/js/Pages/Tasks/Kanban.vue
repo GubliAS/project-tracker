@@ -1,17 +1,5 @@
-﻿<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+<script setup>
+import TaskBoard from './Index.vue';
+defineProps({ title: String, tasks: Array, projects: Array, users: Array });
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><TaskBoard :title="title || 'Kanban Board'" :tasks="tasks" :projects="projects" :users="users" /></template>

@@ -6,6 +6,11 @@ use Inertia\Response;
 
 class InitiationController extends Controller
 {
+    public function index(): Response
+    {
+        return $this->kickoff();
+    }
+
     public function kickoff(): Response
     {
         return $this->inertiaPage('Initiation/Kickoff', 'Project Kick-Off');

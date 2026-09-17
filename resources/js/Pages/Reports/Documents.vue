@@ -1,17 +1,22 @@
-﻿<script setup>
+<script setup>
+import { computed, ref } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
+import PageHeader from '@/Components/ui/PageHeader.vue';
 
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+const props = defineProps({ title: { type: String, default: 'Documents' }, documents: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] } });
+const showModal = ref(false);
+const filter = ref('all');
+const form = useForm({ file: null, category: 'planning', project_id: '' });
+const categories = ['planning', 'design', 'technical', 'financial', 'quality', 'other'];
+const visibleDocuments = computed(() => props.documents.filter((document) => filter.value === 'all' || document.category === filter.value));
+const formatSize = (bytes) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+const categoryClass = (category) => ({ planning: 'bg-primary/10 text-primary', design: 'bg-info/10 text-info', technical: 'bg-success/10 text-success', financial: 'bg-warning/10 text-warning', quality: 'bg-danger/10 text-danger', other: 'bg-secondary/10 text-secondary' }[category]);
+function submit() { form.post('/reports/documents', { forceFormData: true, onSuccess: () => { showModal.value = false; form.reset(); } }); }
+function remove(document) { if (confirm(`Delete “${document.name}”?`)) router.delete(`/reports/documents/${document.id}`, { preserveScroll: true }); }
 </script>
 
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Store, organize, and retrieve project files"><template #actions><button class="ti-btn ti-btn-primary" @click="showModal = true"><i class="ri-upload-2-line me-1"></i> Upload Document</button></template></PageHeader>
+    <div class="box"><div class="box-header flex flex-wrap items-center justify-between gap-3"><h6 class="box-title mb-0">File Manager</h6><select v-model="filter" class="ti-form-select !w-44"><option value="all">All categories</option><option v-for="category in categories" :key="category" :value="category" class="capitalize">{{ category }}</option></select></div><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover whitespace-nowrap"><thead><tr><th>Document</th><th>Category</th><th>Project</th><th>Size</th><th>Uploaded</th><th></th></tr></thead><tbody><tr v-for="document in visibleDocuments" :key="document.id"><td><div class="flex items-center gap-3"><span class="avatar avatar-sm bg-primary/10 text-primary"><i class="ri-file-text-line"></i></span><span class="font-medium">{{ document.name }}</span></div></td><td><span class="badge capitalize" :class="categoryClass(document.category)">{{ document.category }}</span></td><td>{{ document.project?.name || 'General' }}</td><td>{{ formatSize(document.size) }}</td><td>{{ new Date(document.created_at).toLocaleDateString() }}</td><td><a :href="`/reports/documents/${document.id}/download`" class="ti-btn ti-btn-soft-primary ti-btn-sm"><i class="ri-download-2-line"></i></a><button class="ti-btn ti-btn-soft-danger ti-btn-sm ms-1" @click="remove(document)"><i class="ri-delete-bin-line"></i></button></td></tr><tr v-if="!visibleDocuments.length"><td colspan="6" class="py-8 text-center text-textmuted">No documents found.</td></tr></tbody></table></div></div></div>
+    <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4"><div class="box w-full max-w-xl mb-0"><form @submit.prevent="submit"><div class="box-header flex justify-between"><h6 class="box-title mb-0">Upload Document</h6><button type="button" class="ti-btn ti-btn-icon ti-btn-light ti-btn-sm" @click="showModal = false"><i class="ri-close-line"></i></button></div><div class="box-body space-y-4"><div><label class="form-label">File</label><input type="file" class="ti-form-control" required @change="form.file = $event.target.files[0]"><p v-if="form.errors.file" class="text-danger text-xs mt-1">{{ form.errors.file }}</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="form-label">Category</label><select v-model="form.category" class="ti-form-select"><option v-for="category in categories" :key="category" :value="category" class="capitalize">{{ category }}</option></select></div><div><label class="form-label">Project</label><select v-model="form.project_id" class="ti-form-select"><option value="">General</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select></div></div></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary" :disabled="form.processing">Upload</button></div></form></div></div>
+</AppLayout></template>

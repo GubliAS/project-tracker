@@ -1,17 +1,5 @@
-﻿<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+<script setup>
+import Reports from './Index.vue';
+defineProps({ title: String, stats: Object, tasksByStatus: Object, resourceUtilization: Object, qualityByStatus: Object, projectProgress: Array, teamWorkloads: Array });
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><Reports :title="title || 'Reports & Analytics'" :stats="stats" :tasks-by-status="tasksByStatus" :resource-utilization="resourceUtilization" :quality-by-status="qualityByStatus" :project-progress="projectProgress" :team-workloads="teamWorkloads" /></template>

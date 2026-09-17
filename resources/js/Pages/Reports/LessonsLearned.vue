@@ -1,17 +1,5 @@
-﻿<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+<script setup>
+import Lessons from './Lessons.vue';
+defineProps({ title: String, lessons: Array, projects: Array });
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><Lessons :title="title || 'Lessons Learned'" :lessons="lessons" :projects="projects" /></template>

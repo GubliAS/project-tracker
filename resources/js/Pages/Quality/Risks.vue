@@ -1,17 +1,25 @@
-﻿<script setup>
+<script setup>
+import { computed, ref } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
+import PageHeader from '@/Components/ui/PageHeader.vue';
 
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+const props = defineProps({ title: { type: String, default: 'Risks & Issues' }, risks: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] } });
+const showModal = ref(false);
+const editingRisk = ref(null);
+const form = useForm({ title: '', impact: 'medium', probability: 'medium', status: 'open', mitigation_plan: '', project_id: '' });
+const cells = computed(() => ['high', 'medium', 'low'].flatMap((impact) => ['low', 'medium', 'high'].map((probability) => ({ impact, probability, risks: props.risks.filter((risk) => risk.impact === impact && risk.probability === probability) }))));
+const severity = (risk) => ['low', 'medium', 'high'].indexOf(risk.impact) + ['low', 'medium', 'high'].indexOf(risk.probability) + 2;
+const severityClass = (risk) => severity(risk) >= 5 ? 'bg-danger/10 text-danger' : severity(risk) >= 4 ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success';
+
+function openCreate() { editingRisk.value = null; form.reset(); form.defaults(); showModal.value = true; }
+function openEdit(risk) { editingRisk.value = risk; form.title = risk.title; form.impact = risk.impact; form.probability = risk.probability; form.status = risk.status; form.mitigation_plan = risk.mitigation_plan || ''; form.project_id = risk.project_id || ''; showModal.value = true; }
+function submit() { const options = { onSuccess: () => { showModal.value = false; form.reset(); } }; editingRisk.value ? form.put(`/quality/risks/${editingRisk.value.id}`, options) : form.post('/quality/risks', options); }
+function remove(risk) { if (confirm(`Delete “${risk.title}”?`)) router.delete(`/quality/risks/${risk.id}`, { preserveScroll: true }); }
 </script>
 
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Identify, assess, and mitigate delivery risks"><template #actions><button class="ti-btn ti-btn-primary" @click="openCreate"><i class="ri-add-line me-1"></i> Add Risk</button></template></PageHeader>
+    <div class="box mb-4"><div class="box-header"><h6 class="box-title mb-0">Risk Matrix</h6></div><div class="box-body"><div class="grid grid-cols-4 gap-2 text-center text-sm"><div class="font-semibold">Impact / Probability</div><div class="font-semibold">Low</div><div class="font-semibold">Medium</div><div class="font-semibold">High</div><template v-for="impact in ['high', 'medium', 'low']" :key="impact"><div class="flex items-center justify-center font-semibold capitalize">{{ impact }}</div><div v-for="probability in ['low', 'medium', 'high']" :key="`${impact}-${probability}`" class="min-h-20 rounded-lg p-2" :class="cells.find((cell) => cell.impact === impact && cell.probability === probability).risks.length ? 'bg-primary/10' : 'bg-light dark:bg-black/10'"><button v-for="risk in cells.find((cell) => cell.impact === impact && cell.probability === probability).risks" :key="risk.id" class="block w-full rounded bg-white dark:bg-bgdark px-2 py-1 text-left text-xs shadow mb-1" @click="openEdit(risk)">{{ risk.title }}</button></div></template></div></div></div>
+    <div class="box"><div class="box-header"><h6 class="box-title mb-0">Risk Register</h6></div><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover whitespace-nowrap"><thead><tr><th>Risk</th><th>Project</th><th>Impact</th><th>Probability</th><th>Status</th><th></th></tr></thead><tbody><tr v-for="risk in risks" :key="risk.id"><td><p class="font-medium mb-0">{{ risk.title }}</p><p class="text-xs text-textmuted mb-0 max-w-md truncate">{{ risk.mitigation_plan || 'No mitigation plan recorded' }}</p></td><td>{{ risk.project?.name || 'General' }}</td><td><span class="badge" :class="severityClass(risk)">{{ risk.impact }}</span></td><td class="capitalize">{{ risk.probability }}</td><td class="capitalize">{{ risk.status }}</td><td><button class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="openEdit(risk)">Edit</button><button class="ti-btn ti-btn-soft-danger ti-btn-sm ms-1" @click="remove(risk)">Delete</button></td></tr><tr v-if="!risks.length"><td colspan="6" class="py-8 text-center text-textmuted">No risks have been recorded.</td></tr></tbody></table></div></div></div>
+    <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4"><div class="box w-full max-w-2xl mb-0"><form @submit.prevent="submit"><div class="box-header flex items-center justify-between"><h6 class="box-title mb-0">{{ editingRisk ? 'Edit Risk' : 'Add Risk' }}</h6><button type="button" class="ti-btn ti-btn-icon ti-btn-light ti-btn-sm" @click="showModal = false"><i class="ri-close-line"></i></button></div><div class="box-body space-y-4"><div><label class="form-label">Title</label><input v-model="form.title" class="ti-form-control" required></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label class="form-label">Impact</label><select v-model="form.impact" class="ti-form-select"><option>low</option><option>medium</option><option>high</option></select></div><div><label class="form-label">Probability</label><select v-model="form.probability" class="ti-form-select"><option>low</option><option>medium</option><option>high</option></select></div><div><label class="form-label">Status</label><select v-model="form.status" class="ti-form-select"><option>open</option><option>monitoring</option><option>mitigated</option><option>closed</option></select></div></div><div><label class="form-label">Project</label><select v-model="form.project_id" class="ti-form-select"><option value="">General</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select></div><div><label class="form-label">Mitigation Plan</label><textarea v-model="form.mitigation_plan" class="ti-form-control" rows="4"></textarea></div></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary" :disabled="form.processing">Save Risk</button></div></form></div></div>
+</AppLayout></template>

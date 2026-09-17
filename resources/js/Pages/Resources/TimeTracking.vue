@@ -1,17 +1,11 @@
-﻿<script setup>
+<script setup>
+import { computed, ref } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+import PageHeader from '@/Components/ui/PageHeader.vue';
+const props = defineProps({ title: { type: String, default: 'Time Tracking' }, entries: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] }, resources: { type: Array, default: () => [] }, tasks: { type: Array, default: () => [] } });
+const showModal = ref(false); const totalHours = computed(() => props.entries.reduce((sum, entry) => sum + Number(entry.hours), 0)); const form = useForm({ project_id: '', resource_id: '', task_id: '', entry_date: new Date().toISOString().slice(0, 10), hours: 1, description: '' });
+function submit() { form.post('/resources/time-tracking', { onSuccess: () => { showModal.value = false; form.reset(); } }); }
+function remove(entry) { if (confirm('Delete this time entry?')) router.delete(`/resources/time-tracking/${entry.id}`); }
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Record work effort against projects and tasks"><template #actions><button class="ti-btn ti-btn-primary" @click="showModal = true">Log Time</button></template></PageHeader><div class="box mb-4"><div class="box-body"><p class="text-textmuted mb-1">Tracked Hours</p><h3 class="mb-0">{{ totalHours.toFixed(2) }}</h3></div></div><div class="box"><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date</th><th>Resource</th><th>Project / Task</th><th>Hours</th><th>Description</th><th></th></tr></thead><tbody><tr v-for="entry in entries" :key="entry.id"><td>{{ entry.entry_date }}</td><td>{{ entry.resource?.name || 'Unassigned' }}</td><td>{{ entry.project?.name || 'General' }}<span v-if="entry.task" class="text-textmuted"> · {{ entry.task.title }}</span></td><td>{{ entry.hours }}</td><td>{{ entry.description || '—' }}</td><td><button class="ti-btn ti-btn-soft-danger ti-btn-sm" @click="remove(entry)">Delete</button></td></tr><tr v-if="!entries.length"><td colspan="6" class="py-8 text-center text-textmuted">No time entries recorded.</td></tr></tbody></table></div></div></div><div v-if="showModal" class="fixed inset-0 z-[80] grid place-items-center bg-black/50 p-4"><div class="box w-full max-w-xl mb-0"><form @submit.prevent="submit"><div class="box-header"><h6 class="box-title">Log Time</h6></div><div class="box-body grid gap-4"><div class="grid grid-cols-2 gap-4"><select v-model="form.resource_id" class="ti-form-select"><option value="">Resource</option><option v-for="resource in resources" :key="resource.id" :value="resource.id">{{ resource.name }}</option></select><input v-model="form.entry_date" type="date" class="ti-form-control" required></div><div class="grid grid-cols-2 gap-4"><select v-model="form.project_id" class="ti-form-select"><option value="">Project</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select><select v-model="form.task_id" class="ti-form-select"><option value="">Task</option><option v-for="task in tasks" :key="task.id" :value="task.id">{{ task.title }}</option></select></div><input v-model="form.hours" type="number" min="0.25" step="0.25" class="ti-form-control" required><textarea v-model="form.description" class="ti-form-control" placeholder="Work description"></textarea></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary">Save</button></div></form></div></div></AppLayout></template>

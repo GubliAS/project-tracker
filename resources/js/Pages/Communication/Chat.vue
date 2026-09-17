@@ -1,17 +1,5 @@
-﻿<script setup>
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+<script setup>
+import Chat from '../Chat/Index.vue';
+defineProps({ title: String, projects: Array, selectedProjectId: Number, messages: Array });
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><Chat :title="title || 'Project Chat'" :projects="projects" :selected-project-id="selectedProjectId" :messages="messages" /></template>

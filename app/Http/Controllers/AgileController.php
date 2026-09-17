@@ -6,6 +6,11 @@ use Inertia\Response;
 
 class AgileController extends Controller
 {
+    public function index(): Response
+    {
+        return $this->sprints();
+    }
+
     public function sprints(): Response
     {
         return $this->inertiaPage('Agile/Sprints', 'Sprints');

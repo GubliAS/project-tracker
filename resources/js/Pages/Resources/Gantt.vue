@@ -1,17 +1,8 @@
-﻿<script setup>
+<script setup>
+import { computed } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import PagePlaceholder from '@/Components/PagePlaceholder.vue';
-
-defineProps({
-    title: {
-        type: String,
-        required: true,
-    },
-});
+import PageHeader from '@/Components/ui/PageHeader.vue';
+const props = defineProps({ title: { type: String, default: 'Gantt Chart' }, tasks: { type: Array, default: () => [] }, milestones: { type: Array, default: () => [] } });
+const items = computed(() => [...props.tasks.map((task) => ({ id: `task-${task.id}`, title: task.title, project: task.project?.name || 'General', date: task.due_date, type: 'Task', status: task.status })), ...props.milestones.map((milestone) => ({ id: `milestone-${milestone.id}`, title: milestone.title, project: milestone.project?.name || 'General', date: milestone.due_date, type: 'Milestone', status: milestone.status }))].sort((a, b) => a.date.localeCompare(b.date)));
 </script>
-
-<template>
-    <AppLayout :title="title">
-        <PagePlaceholder :title="title" />
-    </AppLayout>
-</template>
+<template><AppLayout :title="title"><PageHeader :title="title" subtitle="A chronological delivery plan based on due tasks and milestones" /><div class="box"><div class="box-body"><div v-for="item in items" :key="item.id" class="grid grid-cols-[7rem_1fr] gap-4 border-b border-defaultborder py-4 last:border-0"><div class="text-sm font-medium">{{ new Date(item.date).toLocaleDateString() }}</div><div><div class="flex items-center justify-between gap-3"><p class="font-medium mb-1">{{ item.title }}</p><span class="badge" :class="item.type === 'Milestone' ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary'">{{ item.type }}</span></div><p class="text-sm text-textmuted mb-2">{{ item.project }}</p><div class="h-2 rounded bg-light dark:bg-black/10"><div class="h-2 rounded" :class="item.status === 'done' || item.status === 'completed' ? 'w-full bg-success' : item.status === 'in_progress' ? 'w-2/3 bg-primary' : 'w-1/3 bg-warning'"></div></div></div></div><p v-if="!items.length" class="py-12 text-center text-textmuted">Add due dates to tasks or milestones to build the timeline.</p></div></div></AppLayout></template>
