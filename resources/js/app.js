@@ -1,5 +1,8 @@
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
+import './assets/css/styles.css';
+import './assets/css/pm-custom.css';
+import './assets/js/preline.js';
 
 createInertiaApp({
     resolve: (name) => {

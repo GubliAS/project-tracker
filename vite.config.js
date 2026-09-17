@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
+    assetsInclude: ['**/*.woff', '**/*.woff2', '**/*.ttf', '**/*.eot'],
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
@@ -22,5 +23,8 @@ export default defineConfig({
         alias: {
             '@': path.resolve('resources/js'),
         },
+    },
+    build: {
+        cssMinify: false,
     },
 });

@@ -1,8 +1,15 @@
+<script setup>
+const currentYear = new Date().getFullYear();
+</script>
+
 <template>
-    <!-- TODO: Replace with converted template footer -->
-    <footer class="app-footer border-top py-3 mt-4">
-        <div class="container-fluid text-muted small">
-            Project Tracker &copy; {{ new Date().getFullYear() }}
+    <footer class="footer mt-auto py-3 bg-white dark:bg-bodybg text-center">
+        <div class="container">
+            <span class="text-textmuted dark:text-textmuted/50">
+                Copyright &copy; {{ currentYear }}
+                <a href="javascript:void(0);" class="text-primary">Project Tracker</a>.
+                All rights reserved.
+            </span>
         </div>
     </footer>
 </template>

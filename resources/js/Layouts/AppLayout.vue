@@ -1,37 +1,42 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, nextTick, ref } from 'vue';
 import AppHeader from '@/Components/Partials/AppHeader.vue';
 import AppSidebar from '@/Components/Partials/AppSidebar.vue';
 import AppFooter from '@/Components/Partials/AppFooter.vue';
 
-defineProps({
-    title: {
-        type: String,
-        default: 'Project Tracker',
-    },
-});
+const isDarkMode = ref(false);
 
-const sidebarCollapsed = ref(false);
-
-const toggleSidebar = () => {
-    sidebarCollapsed.value = !sidebarCollapsed.value;
+const toggleDarkMode = () => {
+    isDarkMode.value = !isDarkMode.value;
+    document.documentElement.classList.toggle('dark', isDarkMode.value);
 };
+
+onMounted(() => {
+    document.documentElement.setAttribute('data-nav-layout', 'horizontal');
+    document.documentElement.setAttribute('data-nav-style', 'menu-click');
+    document.documentElement.setAttribute('data-menu-styles', 'light');
+    document.documentElement.setAttribute('data-header-styles', 'light');
+
+    nextTick(() => {
+        setTimeout(() => {
+            if (window.HSStaticMethods?.autoInit) {
+                window.HSStaticMethods.autoInit();
+            }
+        }, 200);
+    });
+});
 </script>
 
 <template>
-    <div class="app-wrapper" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-        <AppHeader @toggle-sidebar="toggleSidebar" />
-        <AppSidebar :collapsed="sidebarCollapsed" />
+    <div class="page" :class="{ dark: isDarkMode }">
+        <AppHeader @toggle-dark="toggleDarkMode" />
+        <AppSidebar />
 
-        <main class="app-content">
-            <div class="content-header">
-                <h1 class="h4 mb-0">{{ title }}</h1>
-            </div>
-
-            <div class="content-body">
+        <div class="main-content app-content">
+            <div class="container-fluid">
                 <slot />
             </div>
-        </main>
+        </div>
 
         <AppFooter />
     </div>
