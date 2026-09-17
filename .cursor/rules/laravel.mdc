@@ -1,0 +1,14 @@
+---
+description: Laravel backend conventions
+globs:
+  - "**/*.php"
+alwaysApply: false
+---
+
+# LARAVEL CONVENTIONS
+
+- Use artisan commands for models, controllers, migrations
+- Config over env in application code
+- Eager load relationships to avoid N+1 queries
+- Form Requests for validation
+- Route model binding where appropriate

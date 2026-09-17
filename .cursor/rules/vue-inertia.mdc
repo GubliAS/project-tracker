@@ -1,0 +1,13 @@
+---
+description: Vue + Inertia.js patterns
+globs:
+  - "**/*.vue"
+alwaysApply: false
+---
+
+# VUE + INERTIA PATTERNS
+
+- Use Inertia `<Link>` for internal navigation
+- Use `useForm` from `@inertiajs/vue3` for form submissions
+- Page-specific data comes from Laravel controllers as props
+- Import using `@/` alias for `resources/js/`

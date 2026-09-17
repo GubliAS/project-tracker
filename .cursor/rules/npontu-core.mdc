@@ -1,0 +1,30 @@
+---
+description: Npontu core development standards
+globs:
+  - "**/*.php"
+  - "**/*.vue"
+  - "**/*.js"
+alwaysApply: true
+---
+
+# NPONTU TECHNOLOGIES DEVELOPMENT STANDARDS
+
+## Context First - No Guesswork
+
+- NEVER write code until you understand the full context
+- List all relevant files before making changes
+- Follow existing patterns in the codebase
+
+## Code Quality Standards
+
+- Write modular, testable, clean code
+- Follow Laravel and Vue best practices
+- Use `php artisan make:*` for PHP components
+
+## Vue + Inertia Specific
+
+- Page components in `resources/js/Pages/`
+- Reusable components in `resources/js/Components/`
+- Layouts in `resources/js/Layouts/`
+- Use `<script setup>` (Composition API)
+- Use `Inertia::render()` for page routing
