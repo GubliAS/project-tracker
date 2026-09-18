@@ -11,7 +11,7 @@ class ChangelogController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Quality/Changelog', 'Change Log', [
+        return $this->inertiaPage('Quality/ChangeLog', 'Change Log', [
             'changes' => Changelog::query()->orderByDesc('release_date')->latest()->get(),
         ]);
     }
@@ -20,21 +20,21 @@ class ChangelogController extends Controller
     {
         Changelog::query()->create($this->validated($request));
 
-        return redirect()->route('quality.changelog.index')->with('message', 'Change record created successfully.');
+        return redirect()->route('quality.changelog')->with('message', 'Change record created successfully.');
     }
 
     public function update(Request $request, Changelog $changelog): RedirectResponse
     {
         $changelog->update($this->validated($request));
 
-        return redirect()->route('quality.changelog.index')->with('message', 'Change record updated successfully.');
+        return redirect()->route('quality.changelog')->with('message', 'Change record updated successfully.');
     }
 
     public function destroy(Changelog $changelog): RedirectResponse
     {
         $changelog->delete();
 
-        return redirect()->route('quality.changelog.index')->with('message', 'Change record deleted successfully.');
+        return redirect()->route('quality.changelog')->with('message', 'Change record deleted successfully.');
     }
 
     /**

@@ -43,7 +43,7 @@ class QualityTestingController extends Controller
             'check_type' => 'testing',
         ]);
 
-        return redirect()->route('quality.testing.index')->with('message', 'Test run logged successfully.');
+        return redirect()->route('quality.qa-testing')->with('message', 'Test run logged successfully.');
     }
 
     public function update(Request $request, QualityCheck $qualityCheck): RedirectResponse
@@ -57,6 +57,6 @@ class QualityTestingController extends Controller
 
         $qualityCheck->update($validated);
 
-        return redirect()->route('quality.testing.index')->with('message', 'Test run updated successfully.');
+        return redirect()->route('quality.qa-testing')->with('message', 'Test run updated successfully.');
     }
 }

@@ -46,15 +46,15 @@ export const navigation = [
         label: 'Quality',
         children: [
             { label: 'Quality Control', href: '/quality' },
-            { label: 'QA & Testing', href: '/quality/testing' },
+            { label: 'QA & Testing', href: '/quality/qa-testing' },
             { label: 'Risks & Issues', href: '/quality/risks' },
-            { label: 'Change Log', href: '/quality/changelog' },
+            { label: 'Change Log', href: '/quality/change-log' },
         ],
     },
     {
         label: 'Reports',
         children: [
-            { label: 'Analytics', href: '/reports' },
+            { label: 'Analytics', href: '/reports/analytics' },
             { label: 'Documents', href: '/reports/documents' },
             { label: 'Lessons Learned', href: '/reports/lessons' },
         ],

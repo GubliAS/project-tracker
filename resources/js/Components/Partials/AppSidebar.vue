@@ -80,9 +80,9 @@ const menuItems = [
     label: 'Reports',
     icon: 'ri-bar-chart-box-line',
     children: [
-      { label: 'Analytics', to: '/reports' },
+      { label: 'Analytics', to: '/reports/analytics' },
       { label: 'Documents', to: '/reports/documents' },
-      { label: 'Lessons Learned', to: '/reports/lessons-learned' }
+      { label: 'Lessons Learned', to: '/reports/lessons' }
     ]
   },
   {

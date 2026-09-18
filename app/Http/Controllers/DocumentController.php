@@ -49,6 +49,15 @@ class DocumentController extends Controller
         return Storage::disk('public')->download($document->file_path, $document->name);
     }
 
+    public function preview(Document $document): StreamedResponse
+    {
+        abort_unless(Storage::disk('public')->exists($document->file_path), 404);
+
+        return Storage::disk('public')->response($document->file_path, $document->name, [
+            'Content-Disposition' => 'inline; filename="'.$document->name.'"',
+        ]);
+    }
+
     public function destroy(Document $document): RedirectResponse
     {
         Storage::disk('public')->delete($document->file_path);

@@ -19,11 +19,11 @@ const statusLabel = (status) => ({ passed: 'Passed', failed: 'Failed', pending: 
 const statusClass = (status) => ({ passed: 'bg-success/10 text-success', failed: 'bg-danger/10 text-danger', pending: 'bg-warning/10 text-warning' }[status]);
 
 function submit() {
-    form.post('/quality/testing', { onSuccess: () => { form.reset(); showModal.value = false; } });
+    form.post('/quality/qa-testing', { onSuccess: () => { form.reset(); showModal.value = false; } });
 }
 
 function updateStatus(testCase, status) {
-    router.put(`/quality/testing/${testCase.id}`, { status, notes: testCase.notes || '' }, { preserveScroll: true });
+    router.put(`/quality/qa-testing/${testCase.id}`, { status, notes: testCase.notes || '' }, { preserveScroll: true });
 }
 </script>
 

@@ -24,16 +24,16 @@ class SupplementalModulesTest extends TestCase
         $project = Project::factory()->create();
         QualityCheck::factory()->create(['project_id' => $project->id, 'check_type' => 'testing']);
 
-        $this->get('/quality/testing')
+        $this->get('/quality/qa-testing')
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Quality/Testing')->has('testCases', 1));
 
-        $this->post('/quality/testing', [
+        $this->post('/quality/qa-testing', [
             'project_id' => $project->id,
             'title' => 'Checkout regression',
             'status' => 'passed',
             'notes' => 'All payment cases passed.',
-        ])->assertRedirect(route('quality.testing.index'));
+        ])->assertRedirect(route('quality.qa-testing'));
 
         $this->assertDatabaseHas('quality_checks', ['title' => 'Checkout regression', 'check_type' => 'testing', 'status' => 'passed']);
     }
@@ -55,15 +55,15 @@ class SupplementalModulesTest extends TestCase
 
     public function test_changelog_records_are_managed(): void
     {
-        $this->post('/quality/changelog', ['version' => 'v1.2.0', 'title' => 'Risk register', 'description' => 'Added the project risk register.', 'type' => 'feature', 'release_date' => '2026-09-17'])
-            ->assertRedirect(route('quality.changelog.index'));
+        $this->post('/quality/change-log', ['version' => 'v1.2.0', 'title' => 'Risk register', 'description' => 'Added the project risk register.', 'type' => 'feature', 'release_date' => '2026-09-17'])
+            ->assertRedirect(route('quality.changelog'));
 
         $change = Changelog::query()->firstOrFail();
-        $this->put("/quality/changelog/{$change->id}", ['version' => 'v1.2.1', 'title' => 'Risk register update', 'description' => 'Improved severity labels.', 'type' => 'improvement', 'release_date' => '2026-09-18'])
-            ->assertRedirect(route('quality.changelog.index'));
+        $this->put("/quality/change-log/{$change->id}", ['version' => 'v1.2.1', 'title' => 'Risk register update', 'description' => 'Improved severity labels.', 'type' => 'improvement', 'release_date' => '2026-09-18'])
+            ->assertRedirect(route('quality.changelog'));
 
         $this->assertDatabaseHas('changelogs', ['id' => $change->id, 'version' => 'v1.2.1']);
-        $this->delete("/quality/changelog/{$change->id}")->assertRedirect(route('quality.changelog.index'));
+        $this->delete("/quality/change-log/{$change->id}")->assertRedirect(route('quality.changelog'));
     }
 
     public function test_documents_are_uploaded_and_available_for_download(): void
@@ -76,6 +76,7 @@ class SupplementalModulesTest extends TestCase
 
         $document = Document::query()->firstOrFail();
         Storage::disk('public')->assertExists($document->file_path);
+        $this->get("/reports/documents/{$document->id}/preview")->assertOk();
         $this->get("/reports/documents/{$document->id}/download")->assertOk();
     }
 
@@ -84,14 +85,14 @@ class SupplementalModulesTest extends TestCase
         $project = Project::factory()->create();
 
         $this->post('/reports/lessons', ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'high', 'recommendation' => 'Confirm assumptions during kickoff.', 'project_id' => $project->id])
-            ->assertRedirect(route('reports.lessons.index'));
+            ->assertRedirect(route('reports.lessons'));
 
         $lesson = LessonLearned::query()->firstOrFail();
         $this->put("/reports/lessons/{$lesson->id}", ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'medium', 'recommendation' => 'Review assumptions each sprint.', 'project_id' => $project->id])
-            ->assertRedirect(route('reports.lessons.index'));
+            ->assertRedirect(route('reports.lessons'));
 
         $this->assertDatabaseHas('lesson_learneds', ['id' => $lesson->id, 'impact_level' => 'medium']);
-        $this->delete("/reports/lessons/{$lesson->id}")->assertRedirect(route('reports.lessons.index'));
+        $this->delete("/reports/lessons/{$lesson->id}")->assertRedirect(route('reports.lessons'));
     }
 
     public function test_chat_renders_project_messages_and_sends_a_message(): void

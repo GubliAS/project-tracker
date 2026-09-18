@@ -67,18 +67,17 @@ Route::prefix('resources')->name('resources.')->group(function () {
 Route::prefix('quality')->name('quality.')->group(function () {
     Route::get('/', [QualityController::class, 'index'])->name('index');
     Route::post('/', [QualityController::class, 'store'])->name('store');
-    Route::get('/testing', [QualityTestingController::class, 'index'])->name('testing.index');
     Route::get('/qa-testing', [QualityTestingController::class, 'index'])->name('qa-testing');
-    Route::post('/testing', [QualityTestingController::class, 'store'])->name('testing.store');
-    Route::put('/testing/{qualityCheck}', [QualityTestingController::class, 'update'])->name('testing.update');
+    Route::post('/qa-testing', [QualityTestingController::class, 'store'])->name('qa-testing.store');
+    Route::put('/qa-testing/{qualityCheck}', [QualityTestingController::class, 'update'])->name('qa-testing.update');
     Route::get('/risks', [RiskController::class, 'index'])->name('risks.index');
     Route::post('/risks', [RiskController::class, 'store'])->name('risks.store');
     Route::put('/risks/{risk}', [RiskController::class, 'update'])->name('risks.update');
     Route::delete('/risks/{risk}', [RiskController::class, 'destroy'])->name('risks.destroy');
-    Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');
-    Route::post('/changelog', [ChangelogController::class, 'store'])->name('changelog.store');
-    Route::put('/changelog/{changelog}', [ChangelogController::class, 'update'])->name('changelog.update');
-    Route::delete('/changelog/{changelog}', [ChangelogController::class, 'destroy'])->name('changelog.destroy');
+    Route::get('/change-log', [ChangelogController::class, 'index'])->name('changelog');
+    Route::post('/change-log', [ChangelogController::class, 'store'])->name('changelog.store');
+    Route::put('/change-log/{changelog}', [ChangelogController::class, 'update'])->name('changelog.update');
+    Route::delete('/change-log/{changelog}', [ChangelogController::class, 'destroy'])->name('changelog.destroy');
     Route::put('/{qualityCheck}', [QualityController::class, 'update'])->name('update');
     Route::delete('/{qualityCheck}', [QualityController::class, 'destroy'])->name('destroy');
 });
@@ -88,9 +87,10 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::get('/analytics', [ReportController::class, 'analytics'])->name('analytics');
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons.index');
+    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons');
     Route::post('/lessons', [LessonController::class, 'store'])->name('lessons.store');
     Route::put('/lessons/{lesson}', [LessonController::class, 'update'])->name('lessons.update');
     Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy'])->name('lessons.destroy');

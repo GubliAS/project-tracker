@@ -12,7 +12,7 @@ class LessonController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Reports/Lessons', 'Lessons Learned', [
+        return $this->inertiaPage('Reports/LessonsLearned', 'Lessons Learned', [
             'lessons' => LessonLearned::query()->with('project:id,name')->latest()->get(),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -22,21 +22,21 @@ class LessonController extends Controller
     {
         LessonLearned::query()->create($this->validated($request));
 
-        return redirect()->route('reports.lessons.index')->with('message', 'Lesson recorded successfully.');
+        return redirect()->route('reports.lessons')->with('message', 'Lesson recorded successfully.');
     }
 
     public function update(Request $request, LessonLearned $lesson): RedirectResponse
     {
         $lesson->update($this->validated($request));
 
-        return redirect()->route('reports.lessons.index')->with('message', 'Lesson updated successfully.');
+        return redirect()->route('reports.lessons')->with('message', 'Lesson updated successfully.');
     }
 
     public function destroy(LessonLearned $lesson): RedirectResponse
     {
         $lesson->delete();
 
-        return redirect()->route('reports.lessons.index')->with('message', 'Lesson deleted successfully.');
+        return redirect()->route('reports.lessons')->with('message', 'Lesson deleted successfully.');
     }
 
     /**
