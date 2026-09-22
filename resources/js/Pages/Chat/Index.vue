@@ -48,7 +48,7 @@ const sendMessage = () => {
 
 <template>
   <AppLayout title="Project Chat">
-<div>
+<div class="pm-dash">
     <PageHeader title="Project Chat" subtitle="Team communication">
       <template #actions>
         <button class="ti-btn ti-btn-light">

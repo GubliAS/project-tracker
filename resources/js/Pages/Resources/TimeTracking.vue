@@ -19,7 +19,7 @@ const monthlyTotal = ref(156)
 
 <template>
   <AppLayout title="Time Tracking">
-<div>
+<div class="pm-dash">
     <PageHeader title="Time Tracking" subtitle="Track time spent on projects and tasks">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

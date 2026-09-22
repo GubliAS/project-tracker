@@ -1,8 +1,15 @@
 <script setup>
 import { Link } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const emit = defineEmits(['toggle-dark'])
+defineProps({
+  dark: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+defineEmits(['toggle-dark'])
 
 const isSearchOpen = ref(false)
 const searchQuery = ref('')
@@ -24,21 +31,25 @@ const toggleProfileDropdown = () => {
   isProfileDropdownOpen.value = !isProfileDropdownOpen.value
 }
 
+const closeProfileOnOutsideClick = (event) => {
+  const profileDropdown = document.getElementById('headerProfileDropdown')
+  if (profileDropdown && !profileDropdown.closest('.header-element')?.contains(event.target)) {
+    isProfileDropdownOpen.value = false
+  }
+}
+
 onMounted(() => {
-  // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    const profileDropdown = document.getElementById('headerProfileDropdown')
-    if (profileDropdown && !profileDropdown.closest('.header-element')?.contains(e.target)) {
-      isProfileDropdownOpen.value = false
-    }
-  })
+  document.addEventListener('click', closeProfileOnOutsideClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeProfileOnOutsideClick)
 })
 </script>
 
 <template>
-  <header class="app-header sticky" id="header">
+  <header class="app-header sticky pm-header" id="header">
     <div class="main-header-container container-fluid">
-      <!-- Header Content Left -->
       <div class="header-content-left">
         <div class="header-element">
           <div class="horizontal-logo">
@@ -59,7 +70,8 @@ onMounted(() => {
           </a>
         </div>
 
-        <div class="header-element header-search md:!block !hidden my-auto auto-complete-search">
+        <div class="header-element header-search pm-header-search md:!block !hidden my-auto auto-complete-search">
+          <i class="ri-search-line pm-header-search__icon" aria-hidden="true"></i>
           <input
             v-model="searchQuery"
             autocomplete="off"
@@ -67,61 +79,54 @@ onMounted(() => {
             placeholder="Search anything here ..."
             type="text"
           />
-          <a class="header-search-icon border-0" href="javascript:void(0);">
-            <i class="ri-search-line"></i>
-          </a>
         </div>
       </div>
 
-      <!-- Header Content Right -->
       <ul class="header-content-right">
-        <!-- Mobile Search -->
-        <li class="header-element md:!hidden block">
+        <li class="header-element pm-header-search-toggle">
           <a class="header-link" href="javascript:void(0);" @click="toggleSearch">
-            <i class="bi bi-search header-link-icon"></i>
+            <i class="ri-search-line header-link-icon"></i>
           </a>
         </li>
 
-        <!-- Dark Mode Toggle -->
         <li class="header-element">
-          <a class="header-link" href="javascript:void(0);" @click="$emit('toggle-dark')">
-            <i class="ri-moon-line header-link-icon"></i>
+          <a class="header-link" href="javascript:void(0);" :aria-label="dark ? 'Switch to light mode' : 'Switch to dark mode'" @click="$emit('toggle-dark')">
+            <i class="header-link-icon" :class="dark ? 'ri-sun-line' : 'ri-moon-line'"></i>
           </a>
         </li>
 
-        <!-- Fullscreen -->
         <li class="header-element header-fullscreen">
-          <a class="header-link" href="javascript:void(0);" @click="toggleFullscreen">
+          <a class="header-link" href="javascript:void(0);" aria-label="Toggle fullscreen" @click="toggleFullscreen">
             <i class="ri-fullscreen-line header-link-icon"></i>
           </a>
         </li>
 
-        <!-- Notifications -->
         <li class="header-element notifications-dropdown">
-          <a class="header-link" href="javascript:void(0);">
+          <a class="header-link" href="javascript:void(0);" aria-label="Notifications">
             <i class="ri-notification-3-line header-link-icon"></i>
-            <span class="header-icon-pulse bg-primary rounded pulse pulse-secondary"></span>
+            <span class="pm-header-pulse"></span>
           </a>
         </li>
 
-        <!-- Profile -->
-        <li class="header-element ti-dropdown hs-dropdown">
+        <li class="header-element ti-dropdown hs-dropdown pm-header-user-wrap">
           <a
-            class="header-link hs-dropdown-toggle ti-dropdown-toggle"
+            class="header-link hs-dropdown-toggle ti-dropdown-toggle pm-header-user"
             href="javascript:void(0);"
             id="headerProfileDropdown"
-            @click="toggleProfileDropdown"
+            @click.stop="toggleProfileDropdown"
             :aria-expanded="isProfileDropdownOpen"
           >
-            <div class="flex items-center">
-              <span class="avatar avatar-sm bg-primary text-white">PM</span>
-            </div>
+            <span class="avatar avatar-sm bg-primary text-white">PM</span>
+            <span class="pm-header-user__meta">
+              <b>Project Manager</b>
+              <small>Admin</small>
+            </span>
+            <i class="ri-arrow-down-s-line pm-header-user__caret"></i>
           </a>
           <ul
             v-show="isProfileDropdownOpen"
             class="main-header-dropdown hs-dropdown-menu ti-dropdown-menu pt-0 overflow-hidden header-profile-dropdown"
             aria-labelledby="headerProfileDropdown"
-            style="position: absolute; right: 0; top: 100%; z-index: 1000; min-width: 200px;"
           >
             <li>
               <div class="ti-dropdown-item text-center border-b block">
@@ -136,44 +141,16 @@ onMounted(() => {
         </li>
       </ul>
     </div>
+
+    <div v-show="isSearchOpen" class="pm-header-search-mobile md:!hidden">
+      <i class="ri-search-line" aria-hidden="true"></i>
+      <input
+        v-model="searchQuery"
+        autocomplete="off"
+        class="form-control"
+        placeholder="Search anything here ..."
+        type="text"
+      />
+    </div>
   </header>
 </template>
-
-<style scoped>
-.header-link-icon {
-  font-size: 1.25rem;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.header-logo img {
-  max-height: 300px;
-  height: auto;
-  width: auto;
-  object-fit: contain;
-}
-
-.header-logo:hover img {
-  opacity: 0.9;
-}
-</style>

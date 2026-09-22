@@ -130,7 +130,7 @@ const saveKickoff = () => {
       v-if="showScheduleModal"
       class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40"
     >
-      <div class="bg-white dark:bg-bgdark rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
+      <div class="bg-white dark:bg-bodybg2 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <div class="px-6 py-4 border-b border-defaultborder/60 flex items-center justify-between">
           <h3 class="text-base font-semibold">Schedule Kick-Off</h3>
           <button
@@ -186,7 +186,7 @@ const saveKickoff = () => {
           </p>
         </div>
 
-        <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light/40 dark:bg-bgdark/40 rounded-b-xl">
+        <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light rounded-b-xl">
           <button class="ti-btn ti-btn-light" type="button" @click="closeScheduleModal">
             Cancel
           </button>

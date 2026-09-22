@@ -126,7 +126,11 @@ const isActive = (href) => {
   const currentPath = normalizePath(page.url)
   const targetPath = normalizePath(href)
 
-  return currentPath === targetPath || (targetPath !== '/' && currentPath.startsWith(`${targetPath}/`))
+  if (targetPath === '/') {
+    return currentPath === '/' || currentPath === '/dashboard'
+  }
+
+  return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`)
 }
 
 const isChildActive = (children) => {
@@ -135,7 +139,7 @@ const isChildActive = (children) => {
 </script>
 
 <template>
-  <aside class="app-sidebar sticky" id="sidebar">
+  <aside class="app-sidebar sticky pm-nav" id="sidebar">
     <div class="container-xl">
       <div class="main-sidebar" id="sidebar-scroll">
         <nav class="main-menu-container nav nav-pills sub-open">
@@ -147,7 +151,7 @@ const isChildActive = (children) => {
           </div>
 
           <!-- Menu Items -->
-          <ul class="main-menu" style="display: flex; align-items: center; flex-wrap: wrap;">
+          <ul class="main-menu">
             <li
               v-for="item in menuItems"
               :key="item.id"
@@ -157,16 +161,13 @@ const isChildActive = (children) => {
                 'open': isMenuOpen(item.id),
                 'active': isChildActive(item.children) || isActive(item.href)
               }"
-              style="position: relative; display: block;"
             >
-              <!-- Menu item with children (dropdown) -->
               <template v-if="item.children">
                 <a
                   href="#"
                   class="side-menu__item"
                   :class="{ 'active': isChildActive(item.children) }"
                   @click.prevent="toggleMenu(item.id)"
-                  style="display: flex; align-items: center;"
                 >
                   <i :class="[item.icon, 'side-menu__icon']"></i>
                   <span class="side-menu__label">{{ item.label }}</span>
@@ -214,18 +215,17 @@ const isChildActive = (children) => {
 </template>
 
 <style>
-/* Custom dropdown menu - NOT scoped to ensure override */
 .pm-dropdown-menu {
   position: absolute !important;
-  top: 100% !important;
+  top: calc(100% + 0.4rem) !important;
   left: 0 !important;
-  min-width: 200px !important;
+  min-width: 13.5rem !important;
   background-color: #fff !important;
-  border: 1px solid rgba(0,0,0,0.1) !important;
+  border: 1px solid var(--pm-border-soft, rgb(15 23 42 / 0.08)) !important;
   border-radius: 1rem !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.12) !important;
-  padding: 0.5rem 0 !important;
-  z-index: 1000 !important;
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.12) !important;
+  padding: 0.4rem !important;
+  z-index: 1100 !important;
   margin: 0 !important;
   list-style: none !important;
   display: block !important;
@@ -237,39 +237,38 @@ const isChildActive = (children) => {
 
 .pm-dropdown-menu a {
   display: block !important;
-  padding: 0.5rem 1rem !important;
+  padding: 0.55rem 0.85rem !important;
   color: #374151 !important;
   white-space: nowrap !important;
   text-decoration: none !important;
+  border-radius: 0.7rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
 }
 
 .pm-dropdown-menu a:hover {
-  background-color: rgba(92, 97, 242, 0.1) !important;
-  color: #5c61f2 !important;
-}
-
-.pm-dropdown-menu a.active {
-  color: #5c61f2 !important;
-  background-color: rgba(92, 97, 242, 0.08) !important;
-}
-
-.dark .pm-dropdown-menu {
-  background-color: rgb(var(--custom-white)) !important;
-  border-color: rgb(255 255 255 / 0.1) !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35) !important;
-}
-
-.dark .pm-dropdown-menu a {
-  color: rgb(255 255 255 / 0.8) !important;
-}
-
-.dark .pm-dropdown-menu a:hover {
   background-color: rgb(var(--primary) / 0.1) !important;
   color: rgb(var(--primary)) !important;
 }
 
-.dark .pm-dropdown-menu a.active {
+.pm-dropdown-menu a.active {
   color: rgb(var(--primary)) !important;
-  background-color: rgb(var(--primary) / 0.08) !important;
+  background-color: rgb(var(--primary) / 0.12) !important;
+}
+
+.dark .pm-dropdown-menu {
+  background-color: rgb(var(--custom-white)) !important;
+  border-color: var(--pm-border-soft) !important;
+  box-shadow: 0 16px 40px rgb(4 6 16 / 0.45) !important;
+}
+
+.dark .pm-dropdown-menu a {
+  color: rgb(var(--default-text-color) / 0.86) !important;
+}
+
+.dark .pm-dropdown-menu a:hover,
+.dark .pm-dropdown-menu a.active {
+  background-color: rgb(var(--primary) / 0.16) !important;
+  color: #c8c4ff !important;
 }
 </style>

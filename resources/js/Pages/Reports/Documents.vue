@@ -26,7 +26,7 @@ const categoryFilter = ref('all')
 
 <template>
   <AppLayout title="Documents">
-<div>
+<div class="pm-dash">
     <PageHeader title="Documents" subtitle="Manage project documents and files">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

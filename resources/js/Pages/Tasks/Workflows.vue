@@ -14,7 +14,7 @@ const workflows = ref([
 
 <template>
   <AppLayout title="Workflows">
-<div>
+<div class="pm-dash">
     <PageHeader title="Workflows" subtitle="Manage task workflows and stages">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

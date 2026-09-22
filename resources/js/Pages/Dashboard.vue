@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { onMounted, nextTick } from 'vue'
+import { onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
 import ApexCharts from 'apexcharts'
 import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
@@ -112,14 +112,218 @@ const summaryProjects = [
 ]
 
 const summaryAvatars = ['/assets/img/8.jpg', '/assets/img/4.jpg', '/assets/img/6.jpg', '/assets/img/7.jpg']
+const heroArtMissing = ref(false)
+
+const statsPeriod = ref('Last Week')
+const statsTotals = ref({
+  revenue: '$475,896',
+  projects: '75,896',
+  revenueDelta: '5.6%',
+  projectsDelta: '1.6%',
+  revenueUp: true,
+  projectsUp: false,
+})
+
+const statsRanges = {
+  Today: {
+    categories: ['8am', '10am', '12pm', '2pm', '4pm', '6pm', '8pm'],
+    projects: [6, 9, 7, 12, 10, 8, 11],
+    revenue: [8, 10, 9, 14, 11, 9, 13],
+    totals: { revenue: '$18,240', projects: '63', revenueDelta: '2.1%', projectsDelta: '0.8%', revenueUp: true, projectsUp: true },
+  },
+  'Last Week': {
+    categories: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    projects: [18, 24, 21, 32, 28, 36, 30],
+    revenue: [22, 28, 25, 34, 31, 40, 33],
+    totals: { revenue: '$475,896', projects: '75,896', revenueDelta: '5.6%', projectsDelta: '1.6%', revenueUp: true, projectsUp: false },
+  },
+  'Last Month': {
+    categories: ['W1', 'W2', 'W3', 'W4'],
+    projects: [42, 55, 48, 61],
+    revenue: [50, 58, 52, 67],
+    totals: { revenue: '$1.9M', projects: '206', revenueDelta: '4.2%', projectsDelta: '3.1%', revenueUp: true, projectsUp: true },
+  },
+  'Last Year': {
+    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    projects: [15, 28, 23, 23, 41, 58, 48, 50, 22, 31, 40, 45],
+    revenue: [20, 29, 37, 35, 44, 43, 50, 20, 20, 45, 45, 52],
+    totals: { revenue: '$5.4M', projects: '428', revenueDelta: '8.4%', projectsDelta: '2.7%', revenueUp: true, projectsUp: true },
+  },
+}
+
+let projectStatsChart = null
+
+const isDarkMode = () => document.documentElement.classList.contains('dark')
+
+const currentStatsRange = () => statsRanges[statsPeriod.value] || statsRanges['Last Week']
+
+const getPrimaryColor = () => {
+  const primaryRgb = getComputedStyle(document.documentElement).getPropertyValue('--primary-rgb').trim()
+  return primaryRgb ? `rgb(${primaryRgb})` : 'rgb(92, 103, 247)'
+}
+
+const buildProjectStatsOptions = (range) => {
+  const dark = isDarkMode()
+  const primaryColor = getPrimaryColor()
+
+  return {
+    series: [
+      { name: 'Projects', data: range.projects },
+      { name: 'Revenue', data: range.revenue },
+    ],
+    chart: {
+        type: 'area',
+        height: 360,
+        fontFamily: 'inherit',
+        background: 'transparent',
+        foreColor: dark ? '#c8d0e8' : '#6b7280',
+      toolbar: {
+        show: true,
+        offsetY: -6,
+        tools: {
+          download: true,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true,
+        },
+      },
+      zoom: { enabled: true },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 1100,
+        animateGradually: { enabled: true, delay: 140 },
+        dynamicAnimation: { enabled: true, speed: 650 },
+      },
+      dropShadow: {
+        enabled: true,
+        enabledOnSeries: [0, 1],
+        top: 8,
+        left: 0,
+        blur: 6,
+        color: [primaryColor, 'rgb(227, 84, 212)'],
+        opacity: 0.18,
+      },
+    },
+    colors: [primaryColor, 'rgb(227, 84, 212)'],
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 3 },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: dark ? 0.28 : 0.42,
+          opacityTo: dark ? 0.02 : 0.04,
+          stops: [0, 88, 100],
+        },
+      },
+    markers: {
+      size: 0,
+      strokeWidth: 2,
+      hover: { size: 6 },
+    },
+    grid: {
+      borderColor: dark ? 'rgba(255,255,255,0.08)' : '#f1f1f1',
+      strokeDashArray: 4,
+      padding: { left: 8, right: 8, top: 8 },
+    },
+    xaxis: {
+      categories: range.categories,
+      overwriteCategories: range.categories,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: { style: { fontSize: '12px' } },
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return Math.round(value)
+        },
+      },
+    },
+    legend: {
+      show: true,
+      position: 'top',
+      horizontalAlign: 'left',
+      fontSize: '13px',
+      markers: { size: 6, offsetX: -3 },
+      itemMargin: { horizontal: 12 },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      theme: dark ? 'dark' : 'light',
+      y: {
+        formatter: function (value) {
+          return value.toLocaleString()
+        },
+      },
+    },
+    theme: { mode: dark ? 'dark' : 'light' },
+  }
+}
+
+const renderProjectStatsChart = () => {
+  const element = document.querySelector('#project-statistics')
+  if (!element) {
+    return
+  }
+
+  if (projectStatsChart) {
+    charts = charts.filter((chart) => chart !== projectStatsChart)
+    projectStatsChart.destroy()
+    projectStatsChart = null
+    element.innerHTML = ''
+  }
+
+  projectStatsChart = new ApexCharts(element, buildProjectStatsOptions(currentStatsRange()))
+  projectStatsChart.render()
+  charts.push(projectStatsChart)
+}
+
+const setStatsPeriod = (period) => {
+  if (!statsRanges[period]) {
+    return
+  }
+
+  statsPeriod.value = period
+  statsTotals.value = statsRanges[period].totals
+  renderProjectStatsChart()
+}
+
+let themeObserver = null
 
 onMounted(() => {
   nextTick(() => {
     initializeCharts()
   })
+
+  themeObserver = new MutationObserver(() => {
+    nextTick(() => {
+      initializeCharts()
+    })
+  })
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+})
+
+onBeforeUnmount(() => {
+  themeObserver?.disconnect()
+  themeObserver = null
+  charts.forEach((chart) => chart.destroy())
+  charts = []
+  projectStatsChart = null
 })
 
 const initializeCharts = () => {
+  charts.forEach((chart) => {
+    chart.destroy()
+  })
+  charts = []
+  projectStatsChart = null
+
   const getPrimaryColor = () => {
     const root = document.documentElement
     const primaryRgb = getComputedStyle(root).getPropertyValue('--primary-rgb').trim()
@@ -140,7 +344,7 @@ const initializeCharts = () => {
     if (element) {
       const options = {
         series: [{ data: [12, 14, 18, 47, 42, 15, 47, 75, 65, 19, 14, 50] }],
-        chart: { type: 'bar', width: 70, height: 40, sparkline: { enabled: true } },
+        chart: { type: 'bar', width: 70, height: 40, sparkline: { enabled: true }, background: 'transparent' },
         plotOptions: { bar: { columnWidth: '80%', borderRadius: 2 } },
         stroke: { curve: 'smooth', width: 2 },
         labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
@@ -157,39 +361,13 @@ const initializeCharts = () => {
     }
   })
 
-  const projectStatsElement = document.querySelector('#project-statistics')
-  if (projectStatsElement) {
-    const projectStatsChart = new ApexCharts(projectStatsElement, {
-      series: [
-        { name: 'Projects', type: 'area', data: [15, 28, 23, 23, 41, 58, 48, 50, 22, 31, 40, 45] },
-        { name: 'Revenue', type: 'bar', data: [20, 29, 37, 35, 44, 43, 50, 20, 20, 45, 45, 52] },
-      ],
-      chart: {
-        type: 'area',
-        height: 320,
-        animations: { speed: 500 },
-        toolbar: { show: false },
-        dropShadow: { enabled: true, top: 8, left: 0, blur: 4, color: '#000', opacity: 0.08 },
-      },
-      colors: ['rgb(227, 84, 212)', primaryColor],
-      dataLabels: { enabled: false },
-      grid: { borderColor: '#f1f1f1', strokeDashArray: 3 },
-      fill: { type: ['gradient', 'solid'], gradient: { opacityFrom: 0.1, opacityTo: 0.2, shadeIntensity: 0.1 } },
-      stroke: { curve: ['smooth', 'smooth'], width: [2, 1.5], dashArray: [4, 5] },
-      xaxis: { axisTicks: { show: false } },
-      yaxis: { labels: { formatter: function (value) { return value } } },
-      legend: { show: true, position: 'bottom', inverseOrder: true },
-      plotOptions: { bar: { columnWidth: '20%', borderRadius: 3, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
-    })
-    projectStatsChart.render()
-    charts.push(projectStatsChart)
-  }
+  renderProjectStatsChart()
 
   const monthlyTargetElement = document.querySelector('#monthly-target')
   if (monthlyTargetElement) {
     const monthlyTargetChart = new ApexCharts(monthlyTargetElement, {
       series: [86, 80, 60],
-      chart: { height: 220, type: 'radialBar' },
+      chart: { height: 220, type: 'radialBar', background: 'transparent' },
       plotOptions: {
         radialBar: {
           dataLabels: {
@@ -210,25 +388,69 @@ const initializeCharts = () => {
 
   const tasksReportElement = document.querySelector('#tasks-report')
   if (tasksReportElement) {
+    const dark = isDarkMode()
     const tasksReportChart = new ApexCharts(tasksReportElement, {
       series: [
         { name: 'This Week', data: [44, 42, 57, 86, 58, 55, 70] },
         { name: 'Last Week', data: [34, 22, 42, 56, 21, 86, 60] },
       ],
-      chart: { type: 'line', height: 220, toolbar: { show: false } },
-      grid: { borderColor: '#f1f1f1', strokeDashArray: 3 },
-      stroke: { width: 2, curve: 'smooth', dashArray: [0, 3] },
+      chart: {
+        type: 'bar',
+        height: 250,
+        fontFamily: 'inherit',
+        background: 'transparent',
+        foreColor: dark ? '#c8d0e8' : '#6b7280',
+        toolbar: { show: false },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 900,
+          animateGradually: { enabled: true, delay: 80 },
+          dynamicAnimation: { enabled: true, speed: 450 },
+        },
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '42%',
+          borderRadius: 6,
+          borderRadiusApplication: 'end',
+          borderRadiusWhenStacked: 'last',
+        },
+      },
+      grid: {
+        borderColor: dark ? 'rgba(255,255,255,0.08)' : '#f1f1f1',
+        strokeDashArray: 4,
+        padding: { left: 4, right: 4 },
+      },
+      stroke: { show: true, width: 2, colors: ['transparent'] },
       colors: [primaryColor, 'rgb(227, 84, 212)'],
       dataLabels: { enabled: false },
-      legend: { show: true, position: 'top' },
-      tooltip: { enabled: true, theme: 'dark' },
+      legend: {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'left',
+        fontSize: '13px',
+        markers: { size: 6, offsetX: -3 },
+        itemMargin: { horizontal: 12 },
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        theme: dark ? 'dark' : 'light',
+        y: {
+          formatter: function (value) {
+            return `${value} tasks`
+          },
+        },
+      },
       yaxis: {
         labels: {
           formatter: function (y) {
             if (y === null || y === undefined) {
               return '0'
             }
-            return y.toFixed(0) + ''
+            return y.toFixed(0)
           },
         },
       },
@@ -239,6 +461,7 @@ const initializeCharts = () => {
         axisTicks: { show: false },
         labels: { rotate: 0 },
       },
+      theme: { mode: dark ? 'dark' : 'light' },
     })
     tasksReportChart.render()
     charts.push(tasksReportChart)
@@ -251,17 +474,81 @@ const initializeCharts = () => {
     <div class="pm-dash">
       <PageHeader title="Dashboard" subtitle="Portfolio overview and performance" />
 
-      <!-- Row 1: focus hero · today's tasks · projects-worked donut -->
+      <!-- Row 1: statistics + activity -->
       <div class="grid grid-cols-12 gap-6">
-        <div class="xxl:col-span-4 lg:col-span-5 col-span-12">
-          <div class="pm-focus-hero">
-            <span class="pm-focus-hero__glow" aria-hidden="true"></span>
-            <div class="pm-focus-hero__ring" style="--pct: 85">
-              <div class="pm-focus-hero__inner">
-                <i class="ri-folder-chart-line" aria-hidden="true"></i>
-                <strong>85%</strong>
+        <div class="xxl:col-span-8 col-span-12">
+          <div class="box h-full pm-stats-card">
+            <div class="box-header justify-between">
+              <div class="box-title">Project Statistics</div>
+              <div class="ti-dropdown hs-dropdown">
+                <a
+                  aria-expanded="false"
+                  aria-label="Select statistics period"
+                  class="ti-btn ti-btn-sm bg-light"
+                  data-bs-toggle="dropdown"
+                  href="javascript:void(0);"
+                >
+                  {{ statsPeriod }} <i class="ri-arrow-down-s-line align-middle ms-1 inline-block"></i>
+                </a>
+                <ul class="ti-dropdown-menu hs-dropdown-menu hidden">
+                  <li v-for="period in Object.keys(statsRanges)" :key="period">
+                    <a
+                      class="ti-dropdown-item"
+                      :class="{ 'is-active': statsPeriod === period }"
+                      href="javascript:void(0);"
+                      @click.prevent="setStatsPeriod(period)"
+                    >{{ period }}</a>
+                  </li>
+                </ul>
               </div>
             </div>
+            <div class="box-body">
+              <div class="pm-stat-pills">
+                <div class="pm-stat-pill">
+                  <span class="avatar avatar-md avatar-rounded bg-primary/10 text-primary">
+                    <i class="ri-stack-line text-xl"></i>
+                  </span>
+                  <div>
+                    <span class="text-xs text-textmuted">Total Revenue</span>
+                    <div class="flex items-center gap-2">
+                      <h4 class="mb-0">{{ statsTotals.revenue }}</h4>
+                      <span
+                        class="badge leading-none text-white"
+                        :class="statsTotals.revenueUp ? 'bg-success' : 'bg-danger'"
+                      >
+                        {{ statsTotals.revenueDelta }}
+                        <i class="ms-1" :class="statsTotals.revenueUp ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="pm-stat-pill">
+                  <span class="avatar avatar-md avatar-rounded bg-primarytint1color/10 text-primarytint1color">
+                    <i class="ri-briefcase-line text-xl"></i>
+                  </span>
+                  <div>
+                    <span class="text-xs text-textmuted">Total Projects</span>
+                    <div class="flex items-center gap-2">
+                      <h4 class="mb-0">{{ statsTotals.projects }}</h4>
+                      <span
+                        class="badge leading-none text-white"
+                        :class="statsTotals.projectsUp ? 'bg-success' : 'bg-danger'"
+                      >
+                        {{ statsTotals.projectsDelta }}
+                        <i class="ms-1" :class="statsTotals.projectsUp ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="project-statistics" class="pm-stats-chart mt-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xxl:col-span-4 col-span-12">
+          <div class="pm-focus-hero">
+            <span class="pm-focus-hero__glow" aria-hidden="true"></span>
             <div class="pm-focus-hero__copy">
               <span class="pm-focus-pill">
                 <i class="ri-flashlight-fill" aria-hidden="true"></i>
@@ -289,6 +576,36 @@ const initializeCharts = () => {
                 Manage Now
                 <i class="ri-arrow-right-line" aria-hidden="true"></i>
               </Link>
+            </div>
+            <div class="pm-focus-hero__art">
+              <img
+                v-show="!heroArtMissing"
+                alt=""
+                src="/assets/img/manage-projects.png"
+                @error="heroArtMissing = true"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: activity · today's tasks · projects-worked donut -->
+      <div class="grid grid-cols-12 gap-6">
+        <div class="xxl:col-span-4 lg:col-span-5 col-span-12">
+          <div class="box h-full">
+            <div class="box-header justify-between">
+              <div class="box-title">Activity</div>
+              <a class="ti-btn ti-btn-sm bg-light" href="javascript:void(0);">View All</a>
+            </div>
+            <div class="box-body">
+              <div class="pm-activity-head">
+                <div>
+                  <p class="text-xs text-textmuted mb-1">Tasks completed rate</p>
+                  <h3 class="mb-0">85%</h3>
+                </div>
+                <span class="badge leading-none bg-success/10 text-success">+1.5%</span>
+              </div>
+              <div id="tasks-report"></div>
             </div>
           </div>
         </div>
@@ -380,7 +697,7 @@ const initializeCharts = () => {
         </div>
       </div>
 
-      <!-- Row 2: KPI strip -->
+      <!-- Row 3: KPI strip -->
       <div class="grid grid-cols-12 gap-6">
         <div v-for="tile in kpiTiles" :key="tile.id" class="xxl:col-span-3 md:col-span-6 col-span-12">
           <div class="box overflow-hidden pm-stat-tile">
@@ -398,82 +715,6 @@ const initializeCharts = () => {
                 </div>
                 <div class="flex-shrink-0 text-end ms-auto" :id="tile.id"></div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 3: statistics + activity -->
-      <div class="grid grid-cols-12 gap-6">
-        <div class="xxl:col-span-8 col-span-12">
-          <div class="box h-full">
-            <div class="box-header justify-between">
-              <div class="box-title">Project Statistics</div>
-              <div class="ti-dropdown hs-dropdown">
-                <a
-                  aria-expanded="false"
-                  aria-label="anchor"
-                  class="ti-btn ti-btn-sm bg-light"
-                  data-bs-toggle="dropdown"
-                  href="javascript:void(0);"
-                >
-                  Last Week <i class="ri-arrow-down-s-line align-middle inline-block"></i>
-                </a>
-                <ul class="ti-dropdown-menu hs-dropdown-menu hidden">
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Today</a></li>
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Last Week</a></li>
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Last Month</a></li>
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Last Year</a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="box-body">
-              <div class="pm-stat-pills">
-                <div class="pm-stat-pill">
-                  <span class="avatar avatar-md avatar-rounded bg-primary/10 text-primary">
-                    <i class="ri-stack-line text-xl"></i>
-                  </span>
-                  <div>
-                    <span class="text-xs text-textmuted">Total Revenue</span>
-                    <div class="flex items-center gap-2">
-                      <h4 class="mb-0">$475,896</h4>
-                      <span class="badge leading-none bg-success text-white">5.6%<i class="ri-arrow-up-line ms-1"></i></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="pm-stat-pill">
-                  <span class="avatar avatar-md avatar-rounded bg-primarytint1color/10 text-primarytint1color">
-                    <i class="ri-briefcase-line text-xl"></i>
-                  </span>
-                  <div>
-                    <span class="text-xs text-textmuted">Total Projects</span>
-                    <div class="flex items-center gap-2">
-                      <h4 class="mb-0">75,896</h4>
-                      <span class="badge leading-none bg-danger text-white">1.6%<i class="ri-arrow-down-line ms-1"></i></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div id="project-statistics" class="mt-2"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="xxl:col-span-4 col-span-12">
-          <div class="box h-full">
-            <div class="box-header justify-between">
-              <div class="box-title">Activity</div>
-              <a class="ti-btn ti-btn-sm bg-light" href="javascript:void(0);">View All</a>
-            </div>
-            <div class="box-body">
-              <div class="pm-activity-head">
-                <div>
-                  <p class="text-xs text-textmuted mb-1">Tasks completed rate</p>
-                  <h3 class="mb-0">85%</h3>
-                </div>
-                <span class="badge leading-none bg-success/10 text-success">+1.5%</span>
-              </div>
-              <div id="tasks-report"></div>
             </div>
           </div>
         </div>

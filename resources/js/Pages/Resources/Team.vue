@@ -16,7 +16,7 @@ const teamMembers = ref([
 
 <template>
   <AppLayout title="Team Resources">
-<div>
+<div class="pm-dash">
     <PageHeader title="Team Resources" subtitle="Manage team members and allocations">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

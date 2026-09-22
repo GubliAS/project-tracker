@@ -39,7 +39,7 @@ const getPriorityClass = (priority) => ({
 
 <template>
   <AppLayout title="Task List">
-<div>
+<div class="pm-dash">
     <PageHeader title="Task List" subtitle="Manage all tasks across projects">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

@@ -47,7 +47,7 @@ onMounted(() => {
 <template>
     <div class="page" :class="{ dark: isDarkMode }">
         <Head :title="pageTitle" />
-        <AppHeader @toggle-dark="toggleDarkMode" />
+        <AppHeader :dark="isDarkMode" @toggle-dark="toggleDarkMode" />
         <AppSidebar />
 
         <div class="main-content app-content">

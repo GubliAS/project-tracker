@@ -18,7 +18,7 @@ const newLesson = ref({ title: '', category: '', description: '' })
 
 <template>
   <AppLayout title="Lessons Learned">
-<div>
+<div class="pm-dash">
     <PageHeader title="Lessons Learned" subtitle="Capture and share project insights">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

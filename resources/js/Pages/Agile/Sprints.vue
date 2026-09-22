@@ -22,7 +22,7 @@ const currentSprint = ref({
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Sprints" subtitle="Manage sprint cycles and iterations">
       <template #actions>
         <button class="ti-btn ti-btn-primary">
@@ -64,15 +64,15 @@ const currentSprint = ref({
             </div>
 
             <div class="grid grid-cols-3 gap-2 text-center">
-              <div class="p-2 bg-warning/10 rounded">
+              <div class="p-2 bg-warning/10 rounded-2xl">
                 <span class="block text-lg font-bold text-warning">{{ currentSprint.tasks.todo }}</span>
                 <span class="text-xs text-textmuted">To Do</span>
               </div>
-              <div class="p-2 bg-primary/10 rounded">
+              <div class="p-2 bg-primary/10 rounded-2xl">
                 <span class="block text-lg font-bold text-primary">{{ currentSprint.tasks.inProgress }}</span>
                 <span class="text-xs text-textmuted">In Progress</span>
               </div>
-              <div class="p-2 bg-success/10 rounded">
+              <div class="p-2 bg-success/10 rounded-2xl">
                 <span class="block text-lg font-bold text-success">{{ currentSprint.tasks.done }}</span>
                 <span class="text-xs text-textmuted">Done</span>
               </div>

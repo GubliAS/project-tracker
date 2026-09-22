@@ -27,7 +27,7 @@ const formatCurrency = (amount) => {
 
 <template>
   <AppLayout title="Budget Management">
-<div>
+<div class="pm-dash">
     <PageHeader title="Budget Management" subtitle="Track and manage project budgets">
       <template #actions>
         <button class="ti-btn ti-btn-light">

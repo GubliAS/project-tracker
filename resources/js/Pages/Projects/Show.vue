@@ -270,7 +270,7 @@ const saveTask = () => {
               <!-- Stakeholders Card -->
               <button 
                 @click="navigateToStakeholders"
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-user-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -281,7 +281,7 @@ const saveTask = () => {
 
               <!-- Resources Card -->
               <button 
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-team-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -292,7 +292,7 @@ const saveTask = () => {
 
               <!-- Risks Card -->
               <button 
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-shield-cross-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -303,7 +303,7 @@ const saveTask = () => {
 
               <!-- Communication Card -->
               <button 
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-message-3-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -314,7 +314,7 @@ const saveTask = () => {
 
               <!-- Gantt Chart Card -->
               <button 
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-bar-chart-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -325,7 +325,7 @@ const saveTask = () => {
 
               <!-- Reports Card -->
               <button 
-                class="group p-4 bg-light dark:bg-bgdark rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
+                class="group p-4 bg-light rounded-lg border border-defaultborder hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center"
               >
                 <div class="mb-2">
                   <i class="ri-file-chart-line text-3xl text-primary group-hover:scale-110 transition-transform"></i>
@@ -344,7 +344,7 @@ const saveTask = () => {
       v-if="showAddTaskModal" 
       class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40"
     >
-      <div class="bg-white dark:bg-bgdark rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
+      <div class="bg-white dark:bg-bodybg2 rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <div class="px-6 py-4 border-b border-defaultborder/60 flex items-center justify-between">
           <h3 class="text-base font-semibold">Add Task</h3>
           <button 
@@ -391,7 +391,7 @@ const saveTask = () => {
           </p>
         </div>
 
-        <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light/40 dark:bg-bgdark/40 rounded-b-xl">
+        <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light rounded-b-xl">
           <button class="ti-btn ti-btn-light" type="button" @click="closeAddTaskModal">
             Cancel
           </button>

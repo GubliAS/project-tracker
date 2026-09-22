@@ -30,7 +30,7 @@ const completionRate = (items) => {
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="DoR / DoD Framework" subtitle="Definition of Ready and Definition of Done checklists">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

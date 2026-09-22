@@ -23,7 +23,7 @@ const getRiskLevel = (probability, impact) => {
 
 <template>
   <AppLayout title="Risks & Issues">
-<div>
+<div class="pm-dash">
     <PageHeader title="Risks & Issues" subtitle="Track and manage project risks">
       <template #actions>
         <button class="ti-btn ti-btn-primary">
@@ -45,11 +45,11 @@ const getRiskLevel = (probability, impact) => {
               <div class="p-2 text-textmuted">Low Impact</div>
               <div class="p-2 text-textmuted">High Impact</div>
               <div class="p-2 text-textmuted">High Prob</div>
-              <div class="p-3 bg-warning/20 rounded">Medium</div>
-              <div class="p-3 bg-danger/20 rounded">Critical</div>
+              <div class="p-3 bg-warning/20 rounded-2xl">Medium</div>
+              <div class="p-3 bg-danger/20 rounded-2xl">Critical</div>
               <div class="p-2 text-textmuted">Low Prob</div>
-              <div class="p-3 bg-success/20 rounded">Low</div>
-              <div class="p-3 bg-warning/20 rounded">Medium</div>
+              <div class="p-3 bg-success/20 rounded-2xl">Low</div>
+              <div class="p-3 bg-warning/20 rounded-2xl">Medium</div>
             </div>
           </div>
         </div>

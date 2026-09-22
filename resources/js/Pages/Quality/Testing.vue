@@ -23,7 +23,7 @@ const stats = ref({
 
 <template>
   <AppLayout title="QA & Testing">
-<div>
+<div class="pm-dash">
     <PageHeader title="QA & Testing" subtitle="Manage test cases and track quality metrics">
       <template #actions>
         <button class="ti-btn ti-btn-light">

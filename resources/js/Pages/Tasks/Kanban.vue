@@ -53,7 +53,7 @@ const getPriorityClass = (priority) => ({
 
 <template>
   <AppLayout title="Kanban Board">
-<div>
+<div class="pm-dash">
     <PageHeader title="Kanban Board" subtitle="Visualize your workflow">
       <template #actions>
         <button class="ti-btn ti-btn-primary">
@@ -72,11 +72,11 @@ const getPriorityClass = (priority) => ({
             </div>
             <span class="badge bg-light text-defaulttextcolor">{{ column.tasks.length }}</span>
           </div>
-          <div class="box-body space-y-3 min-h-[400px] bg-light/50">
+          <div class="box-body space-y-3 min-h-[400px] bg-light">
             <div 
               v-for="task in column.tasks" 
               :key="task.id"
-              class="bg-white p-3 rounded-lg shadow-sm border cursor-move hover:shadow-md transition-shadow"
+              class="bg-white dark:bg-bodybg2 p-3 rounded-lg shadow-sm border border-defaultborder dark:border-defaultborder/10 cursor-move hover:shadow-md transition-shadow"
             >
               <h6 class="font-medium mb-2">{{ task.title }}</h6>
               <div class="flex items-center justify-between text-sm">

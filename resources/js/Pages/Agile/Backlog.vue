@@ -28,7 +28,7 @@ const getPriorityClass = (priority) => ({
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Product Backlog" subtitle="Prioritize and manage backlog items">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

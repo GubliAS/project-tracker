@@ -21,7 +21,7 @@ const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week
 
 <template>
   <AppLayout title="Gantt Chart">
-<div>
+<div class="pm-dash">
     <PageHeader title="Gantt Chart" subtitle="Visual project timeline">
       <template #actions>
         <button class="ti-btn ti-btn-light">
@@ -50,7 +50,7 @@ const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week
           </div>
 
           <!-- Tasks -->
-          <div v-for="task in tasks" :key="task.id" class="flex border-b hover:bg-light/50">
+          <div v-for="task in tasks" :key="task.id" class="flex border-b hover:bg-light">
             <div class="w-48 p-3 flex items-center gap-2">
               <span class="w-3 h-3 rounded" :class="task.color"></span>
               <span class="text-sm">{{ task.name }}</span>

@@ -16,7 +16,7 @@ const changes = ref([
 
 <template>
   <AppLayout title="Change Log">
-<div>
+<div class="pm-dash">
     <PageHeader title="Change Log" subtitle="Track change requests and approvals">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

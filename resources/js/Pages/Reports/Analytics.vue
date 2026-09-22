@@ -20,7 +20,7 @@ const dateRange = ref({ start: '', end: '' })
 
 <template>
   <AppLayout title="Reports & Analytics">
-<div>
+<div class="pm-dash">
     <PageHeader title="Reports & Analytics" subtitle="Generate and view project reports">
       <template #actions>
         <button class="ti-btn ti-btn-primary">

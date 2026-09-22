@@ -16,7 +16,7 @@ const milestones = ref([
 
 <template>
   <AppLayout title="Milestones">
-<div>
+<div class="pm-dash">
     <PageHeader title="Milestones" subtitle="Track project milestones and deliverables">
       <template #actions>
         <button class="ti-btn ti-btn-primary">
@@ -33,7 +33,7 @@ const milestones = ref([
           
           <div class="space-y-8">
             <div v-for="milestone in milestones" :key="milestone.id" class="relative flex items-start gap-4 pl-8">
-              <span class="absolute left-6 w-4 h-4 rounded-full border-2 border-white" :class="{
+              <span class="absolute left-6 w-4 h-4 rounded-full border-2 !border-defaultborder dark:!border-defaultborder/10" :class="{
                 'bg-success': milestone.status === 'completed',
                 'bg-primary': milestone.status === 'in-progress',
                 'bg-gray-300': milestone.status === 'upcoming'
