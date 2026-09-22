@@ -59,7 +59,7 @@ const saveKickoff = () => {
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Project Kick-Off" subtitle="Initialize and launch new projects">
       <template #actions>
         <button class="ti-btn ti-btn-primary" @click="openScheduleModal">

@@ -50,7 +50,7 @@ const showHybridFields = computed(() => form.value.projectType === 'hybrid')
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Create New Project" subtitle="Add a new project to your portfolio">
       <template #actions>
         <button @click="handleCancel" class="ti-btn ti-btn-light">Cancel</button>

@@ -112,7 +112,7 @@ const formatCurrency = (amount) => {
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Projects List" subtitle="Manage and track all your projects">
       <template #actions>
         <Link href="/projects/create" class="ti-btn ti-btn-primary btn-wave">

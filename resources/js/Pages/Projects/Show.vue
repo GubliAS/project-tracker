@@ -87,7 +87,7 @@ const saveTask = () => {
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader :title="project.name" :subtitle="project.team">
       <template #actions>
         <button class="ti-btn ti-btn-light">

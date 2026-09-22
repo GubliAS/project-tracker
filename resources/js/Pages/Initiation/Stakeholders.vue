@@ -63,7 +63,7 @@ const saveStakeholder = () => {
 
 <template>
     <AppLayout>
-        <div>
+        <div class="pm-dash">
     <PageHeader title="Stakeholders" subtitle="Manage project stakeholders and communication">
       <template #actions>
         <button class="ti-btn ti-btn-primary" @click="openAddModal">
@@ -117,19 +117,19 @@ const saveStakeholder = () => {
           </div>
           <div class="box-body">
             <div class="grid grid-cols-2 gap-2 text-center text-sm">
-              <div class="p-4 bg-danger/10 rounded">
+              <div class="p-4 bg-danger/10 rounded-2xl">
                 <strong class="text-danger">Manage Closely</strong>
                 <p class="text-xs text-textmuted mt-1">High Power, High Interest</p>
               </div>
-              <div class="p-4 bg-warning/10 rounded">
+              <div class="p-4 bg-warning/10 rounded-2xl">
                 <strong class="text-warning">Keep Satisfied</strong>
                 <p class="text-xs text-textmuted mt-1">High Power, Low Interest</p>
               </div>
-              <div class="p-4 bg-primary/10 rounded">
+              <div class="p-4 bg-primary/10 rounded-2xl">
                 <strong class="text-primary">Keep Informed</strong>
                 <p class="text-xs text-textmuted mt-1">Low Power, High Interest</p>
               </div>
-              <div class="p-4 bg-success/10 rounded">
+              <div class="p-4 bg-success/10 rounded-2xl">
                 <strong class="text-success">Monitor</strong>
                 <p class="text-xs text-textmuted mt-1">Low Power, Low Interest</p>
               </div>
