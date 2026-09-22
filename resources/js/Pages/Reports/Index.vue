@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import ApexCharts from 'apexcharts';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
 
@@ -41,6 +42,9 @@ const props = defineProps({
     },
 });
 
+const taskChart = ref(null);
+let chart;
+
 const taskStatusRows = computed(() => [
     { label: 'To Do', key: 'todo', color: 'bg-info' },
     { label: 'In Progress', key: 'in_progress', color: 'bg-primary' },
@@ -67,6 +71,30 @@ const percentOf = (value, total) => {
 
     return Math.round((value / total) * 100);
 };
+
+const renderTaskChart = async () => {
+    await nextTick();
+
+    if (!taskChart.value) {
+        return;
+    }
+
+    chart?.destroy();
+    chart = new ApexCharts(taskChart.value, {
+        chart: { type: 'donut', height: 220, toolbar: { show: false } },
+        series: taskStatusRows.value.map((row) => props.tasksByStatus[row.key] || 0),
+        labels: taskStatusRows.value.map((row) => row.label),
+        colors: ['#0ea5e9', '#6366f1', '#f59e0b', '#22c55e'],
+        legend: { position: 'bottom' },
+        dataLabels: { enabled: false },
+        stroke: { width: 0 },
+    });
+    chart.render();
+};
+
+onMounted(renderTaskChart);
+watch(() => props.tasksByStatus, renderTaskChart, { deep: true });
+onBeforeUnmount(() => chart?.destroy());
 </script>
 
 <template>
@@ -111,7 +139,9 @@ const percentOf = (value, total) => {
                 <div class="box-header">
                     <h6 class="box-title mb-0">Task Completion by Status</h6>
                 </div>
-                <div class="box-body space-y-3">
+                <div class="box-body">
+                    <div ref="taskChart" class="mb-3"></div>
+                    <div class="space-y-3">
                     <div v-for="row in taskStatusRows" :key="row.key">
                         <div class="flex items-center justify-between text-sm mb-1">
                             <span>{{ row.label }}</span>
@@ -120,6 +150,7 @@ const percentOf = (value, total) => {
                         <div class="progress progress-xs">
                             <div class="progress-bar" :class="row.color" :style="{ width: percentOf(tasksByStatus[row.key], stats.total_tasks) + '%' }"></div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 
@@ -10,86 +10,93 @@ const menuItems = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: 'ri-home-line',
-    to: '/dashboard'
+    href: '/'
   },
   {
     id: 'projects',
     label: 'Projects',
     icon: 'ri-folder-line',
+    href: '/projects',
     children: [
-      { label: 'Projects List', to: '/projects' },
-      { label: 'Create Project', to: '/projects/create' },
-      { label: 'Project Details', to: '/projects/1' }
+      { label: 'Projects List', href: '/projects' },
+      { label: 'Create Project', href: '/projects/create' },
+      { label: 'Project Details', href: '/projects/1' }
     ]
   },
   {
     id: 'initiation',
     label: 'Initiation',
     icon: 'ri-rocket-line',
+    href: '/initiation',
     children: [
-      { label: 'Kick-Off', to: '/initiation/kickoff' },
-      { label: 'Stakeholders', to: '/initiation/stakeholders' }
+      { label: 'Kick-Off', href: '/initiation/kickoff' },
+      { label: 'Stakeholders', href: '/initiation/stakeholders' }
     ]
   },
   {
     id: 'agile',
     label: 'Agile',
     icon: 'ri-loop-left-line',
+    href: '/agile',
     children: [
-      { label: 'Sprints', to: '/agile/sprints' },
-      { label: 'Backlog', to: '/agile/backlog' },
-      { label: 'DoR / DoD', to: '/agile/definitions' }
+      { label: 'Sprints', href: '/agile/sprints' },
+      { label: 'Backlog', href: '/agile/backlog' },
+      { label: 'DoR / DoD', href: '/agile/definitions' }
     ]
   },
   {
     id: 'tasks',
     label: 'Tasks',
     icon: 'ri-checkbox-circle-line',
+    href: '/tasks',
     children: [
-      { label: 'Kanban Board', to: '/tasks' },
-      { label: 'Task List', to: '/tasks/kanban' },
-      { label: 'Workflows', to: '/tasks/workflows' }
+      { label: 'Task List', href: '/tasks' },
+      { label: 'Kanban Board', href: '/tasks/kanban' },
+      { label: 'Workflows', href: '/tasks/workflows' }
     ]
   },
   {
     id: 'resources',
     label: 'Resources',
     icon: 'ri-team-line',
+    href: '/resources',
     children: [
-      { label: 'Resource Pool', to: '/resources' },
-      { label: 'Team', to: '/resources/team' },
-      { label: 'Time Tracking', to: '/resources/time-tracking' },
-      { label: 'Budget', to: '/resources/budget' },
-      { label: 'Milestones', to: '/resources/milestones' },
-      { label: 'Gantt Chart', to: '/resources/gantt' }
+      { label: 'Resource Pool', href: '/resources' },
+      { label: 'Team', href: '/resources/team' },
+      { label: 'Time Tracking', href: '/resources/time-tracking' },
+      { label: 'Budget', href: '/resources/budget' },
+      { label: 'Milestones', href: '/resources/milestones' },
+      { label: 'Gantt Chart', href: '/resources/gantt' }
     ]
   },
   {
     id: 'quality',
     label: 'Quality',
     icon: 'ri-shield-check-line',
+    href: '/quality',
     children: [
-      { label: 'Quality Control', to: '/quality' },
-      { label: 'QA & Testing', to: '/quality/qa-testing' },
-      { label: 'Risks & Issues', to: '/quality/risks' },
-      { label: 'Change Log', to: '/quality/change-log' }
+      { label: 'Quality Control', href: '/quality' },
+      { label: 'QA & Testing', href: '/quality/qa-testing' },
+      { label: 'Risks & Issues', href: '/quality/risks' },
+      { label: 'Change Log', href: '/quality/change-log' }
     ]
   },
   {
     id: 'reports',
     label: 'Reports',
     icon: 'ri-bar-chart-box-line',
+    href: '/reports',
     children: [
-      { label: 'Analytics', to: '/reports/analytics' },
-      { label: 'Documents', to: '/reports/documents' },
-      { label: 'Lessons Learned', to: '/reports/lessons' }
+      { label: 'Analytics', href: '/reports/analytics' },
+      { label: 'Documents', href: '/reports/documents' },
+      { label: 'Lessons Learned', href: '/reports/lessons' }
     ]
   },
   {
     id: 'chat',
     label: 'Chat',
     icon: 'ri-chat-3-line',
-    to: '/chat'
+    href: '/chat'
   }
 ]
 
@@ -98,7 +105,6 @@ const toggleMenu = (menuId) => {
   if (index > -1) {
     openMenus.value.splice(index, 1)
   } else {
-    // Close other menus first, then open this one
     openMenus.value = [menuId]
   }
 }
@@ -111,18 +117,32 @@ const isMenuOpen = (menuId) => {
   return openMenus.value.includes(menuId)
 }
 
-const currentPath = () => page.url.split('?')[0]
+const normalizePath = (path) => path.split('?')[0].replace(/\/$/, '') || '/'
 
-const isActive = (path) => {
-  const current = currentPath()
-  if (path === '/dashboard' || path === '/') {
-    return current === '/' || current === '/dashboard'
-  }
-  return current === path
+const isActive = (href) => {
+  const currentPath = normalizePath(page.url)
+  const targetPath = normalizePath(href)
+
+  return currentPath === targetPath || (targetPath !== '/' && currentPath.startsWith(`${targetPath}/`))
 }
 
 const isChildActive = (children) => {
-  return children?.some(child => isActive(child.to))
+  return children?.some(child => isActive(child.href))
+}
+
+const handleMenuToggle = (item) => {
+  if (!item.children) {
+    return
+  }
+
+  const currentPath = normalizePath(page.url)
+  const targetPath = normalizePath(item.href)
+
+  if (currentPath !== targetPath) {
+    return
+  }
+
+  toggleMenu(item.id)
 }
 </script>
 
@@ -137,41 +157,41 @@ const isChildActive = (children) => {
               <path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path>
             </svg>
           </div>
-          
+
           <!-- Menu Items -->
           <ul class="main-menu" style="display: flex; align-items: center; flex-wrap: wrap;">
-            <li 
-              v-for="item in menuItems" 
+            <li
+              v-for="item in menuItems"
               :key="item.id"
               class="slide"
-              :class="{ 
-                'has-sub': item.children, 
+              :class="{
+                'has-sub': item.children,
                 'open': isMenuOpen(item.id) || isChildActive(item.children),
-                'active': isActive(item.to) || isChildActive(item.children)
+                'active': isActive(item.href) || isChildActive(item.children)
               }"
               style="position: relative; display: block;"
             >
               <!-- Menu item with children (dropdown) -->
               <template v-if="item.children">
-                <a 
-                  class="side-menu__item" 
+                <Link
+                  :href="item.href"
+                  class="side-menu__item"
                   :class="{ 'active': isChildActive(item.children) }"
-                  href="javascript:void(0);"
-                  @click="toggleMenu(item.id)"
+                  @click="handleMenuToggle(item)"
                   style="display: flex; align-items: center;"
                 >
                   <i :class="[item.icon, 'side-menu__icon']"></i>
                   <span class="side-menu__label">{{ item.label }}</span>
                   <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                </a>
-                <ul 
-                  v-if="isMenuOpen(item.id)"
+                </Link>
+                <ul
+                  v-if="isMenuOpen(item.id) || isChildActive(item.children)"
                   class="pm-dropdown-menu"
                 >
-                  <li v-for="child in item.children" :key="child.to">
-                    <Link 
-                      :href="child.to" 
-                      :class="{ 'active': isActive(child.to) }"
+                  <li v-for="child in item.children" :key="child.href">
+                    <Link
+                      :href="child.href"
+                      :class="{ 'active': isActive(child.href) }"
                       @click="closeMenus"
                     >
                       {{ child.label }}
@@ -179,13 +199,13 @@ const isChildActive = (children) => {
                   </li>
                 </ul>
               </template>
-              
+
               <!-- Simple menu item (no children) -->
               <template v-else>
-                <Link 
-                  :href="item.to" 
+                <Link
+                  :href="item.href"
                   class="side-menu__item"
-                  :class="{ 'active': isActive(item.to) }"
+                  :class="{ 'active': isActive(item.href) }"
                 >
                   <i :class="[item.icon, 'side-menu__icon']"></i>
                   <span class="side-menu__label">{{ item.label }}</span>
@@ -193,7 +213,7 @@ const isChildActive = (children) => {
               </template>
             </li>
           </ul>
-          
+
           <!-- Slide Right Arrow -->
           <div class="slide-right" id="slide-right">
             <svg fill="#7b8191" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">

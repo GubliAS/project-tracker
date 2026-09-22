@@ -1,22 +1,84 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { computed, ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
+const pageProps = defineProps({ title: { type: String, default: 'Documents' } })
+import { ref } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
 
-const props = defineProps({ title: { type: String, default: 'Documents' }, documents: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] } });
-const showModal = ref(false);
-const filter = ref('all');
-const form = useForm({ file: null, category: 'planning', project_id: '' });
-const categories = ['planning', 'design', 'technical', 'financial', 'quality', 'other'];
-const visibleDocuments = computed(() => props.documents.filter((document) => filter.value === 'all' || document.category === filter.value));
-const formatSize = (bytes) => bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-const categoryClass = (category) => ({ planning: 'bg-primary/10 text-primary', design: 'bg-info/10 text-info', technical: 'bg-success/10 text-success', financial: 'bg-warning/10 text-warning', quality: 'bg-danger/10 text-danger', other: 'bg-secondary/10 text-secondary' }[category]);
-function submit() { form.post('/reports/documents', { forceFormData: true, onSuccess: () => { showModal.value = false; form.reset(); } }); }
-function remove(document) { if (confirm(`Delete “${document.name}”?`)) router.delete(`/reports/documents/${document.id}`, { preserveScroll: true }); }
+const documents = ref([
+  { id: 1, name: 'Project Charter.pdf', type: 'pdf', size: '2.4 MB', project: 'Website Redesign', uploadedBy: 'John Doe', date: '2024-11-15' },
+  { id: 2, name: 'Technical Specs.docx', type: 'doc', size: '1.8 MB', project: 'Mobile App', uploadedBy: 'Jane Smith', date: '2024-11-20' },
+  { id: 3, name: 'UI Mockups.figma', type: 'design', size: '15.2 MB', project: 'Website Redesign', uploadedBy: 'Mike Johnson', date: '2024-11-25' },
+  { id: 4, name: 'Budget Report.xlsx', type: 'excel', size: '890 KB', project: 'Data Migration', uploadedBy: 'Sarah Wilson', date: '2024-11-28' },
+  { id: 5, name: 'Meeting Notes.pdf', type: 'pdf', size: '456 KB', project: 'CRM Integration', uploadedBy: 'David Brown', date: '2024-12-01' }
+])
+
+const getFileIcon = (type) => ({
+  'pdf': 'ri-file-pdf-line text-danger',
+  'doc': 'ri-file-word-line text-primary',
+  'excel': 'ri-file-excel-line text-success',
+  'design': 'ri-palette-line text-purple-500'
+})[type] || 'ri-file-line text-secondary'
+
+const searchQuery = ref('')
+const categoryFilter = ref('all')
 </script>
 
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Store, organize, and retrieve project files"><template #actions><button class="ti-btn ti-btn-primary" @click="showModal = true"><i class="ri-upload-2-line me-1"></i> Upload Document</button></template></PageHeader>
-    <div class="box"><div class="box-header flex flex-wrap items-center justify-between gap-3"><h6 class="box-title mb-0">File Manager</h6><select v-model="filter" class="ti-form-select !w-44"><option value="all">All categories</option><option v-for="category in categories" :key="category" :value="category" class="capitalize">{{ category }}</option></select></div><div class="box-body"><div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"><article v-for="document in visibleDocuments" :key="document.id" class="rounded-lg border border-defaultborder p-4"><div class="flex items-start justify-between gap-3"><span class="avatar avatar-md bg-primary/10 text-primary"><i class="ri-file-text-line"></i></span><span class="badge capitalize" :class="categoryClass(document.category)">{{ document.category }}</span></div><h6 class="mt-4 break-words">{{ document.name }}</h6><p class="mb-1 text-sm text-textmuted">{{ document.project?.name || 'General' }}</p><p class="mb-4 text-xs text-textmuted">{{ formatSize(document.size) }} · {{ new Date(document.created_at).toLocaleDateString() }}</p><div class="flex gap-2"><a :href="`/reports/documents/${document.id}/preview`" target="_blank" rel="noopener" class="ti-btn ti-btn-soft-secondary ti-btn-sm"><i class="ri-eye-line me-1"></i> Preview</a><a :href="`/reports/documents/${document.id}/download`" class="ti-btn ti-btn-soft-primary ti-btn-sm"><i class="ri-download-2-line me-1"></i> Download</a><button class="ti-btn ti-btn-soft-danger ti-btn-sm" aria-label="Delete document" @click="remove(document)"><i class="ri-delete-bin-line"></i></button></div></article><div v-if="!visibleDocuments.length" class="col-span-full py-12 text-center text-textmuted">No documents found.</div></div></div></div>
-    <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4"><div class="box w-full max-w-xl mb-0"><form @submit.prevent="submit"><div class="box-header flex justify-between"><h6 class="box-title mb-0">Upload Document</h6><button type="button" class="ti-btn ti-btn-icon ti-btn-light ti-btn-sm" @click="showModal = false"><i class="ri-close-line"></i></button></div><div class="box-body space-y-4"><div><label class="form-label">File</label><input type="file" class="ti-form-control" required @change="form.file = $event.target.files[0]"><p v-if="form.errors.file" class="text-danger text-xs mt-1">{{ form.errors.file }}</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="form-label">Category</label><select v-model="form.category" class="ti-form-select"><option v-for="category in categories" :key="category" :value="category" class="capitalize">{{ category }}</option></select></div><div><label class="form-label">Project</label><select v-model="form.project_id" class="ti-form-select"><option value="">General</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select></div></div></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary" :disabled="form.processing">Upload</button></div></form></div></div>
-</AppLayout></template>
+<template>
+  <AppLayout title="Documents">
+<div>
+    <PageHeader title="Documents" subtitle="Manage project documents and files">
+      <template #actions>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-upload-cloud-line me-1"></i> Upload Document
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="box">
+      <div class="box-header flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <input v-model="searchQuery" type="text" class="ti-form-control !ps-10" placeholder="Search documents...">
+            <i class="ri-search-line absolute start-3 top-1/2 -translate-y-1/2 text-textmuted"></i>
+          </div>
+          <select v-model="categoryFilter" class="ti-form-select w-auto">
+            <option value="all">All Types</option>
+            <option value="pdf">PDF</option>
+            <option value="doc">Documents</option>
+            <option value="excel">Spreadsheets</option>
+            <option value="design">Design Files</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button class="ti-btn ti-btn-light ti-btn-icon"><i class="ri-list-unordered"></i></button>
+          <button class="ti-btn ti-btn-primary ti-btn-icon"><i class="ri-grid-fill"></i></button>
+        </div>
+      </div>
+
+      <div class="box-body">
+        <div class="grid grid-cols-12 gap-4">
+          <div v-for="doc in documents" :key="doc.id" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3">
+            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div class="text-center mb-3">
+                <i :class="getFileIcon(doc.type)" class="text-5xl"></i>
+              </div>
+              <h6 class="font-medium text-sm mb-1 truncate" :title="doc.name">{{ doc.name }}</h6>
+              <p class="text-xs text-textmuted mb-2">{{ doc.project }}</p>
+              <div class="flex items-center justify-between text-xs text-textmuted">
+                <span>{{ doc.size }}</span>
+                <span>{{ doc.date }}</span>
+              </div>
+              <div class="flex gap-1 mt-3">
+                <button class="ti-btn ti-btn-soft-primary ti-btn-sm flex-1"><i class="ri-eye-line"></i></button>
+                <button class="ti-btn ti-btn-soft-success ti-btn-sm flex-1"><i class="ri-download-line"></i></button>
+                <button class="ti-btn ti-btn-soft-danger ti-btn-sm flex-1"><i class="ri-delete-bin-line"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+

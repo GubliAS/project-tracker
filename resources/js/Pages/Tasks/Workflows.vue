@@ -1,11 +1,54 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
-const props = defineProps({ title: { type: String, default: 'Workflows' }, tasks: { type: Array, default: () => [] } });
-const stages = [{ key: 'todo', label: 'To Do', color: 'bg-info' }, { key: 'in_progress', label: 'In Progress', color: 'bg-primary' }, { key: 'review', label: 'Review', color: 'bg-warning' }, { key: 'done', label: 'Done', color: 'bg-success' }];
-const grouped = computed(() => Object.fromEntries(stages.map((stage) => [stage.key, props.tasks.filter((task) => task.status === stage.key)])));
-function move(task, status) { router.put(`/tasks/${task.id}`, { status }, { preserveScroll: true }); }
+const pageProps = defineProps({ title: { type: String, default: 'Workflows' } })
+import { ref } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const workflows = ref([
+  { id: 1, name: 'Bug Fix Workflow', stages: ['Reported', 'Triaged', 'In Progress', 'Code Review', 'QA', 'Resolved'], projects: 5 },
+  { id: 2, name: 'Feature Development', stages: ['Backlog', 'Design', 'Development', 'Testing', 'Deployment', 'Done'], projects: 8 },
+  { id: 3, name: 'Sprint Workflow', stages: ['Sprint Backlog', 'In Progress', 'Review', 'Done'], projects: 12 }
+])
 </script>
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Visualize work handoffs and move tasks through delivery stages" /><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"><section v-for="stage in stages" :key="stage.key" class="box mb-0"><div class="box-header flex justify-between"><h6 class="box-title mb-0">{{ stage.label }}</h6><span class="badge" :class="stage.color">{{ grouped[stage.key].length }}</span></div><div class="box-body space-y-3"><article v-for="task in grouped[stage.key]" :key="task.id" class="rounded-lg border border-defaultborder p-3"><p class="font-medium mb-2">{{ task.title }}</p><p class="text-xs text-textmuted mb-3">{{ task.project?.name || 'General' }} · {{ task.user?.name || 'Unassigned' }}</p><select class="ti-form-select text-sm" :value="task.status" @change="move(task, $event.target.value)"><option v-for="option in stages" :key="option.key" :value="option.key">{{ option.label }}</option></select></article><p v-if="!grouped[stage.key].length" class="py-6 text-center text-sm text-textmuted">No tasks</p></div></section></div></AppLayout></template>
+
+<template>
+  <AppLayout title="Workflows">
+<div>
+    <PageHeader title="Workflows" subtitle="Manage task workflows and stages">
+      <template #actions>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-add-line me-1"></i> New Workflow
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="grid grid-cols-12 gap-6">
+      <div v-for="workflow in workflows" :key="workflow.id" class="col-span-12 lg:col-span-6 xl:col-span-4">
+        <div class="box">
+          <div class="box-header flex items-center justify-between">
+            <h5 class="box-title">{{ workflow.name }}</h5>
+            <div class="ti-dropdown hs-dropdown">
+              <button class="ti-btn ti-btn-sm ti-btn-light"><i class="ri-more-2-fill"></i></button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span v-for="(stage, idx) in workflow.stages" :key="idx" class="badge bg-light text-defaulttextcolor">
+                {{ stage }}
+                <i v-if="idx < workflow.stages.length - 1" class="ri-arrow-right-s-line ms-1"></i>
+              </span>
+            </div>
+            <div class="text-sm text-textmuted">
+              <i class="ri-folder-line me-1"></i> Used in {{ workflow.projects }} projects
+            </div>
+          </div>
+          <div class="box-footer">
+            <button class="ti-btn ti-btn-soft-primary ti-btn-sm w-full">Edit Workflow</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+

@@ -1,11 +1,62 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
-const props = defineProps({ title: { type: String, default: 'Milestones' }, milestones: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] } }); const showModal = ref(false); const editing = ref(null); const form = useForm({ project_id: '', title: '', due_date: '', status: 'upcoming' });
-function open(milestone = null) { editing.value = milestone; Object.assign(form, milestone ? { project_id: milestone.project_id || '', title: milestone.title, due_date: milestone.due_date || '', status: milestone.status } : { project_id: '', title: '', due_date: '', status: 'upcoming' }); showModal.value = true; }
-function submit() { const options = { onSuccess: () => { showModal.value = false; form.reset(); } }; editing.value ? form.put(`/resources/milestones/${editing.value.id}`, options) : form.post('/resources/milestones', options); }
-function remove(milestone) { if (confirm(`Delete “${milestone.title}”?`)) router.delete(`/resources/milestones/${milestone.id}`); }
+const pageProps = defineProps({ title: { type: String, default: 'Milestones' } })
+import { ref } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const milestones = ref([
+  { id: 1, name: 'Project Kickoff', date: '2024-10-01', status: 'completed', project: 'Website Redesign' },
+  { id: 2, name: 'Design Phase Complete', date: '2024-10-30', status: 'completed', project: 'Website Redesign' },
+  { id: 3, name: 'MVP Release', date: '2024-11-30', status: 'in-progress', project: 'Mobile App' },
+  { id: 4, name: 'Beta Testing', date: '2024-12-15', status: 'upcoming', project: 'Website Redesign' },
+  { id: 5, name: 'Production Launch', date: '2024-12-31', status: 'upcoming', project: 'Website Redesign' }
+])
 </script>
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Plan important dates and track delivery commitments"><template #actions><button class="ti-btn ti-btn-primary" @click="open()">Add Milestone</button></template></PageHeader><div class="box"><div class="box-body"><div v-for="milestone in milestones" :key="milestone.id" class="flex flex-wrap items-center justify-between gap-4 border-b border-defaultborder py-4 last:border-0"><div><p class="font-medium mb-1">{{ milestone.title }}</p><p class="text-sm text-textmuted mb-0">{{ milestone.project?.name || 'General' }} · {{ milestone.due_date || 'No due date' }}</p></div><div class="flex items-center gap-2"><span class="badge capitalize" :class="milestone.status === 'completed' ? 'bg-success/10 text-success' : milestone.status === 'delayed' ? 'bg-danger/10 text-danger' : 'bg-primary/10 text-primary'">{{ milestone.status }}</span><button class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="open(milestone)">Edit</button><button class="ti-btn ti-btn-soft-danger ti-btn-sm" @click="remove(milestone)">Delete</button></div></div><p v-if="!milestones.length" class="py-8 text-center text-textmuted">No milestones created.</p></div></div><div v-if="showModal" class="fixed inset-0 z-[80] grid place-items-center bg-black/50 p-4"><div class="box w-full max-w-lg mb-0"><form @submit.prevent="submit"><div class="box-header"><h6 class="box-title">{{ editing ? 'Edit Milestone' : 'Add Milestone' }}</h6></div><div class="box-body grid gap-4"><input v-model="form.title" class="ti-form-control" placeholder="Milestone title" required><select v-model="form.project_id" class="ti-form-select"><option value="">General</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select><div class="grid grid-cols-2 gap-4"><input v-model="form.due_date" type="date" class="ti-form-control"><select v-model="form.status" class="ti-form-select"><option>upcoming</option><option>in_progress</option><option>completed</option><option>delayed</option></select></div></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary">Save</button></div></form></div></div></AppLayout></template>
+
+<template>
+  <AppLayout title="Milestones">
+<div>
+    <PageHeader title="Milestones" subtitle="Track project milestones and deliverables">
+      <template #actions>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-add-line me-1"></i> Add Milestone
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="box">
+      <div class="box-body">
+        <div class="relative">
+          <!-- Timeline -->
+          <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+          
+          <div class="space-y-8">
+            <div v-for="milestone in milestones" :key="milestone.id" class="relative flex items-start gap-4 pl-8">
+              <span class="absolute left-6 w-4 h-4 rounded-full border-2 border-white" :class="{
+                'bg-success': milestone.status === 'completed',
+                'bg-primary': milestone.status === 'in-progress',
+                'bg-gray-300': milestone.status === 'upcoming'
+              }"></span>
+              <div class="flex-1 p-4 bg-light rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <h6 class="font-medium">{{ milestone.name }}</h6>
+                  <span class="badge" :class="{
+                    'bg-success/10 text-success': milestone.status === 'completed',
+                    'bg-primary/10 text-primary': milestone.status === 'in-progress',
+                    'bg-secondary/10 text-secondary': milestone.status === 'upcoming'
+                  }">{{ milestone.status }}</span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-textmuted">
+                  <span><i class="ri-calendar-line me-1"></i>{{ milestone.date }}</span>
+                  <span><i class="ri-folder-line me-1"></i>{{ milestone.project }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+

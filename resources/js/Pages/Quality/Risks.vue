@@ -1,25 +1,128 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { computed, ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
+const pageProps = defineProps({ title: { type: String, default: 'Risks & Issues' } })
+import { ref } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
 
-const props = defineProps({ title: { type: String, default: 'Risks & Issues' }, risks: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] } });
-const showModal = ref(false);
-const editingRisk = ref(null);
-const form = useForm({ title: '', impact: 'medium', probability: 'medium', status: 'open', mitigation_plan: '', project_id: '' });
-const cells = computed(() => ['high', 'medium', 'low'].flatMap((impact) => ['low', 'medium', 'high'].map((probability) => ({ impact, probability, risks: props.risks.filter((risk) => risk.impact === impact && risk.probability === probability) }))));
-const severity = (risk) => ['low', 'medium', 'high'].indexOf(risk.impact) + ['low', 'medium', 'high'].indexOf(risk.probability) + 2;
-const severityClass = (risk) => severity(risk) >= 5 ? 'bg-danger/10 text-danger' : severity(risk) >= 4 ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success';
+const risks = ref([
+  { id: 1, title: 'Resource shortage', category: 'resource', probability: 'high', impact: 'high', status: 'open', owner: 'John Doe' },
+  { id: 2, title: 'Scope creep', category: 'scope', probability: 'medium', impact: 'high', status: 'mitigating', owner: 'Jane Smith' },
+  { id: 3, title: 'Technical debt', category: 'technical', probability: 'high', impact: 'medium', status: 'open', owner: 'Mike Johnson' },
+  { id: 4, title: 'Vendor delay', category: 'external', probability: 'low', impact: 'high', status: 'closed', owner: 'Sarah Wilson' },
+  { id: 5, title: 'Budget overrun', category: 'financial', probability: 'medium', impact: 'high', status: 'mitigating', owner: 'David Brown' }
+])
 
-function openCreate() { editingRisk.value = null; form.reset(); form.defaults(); showModal.value = true; }
-function openEdit(risk) { editingRisk.value = risk; form.title = risk.title; form.impact = risk.impact; form.probability = risk.probability; form.status = risk.status; form.mitigation_plan = risk.mitigation_plan || ''; form.project_id = risk.project_id || ''; showModal.value = true; }
-function submit() { const options = { onSuccess: () => { showModal.value = false; form.reset(); } }; editingRisk.value ? form.put(`/quality/risks/${editingRisk.value.id}`, options) : form.post('/quality/risks', options); }
-function remove(risk) { if (confirm(`Delete “${risk.title}”?`)) router.delete(`/quality/risks/${risk.id}`, { preserveScroll: true }); }
+const getRiskLevel = (probability, impact) => {
+  if (probability === 'high' && impact === 'high') return { class: 'bg-danger', text: 'Critical' }
+  if (probability === 'high' || impact === 'high') return { class: 'bg-warning', text: 'High' }
+  if (probability === 'medium' || impact === 'medium') return { class: 'bg-info', text: 'Medium' }
+  return { class: 'bg-success', text: 'Low' }
+}
 </script>
 
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Identify, assess, and mitigate delivery risks"><template #actions><button class="ti-btn ti-btn-primary" @click="openCreate"><i class="ri-add-line me-1"></i> Add Risk</button></template></PageHeader>
-    <div class="box mb-4"><div class="box-header"><h6 class="box-title mb-0">Risk Matrix</h6></div><div class="box-body"><div class="grid grid-cols-4 gap-2 text-center text-sm"><div class="font-semibold">Impact / Probability</div><div class="font-semibold">Low</div><div class="font-semibold">Medium</div><div class="font-semibold">High</div><template v-for="impact in ['high', 'medium', 'low']" :key="impact"><div class="flex items-center justify-center font-semibold capitalize">{{ impact }}</div><div v-for="probability in ['low', 'medium', 'high']" :key="`${impact}-${probability}`" class="min-h-20 rounded-lg p-2" :class="cells.find((cell) => cell.impact === impact && cell.probability === probability).risks.length ? 'bg-primary/10' : 'bg-light dark:bg-black/10'"><button v-for="risk in cells.find((cell) => cell.impact === impact && cell.probability === probability).risks" :key="risk.id" class="block w-full rounded bg-white dark:bg-bgdark px-2 py-1 text-left text-xs shadow mb-1" @click="openEdit(risk)">{{ risk.title }}</button></div></template></div></div></div>
-    <div class="box"><div class="box-header"><h6 class="box-title mb-0">Risk Register</h6></div><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover whitespace-nowrap"><thead><tr><th>Risk</th><th>Project</th><th>Impact</th><th>Probability</th><th>Status</th><th></th></tr></thead><tbody><tr v-for="risk in risks" :key="risk.id"><td><p class="font-medium mb-0">{{ risk.title }}</p><p class="text-xs text-textmuted mb-0 max-w-md truncate">{{ risk.mitigation_plan || 'No mitigation plan recorded' }}</p></td><td>{{ risk.project?.name || 'General' }}</td><td><span class="badge" :class="severityClass(risk)">{{ risk.impact }}</span></td><td class="capitalize">{{ risk.probability }}</td><td class="capitalize">{{ risk.status }}</td><td><button class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="openEdit(risk)">Edit</button><button class="ti-btn ti-btn-soft-danger ti-btn-sm ms-1" @click="remove(risk)">Delete</button></td></tr><tr v-if="!risks.length"><td colspan="6" class="py-8 text-center text-textmuted">No risks have been recorded.</td></tr></tbody></table></div></div></div>
-    <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4"><div class="box w-full max-w-2xl mb-0"><form @submit.prevent="submit"><div class="box-header flex items-center justify-between"><h6 class="box-title mb-0">{{ editingRisk ? 'Edit Risk' : 'Add Risk' }}</h6><button type="button" class="ti-btn ti-btn-icon ti-btn-light ti-btn-sm" @click="showModal = false"><i class="ri-close-line"></i></button></div><div class="box-body space-y-4"><div><label class="form-label">Title</label><input v-model="form.title" class="ti-form-control" required></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label class="form-label">Impact</label><select v-model="form.impact" class="ti-form-select"><option>low</option><option>medium</option><option>high</option></select></div><div><label class="form-label">Probability</label><select v-model="form.probability" class="ti-form-select"><option>low</option><option>medium</option><option>high</option></select></div><div><label class="form-label">Status</label><select v-model="form.status" class="ti-form-select"><option>open</option><option>monitoring</option><option>mitigated</option><option>closed</option></select></div></div><div><label class="form-label">Project</label><select v-model="form.project_id" class="ti-form-select"><option value="">General</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select></div><div><label class="form-label">Mitigation Plan</label><textarea v-model="form.mitigation_plan" class="ti-form-control" rows="4"></textarea></div></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary" :disabled="form.processing">Save Risk</button></div></form></div></div>
-</AppLayout></template>
+<template>
+  <AppLayout title="Risks & Issues">
+<div>
+    <PageHeader title="Risks & Issues" subtitle="Track and manage project risks">
+      <template #actions>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-add-line me-1"></i> Add Risk
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="grid grid-cols-12 gap-6">
+      <!-- Risk Matrix -->
+      <div class="col-span-12 xl:col-span-4">
+        <div class="box">
+          <div class="box-header">
+            <h5 class="box-title">Risk Matrix</h5>
+          </div>
+          <div class="box-body">
+            <div class="grid grid-cols-3 gap-1 text-center text-sm">
+              <div class="p-2"></div>
+              <div class="p-2 text-textmuted">Low Impact</div>
+              <div class="p-2 text-textmuted">High Impact</div>
+              <div class="p-2 text-textmuted">High Prob</div>
+              <div class="p-3 bg-warning/20 rounded">Medium</div>
+              <div class="p-3 bg-danger/20 rounded">Critical</div>
+              <div class="p-2 text-textmuted">Low Prob</div>
+              <div class="p-3 bg-success/20 rounded">Low</div>
+              <div class="p-3 bg-warning/20 rounded">Medium</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="box">
+          <div class="box-body">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span>Open Risks</span>
+                <span class="badge bg-danger/10 text-danger">{{ risks.filter(r => r.status === 'open').length }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Mitigating</span>
+                <span class="badge bg-warning/10 text-warning">{{ risks.filter(r => r.status === 'mitigating').length }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Closed</span>
+                <span class="badge bg-success/10 text-success">{{ risks.filter(r => r.status === 'closed').length }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk List -->
+      <div class="col-span-12 xl:col-span-8">
+        <div class="box">
+          <div class="box-header">
+            <h5 class="box-title">Risk Register</h5>
+          </div>
+          <div class="box-body p-0">
+            <table class="table table-hover whitespace-nowrap">
+              <thead>
+                <tr>
+                  <th>Risk</th>
+                  <th>Category</th>
+                  <th>Level</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="risk in risks" :key="risk.id">
+                  <td class="font-medium">{{ risk.title }}</td>
+                  <td><span class="badge bg-secondary/10 text-secondary">{{ risk.category }}</span></td>
+                  <td>
+                    <span class="badge text-white" :class="getRiskLevel(risk.probability, risk.impact).class">
+                      {{ getRiskLevel(risk.probability, risk.impact).text }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" :class="{
+                      'bg-danger/10 text-danger': risk.status === 'open',
+                      'bg-warning/10 text-warning': risk.status === 'mitigating',
+                      'bg-success/10 text-success': risk.status === 'closed'
+                    }">{{ risk.status }}</span>
+                  </td>
+                  <td class="text-textmuted">{{ risk.owner }}</td>
+                  <td>
+                    <div class="flex gap-1">
+                      <button class="ti-btn ti-btn-soft-primary ti-btn-icon ti-btn-sm"><i class="ri-eye-line"></i></button>
+                      <button class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm"><i class="ri-edit-line"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+

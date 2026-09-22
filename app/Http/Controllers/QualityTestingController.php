@@ -22,6 +22,7 @@ class QualityTestingController extends Controller
             'testCases' => $testCases,
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
             'summary' => [
+                'total' => $testCases->count(),
                 'passed' => $testCases->where('status', 'passed')->count(),
                 'failed' => $testCases->where('status', 'failed')->count(),
                 'untested' => $testCases->where('status', 'pending')->count(),

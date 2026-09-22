@@ -13,7 +13,7 @@ class TaskController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Tasks/Index', 'Kanban Board', [
+        return $this->inertiaPage('Tasks/Index', 'Task List', [
             'tasks' => Task::query()
                 ->with(['project:id,name', 'user:id,name'])
                 ->latest()
@@ -66,15 +66,21 @@ class TaskController extends Controller
 
     public function kanban(): Response
     {
-        return $this->index();
+        return $this->inertiaPage('Tasks/Kanban', 'Kanban Board', [
+            'tasks' => Task::query()->with(['project:id,name', 'user:id,name'])->latest()->get(),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function workflows(): Response
     {
         return $this->inertiaPage('Tasks/Workflows', 'Workflows', [
-            'tasks' => Task::query()->with(['project:id,name', 'user:id,name'])->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'workflows' => [
+                ['id' => 1, 'name' => 'Bug Fix Workflow', 'stages' => ['Reported', 'Triaged', 'In Progress', 'Code Review', 'QA', 'Resolved'], 'projects' => 5],
+                ['id' => 2, 'name' => 'Feature Development', 'stages' => ['Backlog', 'Design', 'Development', 'Testing', 'Deployment', 'Done'], 'projects' => 8],
+                ['id' => 3, 'name' => 'Sprint Workflow', 'stages' => ['Sprint Backlog', 'In Progress', 'Review', 'Done'], 'projects' => 12],
+            ],
         ]);
     }
 }

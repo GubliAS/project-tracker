@@ -1,11 +1,134 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { computed, ref } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
-const props = defineProps({ title: { type: String, default: 'Time Tracking' }, entries: { type: Array, default: () => [] }, projects: { type: Array, default: () => [] }, resources: { type: Array, default: () => [] }, tasks: { type: Array, default: () => [] } });
-const showModal = ref(false); const totalHours = computed(() => props.entries.reduce((sum, entry) => sum + Number(entry.hours), 0)); const form = useForm({ project_id: '', resource_id: '', task_id: '', entry_date: new Date().toISOString().slice(0, 10), hours: 1, description: '' });
-function submit() { form.post('/resources/time-tracking', { onSuccess: () => { showModal.value = false; form.reset(); } }); }
-function remove(entry) { if (confirm('Delete this time entry?')) router.delete(`/resources/time-tracking/${entry.id}`); }
+const pageProps = defineProps({ title: { type: String, default: 'Time Tracking' } })
+import { ref } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const timeEntries = ref([
+  { id: 1, task: 'Frontend Development', project: 'Website Redesign', user: 'John Doe', date: '2024-12-03', hours: 6 },
+  { id: 2, task: 'API Integration', project: 'Mobile App', user: 'Jane Smith', date: '2024-12-03', hours: 8 },
+  { id: 3, task: 'Design Review', project: 'Website Redesign', user: 'Mike Johnson', date: '2024-12-03', hours: 4 },
+  { id: 4, task: 'Bug Fixing', project: 'CRM Integration', user: 'Sarah Wilson', date: '2024-12-02', hours: 5 },
+  { id: 5, task: 'Database Setup', project: 'Data Migration', user: 'David Brown', date: '2024-12-02', hours: 7 }
+])
+
+const weeklyTotal = ref(30)
+const monthlyTotal = ref(156)
 </script>
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Record work effort against projects and tasks"><template #actions><button class="ti-btn ti-btn-primary" @click="showModal = true">Log Time</button></template></PageHeader><div class="box mb-4"><div class="box-body"><p class="text-textmuted mb-1">Tracked Hours</p><h3 class="mb-0">{{ totalHours.toFixed(2) }}</h3></div></div><div class="box"><div class="box-body p-0"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date</th><th>Resource</th><th>Project / Task</th><th>Hours</th><th>Description</th><th></th></tr></thead><tbody><tr v-for="entry in entries" :key="entry.id"><td>{{ entry.entry_date }}</td><td>{{ entry.resource?.name || 'Unassigned' }}</td><td>{{ entry.project?.name || 'General' }}<span v-if="entry.task" class="text-textmuted"> · {{ entry.task.title }}</span></td><td>{{ entry.hours }}</td><td>{{ entry.description || '—' }}</td><td><button class="ti-btn ti-btn-soft-danger ti-btn-sm" @click="remove(entry)">Delete</button></td></tr><tr v-if="!entries.length"><td colspan="6" class="py-8 text-center text-textmuted">No time entries recorded.</td></tr></tbody></table></div></div></div><div v-if="showModal" class="fixed inset-0 z-[80] grid place-items-center bg-black/50 p-4"><div class="box w-full max-w-xl mb-0"><form @submit.prevent="submit"><div class="box-header"><h6 class="box-title">Log Time</h6></div><div class="box-body grid gap-4"><div class="grid grid-cols-2 gap-4"><select v-model="form.resource_id" class="ti-form-select"><option value="">Resource</option><option v-for="resource in resources" :key="resource.id" :value="resource.id">{{ resource.name }}</option></select><input v-model="form.entry_date" type="date" class="ti-form-control" required></div><div class="grid grid-cols-2 gap-4"><select v-model="form.project_id" class="ti-form-select"><option value="">Project</option><option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option></select><select v-model="form.task_id" class="ti-form-select"><option value="">Task</option><option v-for="task in tasks" :key="task.id" :value="task.id">{{ task.title }}</option></select></div><input v-model="form.hours" type="number" min="0.25" step="0.25" class="ti-form-control" required><textarea v-model="form.description" class="ti-form-control" placeholder="Work description"></textarea></div><div class="box-footer flex justify-end gap-2"><button type="button" class="ti-btn ti-btn-light" @click="showModal = false">Cancel</button><button class="ti-btn ti-btn-primary">Save</button></div></form></div></div></AppLayout></template>
+
+<template>
+  <AppLayout title="Time Tracking">
+<div>
+    <PageHeader title="Time Tracking" subtitle="Track time spent on projects and tasks">
+      <template #actions>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-time-line me-1"></i> Log Time
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="grid grid-cols-12 gap-6">
+      <!-- Stats -->
+      <div class="col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="box">
+          <div class="box-body">
+            <div class="flex items-center gap-4">
+              <span class="avatar avatar-lg bg-primary/10 text-primary">
+                <i class="ri-time-line text-2xl"></i>
+              </span>
+              <div>
+                <p class="text-textmuted text-sm">Today</p>
+                <h4 class="text-xl font-bold">6.5 hrs</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="box">
+          <div class="box-body">
+            <div class="flex items-center gap-4">
+              <span class="avatar avatar-lg bg-success/10 text-success">
+                <i class="ri-calendar-check-line text-2xl"></i>
+              </span>
+              <div>
+                <p class="text-textmuted text-sm">This Week</p>
+                <h4 class="text-xl font-bold">{{ weeklyTotal }} hrs</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="box">
+          <div class="box-body">
+            <div class="flex items-center gap-4">
+              <span class="avatar avatar-lg bg-info/10 text-info">
+                <i class="ri-calendar-line text-2xl"></i>
+              </span>
+              <div>
+                <p class="text-textmuted text-sm">This Month</p>
+                <h4 class="text-xl font-bold">{{ monthlyTotal }} hrs</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="box">
+          <div class="box-body">
+            <div class="flex items-center gap-4">
+              <span class="avatar avatar-lg bg-warning/10 text-warning">
+                <i class="ri-funds-line text-2xl"></i>
+              </span>
+              <div>
+                <p class="text-textmuted text-sm">Billable</p>
+                <h4 class="text-xl font-bold">85%</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time Entries -->
+      <div class="col-span-12">
+        <div class="box">
+          <div class="box-header">
+            <h5 class="box-title">Recent Time Entries</h5>
+          </div>
+          <div class="box-body p-0">
+            <table class="table table-hover whitespace-nowrap">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Project</th>
+                  <th>Team Member</th>
+                  <th>Date</th>
+                  <th>Hours</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="entry in timeEntries" :key="entry.id">
+                  <td class="font-medium">{{ entry.task }}</td>
+                  <td class="text-textmuted">{{ entry.project }}</td>
+                  <td>{{ entry.user }}</td>
+                  <td>{{ entry.date }}</td>
+                  <td><span class="badge bg-primary/10 text-primary">{{ entry.hours }} hrs</span></td>
+                  <td>
+                    <div class="flex gap-1">
+                      <button class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm"><i class="ri-edit-line"></i></button>
+                      <button class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm"><i class="ri-delete-bin-line"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+

@@ -1,19 +1,174 @@
+﻿import AppLayout from '@/Layouts/AppLayout.vue'
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import PageHeader from '@/Components/ui/PageHeader.vue';
+const pageProps = defineProps({ title: { type: String, default: 'Project Chat' } })
+import { ref, nextTick, onMounted } from 'vue'
+import PageHeader from '@/Components/ui/PageHeader.vue'
 
-const props = defineProps({ title: { type: String, default: 'Project Chat' }, projects: { type: Array, default: () => [] }, selectedProjectId: { type: Number, default: null }, messages: { type: Array, default: () => [] } });
-const messageList = ref(null);
-const activeProjectId = ref(props.selectedProjectId);
-const form = useForm({ project_id: props.selectedProjectId || '', message: '' });
-const activeProject = computed(() => props.projects.find((project) => project.id === activeProjectId.value));
-watch(() => props.selectedProjectId, (value) => { activeProjectId.value = value; form.project_id = value || ''; nextTick(scrollToLatest); });
-watch(() => props.messages, () => nextTick(scrollToLatest));
-function selectProject(projectId) { router.get('/chat', { project: projectId }, { preserveState: true, preserveScroll: true }); }
-function send() { form.post('/chat', { preserveScroll: true, onSuccess: () => { form.reset('message'); form.project_id = activeProjectId.value || ''; } }); }
-function scrollToLatest() { if (messageList.value) messageList.value.scrollTop = messageList.value.scrollHeight; }
+const channels = ref([
+  { id: 1, name: 'general', unread: 2 },
+  { id: 2, name: 'website-redesign', unread: 5 },
+  { id: 3, name: 'mobile-app', unread: 0 },
+  { id: 4, name: 'random', unread: 1 }
+])
+
+const activeChannel = ref('general')
+
+const messages = ref([
+  { id: 1, user: 'John Doe', avatar: 'JD', message: 'Hey team, the new designs are ready for review!', time: '10:30 AM', isMe: false },
+  { id: 2, user: 'Jane Smith', avatar: 'JS', message: 'Great! I\'ll take a look this afternoon.', time: '10:32 AM', isMe: false },
+  { id: 3, user: 'You', avatar: 'ME', message: 'Perfect, let me know if you have any feedback.', time: '10:35 AM', isMe: true },
+  { id: 4, user: 'Mike Johnson', avatar: 'MJ', message: 'The API endpoints are also ready for integration. Check the docs in #mobile-app channel.', time: '10:45 AM', isMe: false },
+  { id: 5, user: 'You', avatar: 'ME', message: 'Thanks Mike! Will start integration tomorrow.', time: '10:50 AM', isMe: true }
+])
+
+const newMessage = ref('')
+const chatContainer = ref(null)
+
+const sendMessage = () => {
+  if (!newMessage.value.trim()) return
+  
+  messages.value.push({
+    id: messages.value.length + 1,
+    user: 'You',
+    avatar: 'ME',
+    message: newMessage.value,
+    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    isMe: true
+  })
+  newMessage.value = ''
+  
+  nextTick(() => {
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    }
+  })
+}
 </script>
 
-<template><AppLayout :title="title"><PageHeader :title="title" subtitle="Discuss work in the context of each project" /><div class="box overflow-hidden"><div class="grid grid-cols-1 lg:grid-cols-[18rem_1fr] min-h-[34rem]"><aside class="border-e border-defaultborder"><div class="p-4 border-b border-defaultborder"><h6 class="mb-0">Project Channels</h6></div><div class="p-2 space-y-1"><button v-for="project in projects" :key="project.id" class="w-full rounded-lg px-3 py-3 text-left transition" :class="activeProjectId === project.id ? 'bg-primary text-white' : 'hover:bg-light dark:hover:bg-black/10'" @click="selectProject(project.id)"><i class="ri-hashtag me-2"></i>{{ project.name }}</button><p v-if="!projects.length" class="p-3 text-sm text-textmuted">Create a project to start a channel.</p></div></aside><section class="flex min-h-[34rem] flex-col"><div class="flex items-center justify-between border-b border-defaultborder p-4"><div><h6 class="mb-0">{{ activeProject?.name || 'Select a project' }}</h6><span class="text-xs text-textmuted">{{ messages.length }} messages</span></div><span class="avatar avatar-sm bg-success/10 text-success"><i class="ri-discuss-line"></i></span></div><div ref="messageList" class="flex-1 space-y-4 overflow-y-auto p-4 max-h-[28rem]"><div v-for="message in messages" :key="message.id" class="flex gap-3"><span class="avatar avatar-sm bg-primary/10 text-primary">{{ (message.user?.name || 'S').slice(0, 1).toUpperCase() }}</span><div><div class="flex items-center gap-2"><span class="font-medium text-sm">{{ message.user?.name || 'System user' }}</span><span class="text-xs text-textmuted">{{ new Date(message.created_at).toLocaleString() }}</span></div><p class="mb-0 mt-1 whitespace-pre-line">{{ message.message }}</p></div></div><div v-if="!messages.length" class="py-12 text-center text-textmuted"><i class="ri-chat-3-line text-4xl"></i><p class="mt-3 mb-0">No messages in this channel yet.</p></div></div><form class="flex gap-2 border-t border-defaultborder p-4" @submit.prevent="send"><input v-model="form.message" class="ti-form-control" :disabled="!activeProjectId" placeholder="Write a message…"><button class="ti-btn ti-btn-primary" :disabled="form.processing || !activeProjectId || !form.message.trim()"><i class="ri-send-plane-2-line"></i></button></form></section></div></div></AppLayout></template>
+<template>
+  <AppLayout title="Project Chat">
+<div>
+    <PageHeader title="Project Chat" subtitle="Team communication">
+      <template #actions>
+        <button class="ti-btn ti-btn-light">
+          <i class="ri-phone-line me-1"></i> Voice Call
+        </button>
+        <button class="ti-btn ti-btn-primary">
+          <i class="ri-vidicon-line me-1"></i> Video Call
+        </button>
+      </template>
+    </PageHeader>
+
+    <div class="grid grid-cols-12 gap-6">
+      <!-- Channels Sidebar -->
+      <div class="col-span-12 xl:col-span-3">
+        <div class="box">
+          <div class="box-header">
+            <div class="flex items-center justify-between">
+              <h5 class="box-title">Channels</h5>
+              <button class="ti-btn ti-btn-sm ti-btn-soft-primary ti-btn-icon"><i class="ri-add-line"></i></button>
+            </div>
+          </div>
+          <div class="box-body p-0">
+            <ul class="list-group list-group-flush">
+              <li 
+                v-for="channel in channels" 
+                :key="channel.id"
+                class="list-group-item flex items-center justify-between cursor-pointer hover:bg-light"
+                :class="{ 'bg-primary/10': activeChannel === channel.name }"
+                @click="activeChannel = channel.name"
+              >
+                <span class="flex items-center gap-2">
+                  <i class="ri-hashtag"></i>
+                  {{ channel.name }}
+                </span>
+                <span v-if="channel.unread > 0" class="badge bg-primary rounded-full">{{ channel.unread }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Team Members -->
+        <div class="box">
+          <div class="box-header">
+            <h5 class="box-title">Team Online</h5>
+          </div>
+          <div class="box-body p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item flex items-center gap-2">
+                <span class="avatar avatar-xs bg-primary text-white">JD</span>
+                <span>John Doe</span>
+                <span class="ms-auto w-2 h-2 bg-success rounded-full"></span>
+              </li>
+              <li class="list-group-item flex items-center gap-2">
+                <span class="avatar avatar-xs bg-info text-white">JS</span>
+                <span>Jane Smith</span>
+                <span class="ms-auto w-2 h-2 bg-success rounded-full"></span>
+              </li>
+              <li class="list-group-item flex items-center gap-2">
+                <span class="avatar avatar-xs bg-warning text-white">MJ</span>
+                <span>Mike Johnson</span>
+                <span class="ms-auto w-2 h-2 bg-gray-300 rounded-full"></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="col-span-12 xl:col-span-9">
+        <div class="box h-[600px] flex flex-col">
+          <div class="box-header border-b">
+            <div class="flex items-center gap-2">
+              <i class="ri-hashtag text-lg"></i>
+              <h5 class="box-title mb-0">{{ activeChannel }}</h5>
+            </div>
+          </div>
+          
+          <!-- Messages -->
+          <div ref="chatContainer" class="box-body flex-1 overflow-y-auto space-y-4">
+            <div 
+              v-for="msg in messages" 
+              :key="msg.id"
+              class="flex gap-3"
+              :class="{ 'flex-row-reverse': msg.isMe }"
+            >
+              <span class="avatar avatar-sm flex-shrink-0" :class="msg.isMe ? 'bg-primary text-white' : 'bg-light text-defaulttextcolor'">
+                {{ msg.avatar }}
+              </span>
+              <div :class="{ 'text-right': msg.isMe }">
+                <div class="flex items-center gap-2 mb-1" :class="{ 'flex-row-reverse': msg.isMe }">
+                  <span class="font-medium text-sm">{{ msg.user }}</span>
+                  <span class="text-xs text-textmuted">{{ msg.time }}</span>
+                </div>
+                <div 
+                  class="inline-block p-3 rounded-lg max-w-md"
+                  :class="msg.isMe ? 'bg-primary text-white' : 'bg-light'"
+                >
+                  {{ msg.message }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="box-footer border-t">
+            <form @submit.prevent="sendMessage" class="flex gap-2">
+              <input 
+                v-model="newMessage"
+                type="text" 
+                class="ti-form-control" 
+                placeholder="Type a message..."
+              >
+              <button type="button" class="ti-btn ti-btn-light ti-btn-icon"><i class="ri-attachment-line"></i></button>
+              <button type="button" class="ti-btn ti-btn-light ti-btn-icon"><i class="ri-emotion-line"></i></button>
+              <button type="submit" class="ti-btn ti-btn-primary ti-btn-icon"><i class="ri-send-plane-fill"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </AppLayout>
+</template>
+
