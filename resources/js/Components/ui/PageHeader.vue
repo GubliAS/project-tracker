@@ -52,10 +52,10 @@ const breadcrumbs = computed(() => {
           </li>
         </ol>
       </nav>
-      <h1 class="page-title font-medium text-lg mb-0">{{ title }}</h1>
+      <h1 class="page-title font-semibold text-xl mb-0 tracking-tight">{{ title }}</h1>
       <p v-if="subtitle" class="text-textmuted dark:text-textmuted/50 text-sm mt-1">{{ subtitle }}</p>
     </div>
-    <div class="btn-list">
+    <div class="btn-list flex flex-wrap items-center gap-2">
       <slot name="actions"></slot>
     </div>
   </div>
