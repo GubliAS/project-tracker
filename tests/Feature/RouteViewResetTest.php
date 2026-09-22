@@ -35,17 +35,26 @@ class RouteViewResetTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Tasks/Index'));
 
-        $this->get('/resources')
+        $this->get('/tasks/kanban')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Resources/Index'));
+            ->assertInertia(fn ($page) => $page->component('Tasks/Kanban'));
+
+        $this->get('/resources')
+            ->assertRedirect(route('resources.team'));
+
+        $this->get('/resources/team')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Resources/Team'));
 
         $this->get('/quality')
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Quality/Index'));
+            ->assertRedirect(route('quality.qa-testing'));
 
         $this->get('/reports')
+            ->assertRedirect(route('reports.analytics'));
+
+        $this->get('/chat')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/Index'));
+            ->assertInertia(fn ($page) => $page->component('Chat/Index'));
     }
 
     public function test_quality_and_reports_navigation_routes_render_their_registered_pages(): void
@@ -64,13 +73,16 @@ class RouteViewResetTest extends TestCase
 
         $this->get('/reports/analytics')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/Index'));
+            ->assertInertia(fn ($page) => $page->component('Reports/Analytics'));
 
         $this->get('/reports/documents')
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Reports/Documents'));
 
         $this->get('/reports/lessons')
+            ->assertRedirect('/reports/lessons-learned');
+
+        $this->get('/reports/lessons-learned')
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Reports/LessonsLearned'));
     }

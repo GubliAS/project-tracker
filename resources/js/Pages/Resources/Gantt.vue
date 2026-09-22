@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Gantt Chart' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Gantt Chart' } })
 
 const tasks = ref([
   { id: 1, name: 'Project Planning', start: 0, duration: 2, progress: 100, color: 'bg-success' },

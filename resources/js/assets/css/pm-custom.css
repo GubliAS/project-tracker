@@ -26,6 +26,13 @@
     gap: 0.5rem;
 }
 
+/* Ynex dark header hides .desktop-logo/.desktop-dark and only shows .desktop-white */
+@media (min-width: 992px) {
+    [data-header-styles="dark"] .app-header .horizontal-logo .header-logo .desktop-white {
+        display: block !important;
+    }
+}
+
 .header-content-right {
     display: flex !important;
     align-items: center !important;
@@ -132,6 +139,33 @@
 [data-nav-layout="horizontal"] .slide-menu .side-menu__item.active {
     color: rgb(var(--primary));
     background-color: rgba(var(--primary), 0.08);
+}
+
+.dark [data-nav-layout="horizontal"] .main-menu > .slide > .slide-menu.child1 {
+    background-color: rgb(var(--custom-white));
+    border-color: rgb(255 255 255 / 0.1);
+}
+
+.dark [data-nav-layout="horizontal"] .slide-menu .side-menu__item {
+    color: rgb(255 255 255 / 0.8);
+}
+
+.dark .app-header .main-header-dropdown,
+.dark .app-header .header-profile-dropdown,
+.dark .app-header .ti-dropdown-menu {
+    background-color: rgb(var(--body-bg)) !important;
+    border-color: rgb(255 255 255 / 0.1) !important;
+    color: rgb(255 255 255 / 0.8);
+    opacity: 1;
+}
+
+.dark .app-header .ti-dropdown-item {
+    color: rgb(255 255 255 / 0.8);
+}
+
+.dark .app-header .ti-dropdown-item:hover {
+    background-color: rgb(var(--primary) / 0.05);
+    color: rgb(var(--primary));
 }
 
 /* Hide the label header in dropdown */

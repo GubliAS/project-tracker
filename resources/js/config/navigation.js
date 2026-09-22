@@ -26,15 +26,14 @@ export const navigation = [
     {
         label: 'Tasks',
         children: [
-            { label: 'Kanban Board', href: '/tasks' },
-            { label: 'Task List', href: '/tasks/kanban' },
+            { label: 'Task List', href: '/tasks' },
+            { label: 'Kanban Board', href: '/tasks/kanban' },
             { label: 'Workflows', href: '/tasks/workflows' },
         ],
     },
     {
         label: 'Resources',
         children: [
-            { label: 'Resource Pool', href: '/resources' },
             { label: 'Team', href: '/resources/team' },
             { label: 'Time Tracking', href: '/resources/time-tracking' },
             { label: 'Budget', href: '/resources/budget' },
@@ -45,7 +44,6 @@ export const navigation = [
     {
         label: 'Quality',
         children: [
-            { label: 'Quality Control', href: '/quality' },
             { label: 'QA & Testing', href: '/quality/qa-testing' },
             { label: 'Risks & Issues', href: '/quality/risks' },
             { label: 'Change Log', href: '/quality/change-log' },
@@ -56,7 +54,7 @@ export const navigation = [
         children: [
             { label: 'Analytics', href: '/reports/analytics' },
             { label: 'Documents', href: '/reports/documents' },
-            { label: 'Lessons Learned', href: '/reports/lessons' },
+            { label: 'Lessons Learned', href: '/reports/lessons-learned' },
         ],
     },
     { label: 'Chat', href: '/chat' },

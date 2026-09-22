@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Documents' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Documents' } })
 
 const documents = ref([
   { id: 1, name: 'Project Charter.pdf', type: 'pdf', size: '2.4 MB', project: 'Website Redesign', uploadedBy: 'John Doe', date: '2024-11-15' },

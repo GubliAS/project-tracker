@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Change Log' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Change Log' } })
 
 const changes = ref([
   { id: 1, title: 'Add user profile page', type: 'feature', requestor: 'John Smith', status: 'approved', impact: 'medium', date: '2024-12-01' },

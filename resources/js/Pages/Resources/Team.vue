@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Team Resources' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Team Resources' } })
 
 const teamMembers = ref([
   { id: 1, name: 'John Doe', role: 'Frontend Developer', email: 'john@example.com', availability: 100, projects: 3 },

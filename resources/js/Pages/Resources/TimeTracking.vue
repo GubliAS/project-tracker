@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Time Tracking' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Time Tracking' } })
 
 const timeEntries = ref([
   { id: 1, task: 'Frontend Development', project: 'Website Redesign', user: 'John Doe', date: '2024-12-03', hours: 6 },

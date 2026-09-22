@@ -17,16 +17,22 @@ const pageTitle = computed(() => props.title || page.props.title || '');
 
 const isDarkMode = ref(false);
 
+const applyChromeTheme = (dark) => {
+    const theme = dark ? 'dark' : 'light';
+    document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.setAttribute('data-header-styles', theme);
+    document.documentElement.setAttribute('data-menu-styles', theme);
+};
+
 const toggleDarkMode = () => {
     isDarkMode.value = !isDarkMode.value;
-    document.documentElement.classList.toggle('dark', isDarkMode.value);
+    applyChromeTheme(isDarkMode.value);
 };
 
 onMounted(() => {
     document.documentElement.setAttribute('data-nav-layout', 'horizontal');
     document.documentElement.setAttribute('data-nav-style', 'menu-click');
-    document.documentElement.setAttribute('data-menu-styles', 'light');
-    document.documentElement.setAttribute('data-header-styles', 'light');
+    applyChromeTheme(isDarkMode.value);
 
     nextTick(() => {
         setTimeout(() => {

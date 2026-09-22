@@ -84,15 +84,15 @@ class SupplementalModulesTest extends TestCase
     {
         $project = Project::factory()->create();
 
-        $this->post('/reports/lessons', ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'high', 'recommendation' => 'Confirm assumptions during kickoff.', 'project_id' => $project->id])
+        $this->post('/reports/lessons-learned', ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'high', 'recommendation' => 'Confirm assumptions during kickoff.', 'project_id' => $project->id])
             ->assertRedirect(route('reports.lessons'));
 
         $lesson = LessonLearned::query()->firstOrFail();
-        $this->put("/reports/lessons/{$lesson->id}", ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'medium', 'recommendation' => 'Review assumptions each sprint.', 'project_id' => $project->id])
+        $this->put("/reports/lessons-learned/{$lesson->id}", ['title' => 'Validate early', 'category' => 'Delivery', 'impact_level' => 'medium', 'recommendation' => 'Review assumptions each sprint.', 'project_id' => $project->id])
             ->assertRedirect(route('reports.lessons'));
 
         $this->assertDatabaseHas('lesson_learneds', ['id' => $lesson->id, 'impact_level' => 'medium']);
-        $this->delete("/reports/lessons/{$lesson->id}")->assertRedirect(route('reports.lessons'));
+        $this->delete("/reports/lessons-learned/{$lesson->id}")->assertRedirect(route('reports.lessons'));
     }
 
     public function test_chat_renders_project_messages_and_sends_a_message(): void

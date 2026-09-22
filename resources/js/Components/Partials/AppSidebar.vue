@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 
 const page = usePage()
 const openMenus = ref([])
@@ -59,9 +59,8 @@ const menuItems = [
     id: 'resources',
     label: 'Resources',
     icon: 'ri-team-line',
-    href: '/resources',
+    href: '/resources/team',
     children: [
-      { label: 'Resource Pool', href: '/resources' },
       { label: 'Team', href: '/resources/team' },
       { label: 'Time Tracking', href: '/resources/time-tracking' },
       { label: 'Budget', href: '/resources/budget' },
@@ -73,9 +72,8 @@ const menuItems = [
     id: 'quality',
     label: 'Quality',
     icon: 'ri-shield-check-line',
-    href: '/quality',
+    href: '/quality/qa-testing',
     children: [
-      { label: 'Quality Control', href: '/quality' },
       { label: 'QA & Testing', href: '/quality/qa-testing' },
       { label: 'Risks & Issues', href: '/quality/risks' },
       { label: 'Change Log', href: '/quality/change-log' }
@@ -85,11 +83,11 @@ const menuItems = [
     id: 'reports',
     label: 'Reports',
     icon: 'ri-bar-chart-box-line',
-    href: '/reports',
+    href: '/reports/analytics',
     children: [
       { label: 'Analytics', href: '/reports/analytics' },
       { label: 'Documents', href: '/reports/documents' },
-      { label: 'Lessons Learned', href: '/reports/lessons' }
+      { label: 'Lessons Learned', href: '/reports/lessons-learned' }
     ]
   },
   {
@@ -113,6 +111,11 @@ const closeMenus = () => {
   openMenus.value = []
 }
 
+onMounted(() => {
+  const stop = router.on('navigate', closeMenus)
+  onUnmounted(stop)
+})
+
 const isMenuOpen = (menuId) => {
   return openMenus.value.includes(menuId)
 }
@@ -128,21 +131,6 @@ const isActive = (href) => {
 
 const isChildActive = (children) => {
   return children?.some(child => isActive(child.href))
-}
-
-const handleMenuToggle = (item) => {
-  if (!item.children) {
-    return
-  }
-
-  const currentPath = normalizePath(page.url)
-  const targetPath = normalizePath(item.href)
-
-  if (currentPath !== targetPath) {
-    return
-  }
-
-  toggleMenu(item.id)
 }
 </script>
 
@@ -166,33 +154,32 @@ const handleMenuToggle = (item) => {
               class="slide"
               :class="{
                 'has-sub': item.children,
-                'open': isMenuOpen(item.id) || isChildActive(item.children),
-                'active': isActive(item.href) || isChildActive(item.children)
+                'open': isMenuOpen(item.id),
+                'active': isChildActive(item.children) || isActive(item.href)
               }"
               style="position: relative; display: block;"
             >
               <!-- Menu item with children (dropdown) -->
               <template v-if="item.children">
-                <Link
-                  :href="item.href"
+                <a
+                  href="#"
                   class="side-menu__item"
                   :class="{ 'active': isChildActive(item.children) }"
-                  @click="handleMenuToggle(item)"
+                  @click.prevent="toggleMenu(item.id)"
                   style="display: flex; align-items: center;"
                 >
                   <i :class="[item.icon, 'side-menu__icon']"></i>
                   <span class="side-menu__label">{{ item.label }}</span>
                   <i class="ri-arrow-down-s-line side-menu__angle"></i>
-                </Link>
+                </a>
                 <ul
-                  v-if="isMenuOpen(item.id) || isChildActive(item.children)"
+                  v-if="isMenuOpen(item.id)"
                   class="pm-dropdown-menu"
                 >
                   <li v-for="child in item.children" :key="child.href">
                     <Link
                       :href="child.href"
                       :class="{ 'active': isActive(child.href) }"
-                      @click="closeMenus"
                     >
                       {{ child.label }}
                     </Link>
@@ -264,5 +251,25 @@ const handleMenuToggle = (item) => {
 .pm-dropdown-menu a.active {
   color: #5c61f2 !important;
   background-color: rgba(92, 97, 242, 0.08) !important;
+}
+
+.dark .pm-dropdown-menu {
+  background-color: rgb(var(--custom-white)) !important;
+  border-color: rgb(255 255 255 / 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35) !important;
+}
+
+.dark .pm-dropdown-menu a {
+  color: rgb(255 255 255 / 0.8) !important;
+}
+
+.dark .pm-dropdown-menu a:hover {
+  background-color: rgb(var(--primary) / 0.1) !important;
+  color: rgb(var(--primary)) !important;
+}
+
+.dark .pm-dropdown-menu a.active {
+  color: rgb(var(--primary)) !important;
+  background-color: rgb(var(--primary) / 0.08) !important;
 }
 </style>

@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Project Chat' } })
+﻿<script setup>
 import { ref, nextTick, onMounted } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Project Chat' } })
 
 const channels = ref([
   { id: 1, name: 'general', unread: 2 },

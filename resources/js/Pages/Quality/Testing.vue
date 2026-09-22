@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'QA & Testing' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'QA & Testing' } })
 
 const testCases = ref([
   { id: 1, name: 'Login functionality', type: 'functional', status: 'passed', priority: 'high', lastRun: '2024-12-03' },

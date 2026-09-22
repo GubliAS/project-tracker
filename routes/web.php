@@ -48,7 +48,7 @@ Route::prefix('tasks')->name('tasks.')->group(function () {
 });
 
 Route::prefix('resources')->name('resources.')->group(function () {
-    Route::get('/', [ResourceController::class, 'index'])->name('index');
+    Route::get('/', fn () => redirect()->route('resources.team'))->name('index');
     Route::post('/', [ResourceController::class, 'store'])->name('store');
     Route::get('/team', [ResourceController::class, 'team'])->name('team');
     Route::get('/time-tracking', [ResourceController::class, 'timeTracking'])->name('time-tracking');
@@ -65,7 +65,7 @@ Route::prefix('resources')->name('resources.')->group(function () {
 });
 
 Route::prefix('quality')->name('quality.')->group(function () {
-    Route::get('/', [QualityController::class, 'index'])->name('index');
+    Route::get('/', fn () => redirect()->route('quality.qa-testing'))->name('index');
     Route::post('/', [QualityController::class, 'store'])->name('store');
     Route::get('/qa-testing', [QualityTestingController::class, 'index'])->name('qa-testing');
     Route::post('/qa-testing', [QualityTestingController::class, 'store'])->name('qa-testing.store');
@@ -83,17 +83,18 @@ Route::prefix('quality')->name('quality.')->group(function () {
 });
 
 Route::prefix('reports')->name('reports.')->group(function () {
-    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::get('/', fn () => redirect()->route('reports.analytics'))->name('index');
     Route::get('/analytics', [ReportController::class, 'analytics'])->name('analytics');
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
-    Route::get('/lessons', [LessonController::class, 'index'])->name('lessons');
-    Route::post('/lessons', [LessonController::class, 'store'])->name('lessons.store');
-    Route::put('/lessons/{lesson}', [LessonController::class, 'update'])->name('lessons.update');
-    Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy'])->name('lessons.destroy');
+    Route::redirect('/lessons', '/reports/lessons-learned');
+    Route::get('/lessons-learned', [LessonController::class, 'index'])->name('lessons');
+    Route::post('/lessons-learned', [LessonController::class, 'store'])->name('lessons.store');
+    Route::put('/lessons-learned/{lesson}', [LessonController::class, 'update'])->name('lessons.update');
+    Route::delete('/lessons-learned/{lesson}', [LessonController::class, 'destroy'])->name('lessons.destroy');
 });
 
 Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');

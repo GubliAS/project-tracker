@@ -75,8 +75,11 @@ class CoreModulesTest extends TestCase
     public function test_resources_can_be_managed(): void
     {
         $this->get('/resources')
+            ->assertRedirect(route('resources.team'));
+
+        $this->get('/resources/team')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Resources/Index')->has('resources'));
+            ->assertInertia(fn ($page) => $page->component('Resources/Team')->has('resources'));
 
         $this->post('/resources', [
             'name' => 'QA Engineer',
@@ -106,10 +109,13 @@ class CoreModulesTest extends TestCase
         $project = Project::factory()->create(['name' => 'Mobile App']);
 
         $this->get('/quality')
+            ->assertRedirect(route('quality.qa-testing'));
+
+        $this->get('/quality/qa-testing')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('Quality/Index')
-                ->has('qualityChecks')
+                ->component('Quality/Testing')
+                ->has('testCases')
                 ->has('summary'));
 
         $this->post('/quality', [
@@ -136,30 +142,13 @@ class CoreModulesTest extends TestCase
         $this->assertDatabaseMissing('quality_checks', ['id' => $check->id]);
     }
 
-    public function test_reports_index_aggregates_system_statistics(): void
+    public function test_reports_analytics_renders_the_template_reports_page(): void
     {
-        $project = Project::factory()->create();
-        Task::factory()->create(['project_id' => $project->id, 'status' => 'done']);
-        Task::factory()->create(['project_id' => $project->id, 'status' => 'todo']);
-        Resource::factory()->create(['availability_status' => 'available']);
-        Resource::factory()->create(['availability_status' => 'allocated']);
-        QualityCheck::factory()->create(['project_id' => $project->id, 'status' => 'passed']);
-        QualityCheck::factory()->create(['project_id' => $project->id, 'status' => 'pending']);
-
         $this->get('/reports')
+            ->assertRedirect(route('reports.analytics'));
+
+        $this->get('/reports/analytics')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Reports/Index')
-                ->where('stats.total_projects', 1)
-                ->where('stats.total_tasks', 2)
-                ->where('stats.completion_rate', 50)
-                ->where('stats.pending_quality_audits', 1)
-                ->where('stats.active_resources', 2)
-                ->where('stats.quality_pass_rate', 50)
-                ->has('tasksByStatus')
-                ->has('resourceUtilization')
-                ->has('qualityByStatus')
-                ->has('projectProgress')
-                ->has('teamWorkloads'));
+            ->assertInertia(fn ($page) => $page->component('Reports/Analytics'));
     }
 }

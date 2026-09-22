@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Reports & Analytics' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Reports & Analytics' } })
 
 const reportTypes = ref([
   { id: 1, name: 'Project Status Report', description: 'Overall project health and progress', icon: 'ri-bar-chart-line', color: 'primary' },

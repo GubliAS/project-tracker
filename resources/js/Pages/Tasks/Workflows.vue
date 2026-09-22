@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Workflows' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Workflows' } })
 
 const workflows = ref([
   { id: 1, name: 'Bug Fix Workflow', stages: ['Reported', 'Triaged', 'In Progress', 'Code Review', 'QA', 'Resolved'], projects: 5 },

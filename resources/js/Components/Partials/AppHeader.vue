@@ -43,10 +43,12 @@ onMounted(() => {
         <div class="header-element">
           <div class="horizontal-logo">
             <Link class="header-logo" href="/">
-              <img alt="KEDEBÐÐ ERP Logo" class="desktop-logo" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBÐÐ ERP Logo" class="toggle-dark" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBÐÐ ERP Logo" class="desktop-dark" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBÐÐ ERP Logo" class="toggle-logo" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="desktop-logo" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="toggle-dark" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="desktop-dark" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="desktop-white" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="toggle-logo" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="toggle-white" src="/assets/img/Kedebah Logo.png"/>
             </Link>
           </div>
         </div>

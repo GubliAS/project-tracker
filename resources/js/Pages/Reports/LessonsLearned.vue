@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Lessons Learned' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Lessons Learned' } })
 
 const lessons = ref([
   { id: 1, title: 'Early stakeholder involvement improves outcomes', category: 'process', project: 'Website Redesign', impact: 'positive', date: '2024-11-30' },

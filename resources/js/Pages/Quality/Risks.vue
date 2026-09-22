@@ -1,8 +1,9 @@
-﻿import AppLayout from '@/Layouts/AppLayout.vue'
-<script setup>
-const pageProps = defineProps({ title: { type: String, default: 'Risks & Issues' } })
+﻿<script setup>
 import { ref } from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+
+const pageProps = defineProps({ title: { type: String, default: 'Risks & Issues' } })
 
 const risks = ref([
   { id: 1, title: 'Resource shortage', category: 'resource', probability: 'high', impact: 'high', status: 'open', owner: 'John Doe' },

@@ -11,8 +11,8 @@ const form = useForm({ title: '', category: 'Delivery', impact_level: 'medium', 
 const impactClass = (level) => ({ low: 'bg-success/10 text-success', medium: 'bg-warning/10 text-warning', high: 'bg-danger/10 text-danger' }[level]);
 function openCreate() { editingLesson.value = null; form.reset(); form.category = 'Delivery'; form.impact_level = 'medium'; showModal.value = true; }
 function openEdit(lesson) { editingLesson.value = lesson; Object.assign(form, { title: lesson.title, category: lesson.category, impact_level: lesson.impact_level, recommendation: lesson.recommendation, project_id: lesson.project_id || '' }); showModal.value = true; }
-function submit() { const options = { onSuccess: () => { showModal.value = false; form.reset(); } }; editingLesson.value ? form.put(`/reports/lessons/${editingLesson.value.id}`, options) : form.post('/reports/lessons', options); }
-function remove(lesson) { if (confirm(`Delete “${lesson.title}”?`)) router.delete(`/reports/lessons/${lesson.id}`, { preserveScroll: true }); }
+function submit() { const options = { onSuccess: () => { showModal.value = false; form.reset(); } }; editingLesson.value ? form.put(`/reports/lessons-learned/${editingLesson.value.id}`, options) : form.post('/reports/lessons-learned', options); }
+function remove(lesson) { if (confirm(`Delete “${lesson.title}”?`)) router.delete(`/reports/lessons-learned/${lesson.id}`, { preserveScroll: true }); }
 </script>
 
 <template><AppLayout :title="title"><PageHeader :title="title" subtitle="Capture insights that make future projects stronger"><template #actions><button class="ti-btn ti-btn-primary" @click="openCreate"><i class="ri-add-line me-1"></i> Record Lesson</button></template></PageHeader>
