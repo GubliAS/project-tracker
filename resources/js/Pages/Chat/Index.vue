@@ -25,6 +25,34 @@ const messages = ref([
 const newMessage = ref('')
 const chatContainer = ref(null)
 
+const showAddChannelModal = ref(false)
+const newChannel = ref({ name: '' })
+
+const openAddChannelModal = () => {
+  showAddChannelModal.value = true
+}
+
+const closeAddChannelModal = () => {
+  showAddChannelModal.value = false
+  newChannel.value = { name: '' }
+}
+
+const saveChannel = () => {
+  const name = newChannel.value.name.trim().toLowerCase().replace(/\s+/g, '-')
+  if (!name) return
+
+  const nextId = channels.value.length ? Math.max(...channels.value.map(c => c.id)) + 1 : 1
+
+  channels.value.push({
+    id: nextId,
+    name,
+    unread: 0
+  })
+
+  activeChannel.value = name
+  closeAddChannelModal()
+}
+
 const sendMessage = () => {
   if (!newMessage.value.trim()) return
   
@@ -67,23 +95,25 @@ const sendMessage = () => {
           <div class="box-header">
             <div class="flex items-center justify-between">
               <h5 class="box-title">Channels</h5>
-              <button class="ti-btn ti-btn-sm ti-btn-soft-primary ti-btn-icon"><i class="ri-add-line"></i></button>
+              <button class="ti-btn ti-btn-sm ti-btn-soft-primary ti-btn-icon" type="button" @click="openAddChannelModal">
+                <i class="ri-add-line"></i>
+              </button>
             </div>
           </div>
           <div class="box-body p-0">
-            <ul class="list-group list-group-flush">
-              <li 
-                v-for="channel in channels" 
+            <ul class="pm-channel-list">
+              <li
+                v-for="channel in channels"
                 :key="channel.id"
-                class="list-group-item flex items-center justify-between cursor-pointer hover:bg-light"
-                :class="{ 'bg-primary/10': activeChannel === channel.name }"
+                class="pm-channel-item"
+                :class="{ active: activeChannel === channel.name }"
                 @click="activeChannel = channel.name"
               >
-                <span class="flex items-center gap-2">
-                  <i class="ri-hashtag"></i>
+                <span class="flex items-center min-w-0 truncate">
+                  <i class="ri-hashtag pm-channel-item__hash"></i>
                   {{ channel.name }}
                 </span>
-                <span v-if="channel.unread > 0" class="badge bg-primary rounded-full">{{ channel.unread }}</span>
+                <span v-if="channel.unread > 0" class="badge bg-primary text-white rounded-full">{{ channel.unread }}</span>
               </li>
             </ul>
           </div>
@@ -95,21 +125,21 @@ const sendMessage = () => {
             <h5 class="box-title">Team Online</h5>
           </div>
           <div class="box-body p-0">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item flex items-center gap-2">
-                <span class="avatar avatar-xs bg-primary text-white">JD</span>
-                <span>John Doe</span>
-                <span class="ms-auto w-2 h-2 bg-success rounded-full"></span>
+            <ul class="pm-presence-list">
+              <li class="pm-presence-row">
+                <span class="avatar avatar-sm avatar-rounded bg-primary text-white">JD</span>
+                <span class="text-sm truncate">John Doe</span>
+                <span class="pm-presence-dot bg-success"></span>
               </li>
-              <li class="list-group-item flex items-center gap-2">
-                <span class="avatar avatar-xs bg-info text-white">JS</span>
-                <span>Jane Smith</span>
-                <span class="ms-auto w-2 h-2 bg-success rounded-full"></span>
+              <li class="pm-presence-row">
+                <span class="avatar avatar-sm avatar-rounded bg-info text-white">JS</span>
+                <span class="text-sm truncate">Jane Smith</span>
+                <span class="pm-presence-dot bg-success"></span>
               </li>
-              <li class="list-group-item flex items-center gap-2">
-                <span class="avatar avatar-xs bg-warning text-white">MJ</span>
-                <span>Mike Johnson</span>
-                <span class="ms-auto w-2 h-2 bg-gray-300 rounded-full"></span>
+              <li class="pm-presence-row">
+                <span class="avatar avatar-sm avatar-rounded bg-warning text-white">MJ</span>
+                <span class="text-sm truncate">Mike Johnson</span>
+                <span class="pm-presence-dot bg-gray-300"></span>
               </li>
             </ul>
           </div>
@@ -139,7 +169,7 @@ const sendMessage = () => {
               </span>
               <div :class="{ 'text-right': msg.isMe }">
                 <div class="flex items-center gap-2 mb-1" :class="{ 'flex-row-reverse': msg.isMe }">
-                  <span class="font-medium text-sm">{{ msg.user }}</span>
+                  <span v-if="!msg.isMe" class="font-medium text-sm">{{ msg.user }}</span>
                   <span class="text-xs text-textmuted">{{ msg.time }}</span>
                 </div>
                 <div 
@@ -154,11 +184,11 @@ const sendMessage = () => {
 
           <!-- Input -->
           <div class="box-footer border-t">
-            <form @submit.prevent="sendMessage" class="flex gap-2">
-              <input 
+            <form @submit.prevent="sendMessage" class="flex items-center gap-2">
+              <input
                 v-model="newMessage"
-                type="text" 
-                class="ti-form-control" 
+                type="text"
+                class="ti-form-control flex-1"
                 placeholder="Type a message..."
               >
               <button type="button" class="ti-btn ti-btn-light ti-btn-icon"><i class="ri-attachment-line"></i></button>
@@ -166,6 +196,56 @@ const sendMessage = () => {
               <button type="submit" class="ti-btn ti-btn-primary ti-btn-icon"><i class="ri-send-plane-fill"></i></button>
             </form>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Channel Modal -->
+    <div
+      v-if="showAddChannelModal"
+      class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40"
+    >
+      <div class="bg-white dark:bg-bodybg2 rounded-xl shadow-xl w-full max-w-sm mx-4">
+        <div class="px-6 py-4 border-b border-defaultborder/60 flex items-center justify-between">
+          <h3 class="text-base font-semibold">Add Channel</h3>
+          <button
+            class="ti-btn ti-btn-sm ti-btn-icon ti-btn-light"
+            type="button"
+            @click="closeAddChannelModal"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+
+        <div class="px-6 py-5 space-y-4">
+          <div>
+            <label class="ti-form-label text-sm mb-1">Channel Name <span class="text-danger">*</span></label>
+            <input
+              v-model="newChannel.name"
+              type="text"
+              class="ti-form-control"
+              placeholder="e.g. product-launch"
+              @keyup.enter="saveChannel"
+            >
+          </div>
+
+          <p v-if="!newChannel.name.trim()" class="text-xs text-warning mt-1">
+            Enter a channel name to enable save.
+          </p>
+        </div>
+
+        <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light rounded-b-xl">
+          <button class="ti-btn ti-btn-light" type="button" @click="closeAddChannelModal">
+            Cancel
+          </button>
+          <button
+            class="ti-btn ti-btn-primary"
+            type="button"
+            :disabled="!newChannel.name.trim()"
+            @click="saveChannel"
+          >
+            Add Channel
+          </button>
         </div>
       </div>
     </div>

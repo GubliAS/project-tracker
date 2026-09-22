@@ -15,13 +15,29 @@ const props = defineProps({
 const page = usePage();
 const pageTitle = computed(() => props.title || page.props.title || '');
 
-const isDarkMode = ref(false);
+const THEME_STORAGE_KEY = 'pm-theme';
+
+const getStoredTheme = () => {
+    try {
+        return localStorage.getItem(THEME_STORAGE_KEY) === 'dark';
+    } catch (e) {
+        return false;
+    }
+};
+
+const isDarkMode = ref(getStoredTheme());
 
 const applyChromeTheme = (dark) => {
     const theme = dark ? 'dark' : 'light';
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.setAttribute('data-header-styles', theme);
     document.documentElement.setAttribute('data-menu-styles', theme);
+
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch (e) {
+        // localStorage unavailable (private mode, etc.) - theme just won't persist
+    }
 };
 
 const toggleDarkMode = () => {

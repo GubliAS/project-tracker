@@ -20,6 +20,13 @@ const getFileIcon = (type) => ({
   'design': 'ri-palette-line text-purple-500'
 })[type] || 'ri-file-line text-secondary'
 
+const getFileIconBg = (type) => ({
+  'pdf': 'bg-danger/10',
+  'doc': 'bg-primary/10',
+  'excel': 'bg-success/10',
+  'design': 'bg-purple-500/10'
+})[type] || 'bg-secondary/10'
+
 const searchQuery = ref('')
 const categoryFilter = ref('all')
 </script>
@@ -59,20 +66,37 @@ const categoryFilter = ref('all')
       <div class="box-body">
         <div class="grid grid-cols-12 gap-4">
           <div v-for="doc in documents" :key="doc.id" class="col-span-12 md:col-span-6 lg:col-span-4 xl:col-span-3">
-            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-              <div class="text-center mb-3">
-                <i :class="getFileIcon(doc.type)" class="text-5xl"></i>
-              </div>
-              <h6 class="font-medium text-sm mb-1 truncate" :title="doc.name">{{ doc.name }}</h6>
-              <p class="text-xs text-textmuted mb-2">{{ doc.project }}</p>
-              <div class="flex items-center justify-between text-xs text-textmuted">
-                <span>{{ doc.size }}</span>
-                <span>{{ doc.date }}</span>
-              </div>
-              <div class="flex gap-1 mt-3">
-                <button class="ti-btn ti-btn-soft-primary ti-btn-sm flex-1"><i class="ri-eye-line"></i></button>
-                <button class="ti-btn ti-btn-soft-success ti-btn-sm flex-1"><i class="ri-download-line"></i></button>
-                <button class="ti-btn ti-btn-soft-danger ti-btn-sm flex-1"><i class="ri-delete-bin-line"></i></button>
+            <div class="box h-full mb-0 hover:shadow-lg transition-shadow cursor-pointer">
+              <div class="box-body flex flex-col h-full">
+                <span class="avatar avatar-lg avatar-rounded pm-icon-tile mb-3" :class="getFileIconBg(doc.type)">
+                  <i :class="getFileIcon(doc.type)" class="text-2xl"></i>
+                </span>
+                <h6 class="font-medium text-sm mb-1 truncate" :title="doc.name">{{ doc.name }}</h6>
+                <p class="text-xs text-textmuted mb-2">{{ doc.project }}</p>
+                <div class="flex items-center justify-between text-xs text-textmuted mb-3">
+                  <span>{{ doc.size }}</span>
+                  <span>{{ doc.date }}</span>
+                </div>
+                <div class="flex items-center gap-2 mt-auto pt-3 border-t border-defaultborder dark:border-defaultborder/10">
+                  <div class="hs-tooltip ti-main-tooltip">
+                    <button class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-primary !m-0" type="button">
+                      <i class="ri-eye-line"></i>
+                      <span class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700" role="tooltip">View</span>
+                    </button>
+                  </div>
+                  <div class="hs-tooltip ti-main-tooltip">
+                    <button class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-success !m-0" type="button">
+                      <i class="ri-download-line"></i>
+                      <span class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700" role="tooltip">Download</span>
+                    </button>
+                  </div>
+                  <div class="hs-tooltip ti-main-tooltip ms-auto">
+                    <button class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-danger !m-0" type="button">
+                      <i class="ri-delete-bin-line"></i>
+                      <span class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700" role="tooltip">Delete</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

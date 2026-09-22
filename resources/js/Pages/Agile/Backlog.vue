@@ -40,36 +40,44 @@ const getPriorityClass = (priority) => ({
     <div class="grid grid-cols-12 gap-6">
       <!-- Stats -->
       <div class="col-span-12 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-stack-line text-4xl text-primary mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-primary/10 text-primary mx-auto mb-3">
+              <i class="ri-stack-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold">{{ backlogItems.length }}</h4>
             <p class="text-textmuted">Total Items</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-checkbox-circle-line text-4xl text-success mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-success/10 text-success mx-auto mb-3">
+              <i class="ri-checkbox-circle-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold">{{ backlogItems.filter(i => i.status === 'ready').length }}</h4>
             <p class="text-textmuted">Ready for Sprint</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-fire-line text-4xl text-danger mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-danger/10 text-danger mx-auto mb-3">
+              <i class="ri-fire-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold">{{ backlogItems.filter(i => i.priority === 'high').length }}</h4>
             <p class="text-textmuted">High Priority</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-bar-chart-horizontal-line text-4xl text-info mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-info/10 text-info mx-auto mb-3">
+              <i class="ri-bar-chart-horizontal-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold">{{ backlogItems.reduce((sum, i) => sum + i.points, 0) }}</h4>
             <p class="text-textmuted">Total Points</p>
           </div>

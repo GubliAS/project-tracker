@@ -834,6 +834,37 @@ textarea {
     border-width: 2px !important;
 }
 
+/* Soft "tinted" icon-badge avatars (avatar + bg-color/10 + text-color): the base
+   .avatar rule hardcodes a white icon color for solid badges, which washes out
+   an icon meant to sit on a pale tint instead. Restore the intended color. */
+.avatar.text-primary { color: rgb(var(--primary)) !important; }
+.avatar.text-secondary { color: rgb(var(--secondary)) !important; }
+.avatar.text-success { color: rgb(var(--success)) !important; }
+.avatar.text-info { color: rgb(var(--info)) !important; }
+.avatar.text-warning { color: rgb(var(--warning)) !important; }
+.avatar.text-danger { color: rgb(var(--danger)) !important; }
+.avatar.text-primarytint1color { color: rgb(var(--primary-tint1-rgb)) !important; }
+.avatar.text-primarytint2color { color: rgb(var(--primary-tint2-rgb)) !important; }
+.avatar.text-primarytint3color { color: rgb(var(--primary-tint3-rgb)) !important; }
+
+/* Icon tiles that should feel like the header's circular icon buttons:
+   perfectly round, and a subtle lift when their parent card is hovered. */
+.pm-icon-tile {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.box:hover .pm-icon-tile {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgb(15 23 42 / 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pm-icon-tile,
+    .box:hover .pm-icon-tile {
+        transform: none;
+    }
+}
+
 /* Colored-dot legend */
 .pm-dot {
     width: 0.5rem;
@@ -1413,6 +1444,101 @@ html.dark body {
 .dark .ti-dropdown-item.is-active {
     background: rgb(var(--primary) / 0.16) !important;
     color: #c8c4ff !important;
+}
+
+/* ============================================
+   CHAT — channel list + presence rows
+   ============================================ */
+
+.pm-channel-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.pm-channel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--pm-radius-pill);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgb(var(--default-text-color) / 0.75);
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+}
+
+.pm-channel-item:hover {
+    background: rgb(var(--primary) / 0.08);
+}
+
+.pm-channel-item.active {
+    background: rgb(var(--primary)) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 18px rgb(92 103 247 / 0.28);
+}
+
+.pm-channel-item__hash {
+    opacity: 0.55;
+    margin-right: 0.35rem;
+}
+
+.pm-channel-item.active .pm-channel-item__hash {
+    opacity: 0.85;
+}
+
+.pm-channel-item .badge {
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding-inline: 0.35rem !important;
+}
+
+.pm-channel-item.active .badge {
+    background: rgb(255 255 255 / 0.25) !important;
+    color: #fff !important;
+}
+
+.dark .pm-channel-item {
+    color: rgb(var(--default-text-color) / 0.75);
+}
+
+.dark .pm-channel-item:hover {
+    background: rgb(255 255 255 / 0.06);
+}
+
+.pm-presence-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 0.5rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.pm-presence-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--pm-radius-panel);
+    transition: background 0.16s ease;
+}
+
+.pm-presence-row:hover {
+    background: rgb(var(--primary) / 0.06);
+}
+
+.pm-presence-dot {
+    margin-left: auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--pm-radius-pill);
+    flex-shrink: 0;
 }
 
 @media (min-width: 1200px) {

@@ -36,7 +36,7 @@ const dateRange = ref({ start: '', end: '' })
           <div v-for="report in reportTypes" :key="report.id" class="col-span-12 md:col-span-6 lg:col-span-4">
             <div class="box h-full cursor-pointer hover:shadow-lg transition-shadow" @click="selectedReport = report.name">
               <div class="box-body text-center">
-                <span class="avatar avatar-lg mb-3" :class="`bg-${report.color}/10 text-${report.color}`">
+                <span class="avatar avatar-lg avatar-rounded pm-icon-tile mb-3" :class="`bg-${report.color}/10 text-${report.color}`">
                   <i :class="report.icon" class="text-2xl"></i>
                 </span>
                 <h6 class="font-medium mb-1">{{ report.name }}</h6>
@@ -96,23 +96,31 @@ const dateRange = ref({ start: '', end: '' })
           <div class="box-header">
             <h5 class="box-title">Recent Reports</h5>
           </div>
-          <div class="box-body p-0">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item flex items-center justify-between">
-                <div>
-                  <span class="font-medium block">Sprint 11 Report</span>
-                  <span class="text-xs text-textmuted">Dec 1, 2024</span>
-                </div>
-                <button class="ti-btn ti-btn-soft-primary ti-btn-sm ti-btn-icon"><i class="ri-download-line"></i></button>
-              </li>
-              <li class="list-group-item flex items-center justify-between">
-                <div>
-                  <span class="font-medium block">November Budget</span>
-                  <span class="text-xs text-textmuted">Nov 30, 2024</span>
-                </div>
-                <button class="ti-btn ti-btn-soft-primary ti-btn-sm ti-btn-icon"><i class="ri-download-line"></i></button>
-              </li>
-            </ul>
+          <div class="box-body pt-2">
+            <div class="pm-team-row">
+              <span class="avatar avatar-sm avatar-rounded bg-primary/10 text-primary">
+                <i class="ri-file-chart-line"></i>
+              </span>
+              <div class="min-w-0 grow">
+                <span class="font-medium block truncate">Sprint 11 Report</span>
+                <span class="text-xs text-textmuted">Dec 1, 2024</span>
+              </div>
+              <button class="ti-btn ti-btn-soft-primary ti-btn-sm ti-btn-icon !rounded-full !m-0">
+                <i class="ri-download-line"></i>
+              </button>
+            </div>
+            <div class="pm-team-row">
+              <span class="avatar avatar-sm avatar-rounded bg-warning/10 text-warning">
+                <i class="ri-file-chart-line"></i>
+              </span>
+              <div class="min-w-0 grow">
+                <span class="font-medium block truncate">November Budget</span>
+                <span class="text-xs text-textmuted">Nov 30, 2024</span>
+              </div>
+              <button class="ti-btn ti-btn-soft-primary ti-btn-sm ti-btn-icon !rounded-full !m-0">
+                <i class="ri-download-line"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
