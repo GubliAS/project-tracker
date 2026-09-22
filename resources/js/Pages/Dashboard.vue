@@ -425,7 +425,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-user-plus align-middle"></i>
+                            <i class="ri-user-add-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -440,7 +440,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-0 ti-btn-soft-info"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-at align-middle"></i>
+                            <i class="ri-at-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -455,7 +455,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary2 !m-02"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye align-middle"></i>
+                            <i class="ri-eye-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -496,7 +496,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-user-plus align-middle"></i>
+                            <i class="ri-user-add-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -511,7 +511,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-0 ti-btn-soft-info"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-at align-middle"></i>
+                            <i class="ri-at-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -526,7 +526,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary2 !m-02"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye align-middle"></i>
+                            <i class="ri-eye-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -567,7 +567,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-user-plus align-middle"></i>
+                            <i class="ri-user-add-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -582,7 +582,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-0 ti-btn-soft-info"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-at align-middle"></i>
+                            <i class="ri-at-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -597,7 +597,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary2 !m-02"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye align-middle"></i>
+                            <i class="ri-eye-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -638,7 +638,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-user-plus align-middle"></i>
+                            <i class="ri-user-add-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -653,7 +653,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-0 ti-btn-soft-info"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-at align-middle"></i>
+                            <i class="ri-at-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -668,7 +668,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary2 !m-02"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye align-middle"></i>
+                            <i class="ri-eye-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -709,7 +709,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-user-plus align-middle"></i>
+                            <i class="ri-user-add-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -724,7 +724,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-0 ti-btn-soft-info"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-at align-middle"></i>
+                            <i class="ri-at-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -739,7 +739,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary2 !m-02"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye align-middle"></i>
+                            <i class="ri-eye-line align-middle"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1426,7 +1426,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye"></i>
+                            <i class="ri-eye-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1441,7 +1441,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-secondary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-pencil"></i>
+                            <i class="ri-pencil-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1456,7 +1456,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-danger !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-trash"></i>
+                            <i class="ri-delete-bin-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1516,7 +1516,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye"></i>
+                            <i class="ri-eye-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1531,7 +1531,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-secondary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-pencil"></i>
+                            <i class="ri-pencil-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1546,7 +1546,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-danger !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-trash"></i>
+                            <i class="ri-delete-bin-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1606,7 +1606,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-primary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-eye"></i>
+                            <i class="ri-eye-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1621,7 +1621,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-secondary !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-pencil"></i>
+                            <i class="ri-pencil-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"
@@ -1636,7 +1636,7 @@ const initializeCharts = () => {
                             class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full me-2 ti-btn-soft-danger !m-0"
                             href="javascript:void(0);"
                           >
-                            <i class="ti ti-trash"></i>
+                            <i class="ri-delete-bin-line"></i>
                             <span
                               class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700"
                               role="tooltip"

@@ -26,6 +26,14 @@
     gap: 0.5rem;
 }
 
+/* Horizontal nav is always visible on desktop; keep the hamburger for collapsed menus */
+@media (min-width: 992px) {
+    [data-nav-layout="horizontal"] .main-header-container .sidemenu-toggle,
+    [data-nav-layout="horizontal"] .main-header-container .header-element:has(.sidemenu-toggle) {
+        display: none !important;
+    }
+}
+
 /* Ynex dark header hides .desktop-logo/.desktop-dark and only shows .desktop-white */
 @media (min-width: 992px) {
     [data-header-styles="dark"] .app-header .horizontal-logo .header-logo .desktop-white {
@@ -208,6 +216,17 @@
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+}
+
+/* Table action buttons: keep Remix/Tabler glyphs visible inside the circle */
+table .ti-btn.ti-btn-icon i {
+    margin: 0 !important;
+    line-height: 1 !important;
+    font-style: normal !important;
+}
+
+table .ti-btn.ti-btn-icon i::before {
+    display: inline-block !important;
 }
 
 /* ============================================
