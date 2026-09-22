@@ -222,7 +222,7 @@ const isChildActive = (children) => {
   min-width: 200px !important;
   background-color: #fff !important;
   border: 1px solid rgba(0,0,0,0.1) !important;
-  border-radius: 0.375rem !important;
+  border-radius: 1rem !important;
   box-shadow: 0 10px 40px rgba(0,0,0,0.12) !important;
   padding: 0.5rem 0 !important;
   z-index: 1000 !important;

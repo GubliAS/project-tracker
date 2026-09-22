@@ -325,3 +325,257 @@ table .ti-btn.ti-btn-icon i::before {
 .gap-3 { gap: 0.75rem !important; }
 .gap-4 { gap: 1rem !important; }
 
+/* ============================================
+   DESIGN TOKENS — elevated cards + pill controls
+   ============================================ */
+
+:root {
+    --pm-radius-card: 1.25rem;
+    --pm-radius-card-lg: 1.5rem;
+    --pm-radius-panel: 1rem;
+    --pm-radius-pill: 9999px;
+    --pm-shadow-card: 0 10px 32px rgb(15 23 42 / 0.06);
+    --pm-shadow-card-hover: 0 14px 36px rgb(15 23 42 / 0.08);
+    --pm-border-soft: rgb(15 23 42 / 0.06);
+    --pm-page-gap: 1.5rem;
+}
+
+.dark {
+    --pm-shadow-card: 0 12px 36px rgb(0 0 0 / 0.38);
+    --pm-shadow-card-hover: 0 16px 40px rgb(0 0 0 / 0.45);
+    --pm-border-soft: rgb(255 255 255 / 0.08);
+}
+
+/* Soft page canvas */
+.main-content.app-content {
+    padding-bottom: 2rem;
+}
+
+.main-content .container-fluid {
+    padding-top: 0.25rem;
+}
+
+/* ============================================
+   CARDS — larger radius, elevation over hard borders
+   ============================================ */
+
+.box {
+    border-radius: var(--pm-radius-card) !important;
+    border-color: var(--pm-border-soft) !important;
+    box-shadow: var(--pm-shadow-card) !important;
+}
+
+.box .box {
+    box-shadow: none !important;
+}
+
+.box-header {
+    border-bottom-color: var(--pm-border-soft) !important;
+}
+
+.box-body,
+.box-header {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+.main-dashboard-banner,
+.project-dashboard-banner {
+    border-radius: var(--pm-radius-card-lg) !important;
+    box-shadow: var(--pm-shadow-card) !important;
+}
+
+/* Nested tinted panels (daily tasks, legends) */
+.bg-light {
+    border-radius: var(--pm-radius-panel) !important;
+}
+
+/* ============================================
+   PILLS — buttons, badges, inputs, progress, nav
+   ============================================ */
+
+.ti-btn,
+.btn,
+button.ti-btn,
+a.ti-btn,
+.ti-btn-icon,
+.ti-btn.ti-btn-icon {
+    border-radius: var(--pm-radius-pill) !important;
+}
+
+.badge,
+.badge.leading-none {
+    border-radius: var(--pm-radius-pill) !important;
+    padding-inline: 0.6rem !important;
+}
+
+.form-control,
+.ti-form-control,
+.header-search-bar,
+select.form-control,
+select.ti-form-control,
+input.form-control,
+input.ti-form-control,
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="password"] {
+    border-radius: var(--pm-radius-pill) !important;
+}
+
+textarea.form-control,
+textarea.ti-form-control,
+textarea {
+    border-radius: var(--pm-radius-panel) !important;
+}
+
+.progress,
+.progress-bar,
+.progress-lg,
+.progress-sm,
+.progress-xs {
+    border-radius: var(--pm-radius-pill) !important;
+}
+
+.ti-dropdown-menu,
+.hs-dropdown-menu,
+.main-header-dropdown,
+.header-profile-dropdown {
+    border-radius: var(--pm-radius-panel) !important;
+    overflow: hidden;
+}
+
+.app-header .header-link {
+    border-radius: var(--pm-radius-pill) !important;
+}
+
+.app-header .header-search-bar {
+    padding-inline: 1.1rem 2.4rem !important;
+}
+
+[data-nav-layout="horizontal"] .side-menu__item {
+    border-radius: var(--pm-radius-pill) !important;
+    padding-inline: 0.95rem !important;
+}
+
+[data-nav-layout="horizontal"] .main-menu > .slide > .slide-menu.child1 {
+    border-radius: var(--pm-radius-panel) !important;
+}
+
+.pm-dropdown-menu {
+    border-radius: var(--pm-radius-panel) !important;
+}
+
+.breadcrumb {
+    gap: 0.25rem;
+}
+
+.breadcrumb-item > a,
+.breadcrumb-item > span {
+    border-radius: var(--pm-radius-pill);
+}
+
+.page-title {
+    letter-spacing: -0.02em;
+}
+
+/* Tables sit inside rounded cards */
+.table-responsive {
+    border-radius: 0 0 var(--pm-radius-card) var(--pm-radius-card);
+}
+
+.avatar-list-stacked .avatar {
+    border-width: 2px !important;
+}
+
+/* Colored-dot legend */
+.pm-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--pm-radius-pill);
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Stat tiles */
+.pm-stat-tile .box-body,
+.pm-stat-tile.box .box-body {
+    padding: 1.15rem 1.2rem;
+}
+
+.pm-stat-tile h4 {
+    letter-spacing: -0.03em;
+}
+
+/* List cards with a left color rail (today's tasks pattern) */
+.pm-accent-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--pm-radius-panel) !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+}
+
+.pm-accent-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.65rem;
+    bottom: 0.65rem;
+    width: 4px;
+    border-radius: var(--pm-radius-pill);
+    background: rgb(var(--primary));
+}
+
+.pm-accent-primary::before { background: rgb(var(--primary)); }
+.pm-accent-secondary::before { background: rgb(var(--secondary)); }
+.pm-accent-info::before { background: rgb(var(--info)); }
+.pm-accent-warning::before { background: rgb(var(--warning)); }
+.pm-accent-success::before { background: rgb(var(--success)); }
+.pm-accent-tint1::before { background: var(--primarytint1color, rgb(227, 84, 212)); }
+.pm-accent-tint2::before { background: var(--primarytint2color, rgb(255, 93, 159)); }
+
+.pm-accent-card .box-body {
+    padding-left: 1.15rem;
+}
+
+/* Running-project rows */
+.pm-running-item {
+    padding: 0.85rem 0.15rem 1rem;
+    border-bottom: 1px solid var(--pm-border-soft);
+}
+
+.pm-running-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0.15rem;
+}
+
+/* Hero banner content */
+.pm-hero-card .ti-btn {
+    border-radius: var(--pm-radius-pill) !important;
+}
+
+@media (max-width: 575.98px) {
+    .box-body,
+    .box-header {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .pm-stat-tile h4 {
+        font-size: 1.15rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .box,
+    .ti-btn,
+    .header-link,
+    .side-menu__item {
+        transition: none !important;
+    }
+}
+
