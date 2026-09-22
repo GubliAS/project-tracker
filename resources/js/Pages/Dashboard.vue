@@ -350,18 +350,21 @@ const initializeCharts = () => {
     <AppLayout>
         <div>
     <!-- Projects Dashboard Header -->
-    <PageHeader title="Projects" subtitle="Portfolio overview and performance" />
+    <PageHeader title="Dashboard" subtitle="Portfolio overview and performance" />
 
     <!-- Row 1: Banner & Team -->
     <div class="grid grid-cols-12 gap-x-6">
       <!-- Banner -->
       <div class="xxl:col-span-5 col-span-12">
-        <div class="box main-dashboard-banner project-dashboard-banner overflow-hidden">
+        <div class="box main-dashboard-banner project-dashboard-banner overflow-hidden pm-hero-card">
           <div class="box-body p-[1.5rem]">
             <div class="grid grid-cols-12 gap-x-6 justify-between">
               <div class="xxl:col-span-8 xl:col-span-5 lg:col-span-5 md:col-span-5 sm:col-span-5 col-span-12">
+                <span class="avatar avatar-md avatar-rounded bg-white/20 text-white mb-3">
+                  <i class="ri-folder-chart-line text-xl"></i>
+                </span>
                 <h4 class="mb-1 font-medium text-white">Manage Projects</h4>
-                <p class="mb-3 text-white opacity-70">
+                <p class="mb-4 text-white opacity-70">
                   Manage projects effortlessly with our one-click solution, streamlining your workflow.
                 </p>
                 <Link class="ti-btn ti-btn-sm bg-primarytint1color text-white" href="/projects">
@@ -763,10 +766,10 @@ const initializeCharts = () => {
         <div class="grid grid-cols-12 gap-x-6">
           <!-- New Projects -->
           <div class="xxl:col-span-3 md:col-span-6 col-span-12">
-            <div class="box overflow-hidden">
+            <div class="box overflow-hidden pm-stat-tile">
               <div class="box-body">
                 <div class="mb-5 flex items-start justify-between">
-                  <span class="avatar avatar-sm bg-primary svg-white">
+                  <span class="avatar avatar-sm avatar-rounded bg-primary svg-white">
                     <i class="ri-pages-line text-[1rem]"></i>
                   </span>
                   <span class="badge leading-none bg-danger/10 text-danger">-5.20%</span>
@@ -774,7 +777,7 @@ const initializeCharts = () => {
                 <div class="flex align-items-end justify-between flex-wrap">
                   <div class="flex-shrink-0 leading-none">
                     <div class="text-textmuted dark:text-textmuted/50 mb-2">New Projects</div>
-                    <h4 class="mb-0 text-xl font-medium">432</h4>
+                    <h4 class="mb-0 text-2xl font-semibold">432</h4>
                   </div>
                   <div class="flex-shrink-0 text-end ms-auto" id="Projects-2"></div>
                 </div>
@@ -784,10 +787,10 @@ const initializeCharts = () => {
 
           <!-- Completed -->
           <div class="xxl:col-span-3 md:col-span-6 col-span-12">
-            <div class="box overflow-hidden">
+            <div class="box overflow-hidden pm-stat-tile">
               <div class="box-body">
                 <div class="mb-5 flex items-start justify-between">
-                  <span class="avatar avatar-sm bg-primarytint1color svg-white">
+                  <span class="avatar avatar-sm avatar-rounded bg-primarytint1color svg-white">
                     <i class="ri-check-double-line text-[1rem]"></i>
                   </span>
                   <span class="badge leading-none bg-success/10 text-success">+7.20%</span>
@@ -795,7 +798,7 @@ const initializeCharts = () => {
                 <div class="flex align-items-end justify-between flex-wrap">
                   <div class="flex-shrink-0 leading-none">
                     <div class="text-textmuted dark:text-textmuted/50 mb-2">Completed</div>
-                    <h4 class="mb-0 text-xl font-medium">122</h4>
+                    <h4 class="mb-0 text-2xl font-semibold">122</h4>
                   </div>
                   <div class="flex-shrink-0 text-end ms-auto" id="Projects-1"></div>
                 </div>
@@ -805,10 +808,10 @@ const initializeCharts = () => {
 
           <!-- Ongoing Projects -->
           <div class="xxl:col-span-3 md:col-span-6 col-span-12">
-            <div class="box overflow-hidden">
+            <div class="box overflow-hidden pm-stat-tile">
               <div class="box-body">
                 <div class="mb-5 flex items-start justify-between">
-                  <span class="avatar avatar-sm bg-primarytint2color svg-white">
+                  <span class="avatar avatar-sm avatar-rounded bg-primarytint2color svg-white">
                     <i class="ri-loop-left-fill text-[1rem]"></i>
                   </span>
                   <span class="badge leading-none bg-danger/10 text-danger">-5.20%</span>
@@ -816,7 +819,7 @@ const initializeCharts = () => {
                 <div class="flex align-items-end justify-between flex-wrap">
                   <div class="flex-shrink-0 leading-none">
                     <div class="text-textmuted dark:text-textmuted/50 mb-2">Ongoing Projects</div>
-                    <h4 class="mb-0 text-xl font-medium">1,265</h4>
+                    <h4 class="mb-0 text-2xl font-semibold">1,265</h4>
                   </div>
                   <div class="flex-shrink-0 text-end ms-auto" id="Projects-3"></div>
                 </div>
@@ -826,10 +829,10 @@ const initializeCharts = () => {
 
           <!-- Pending Projects -->
           <div class="xxl:col-span-3 md:col-span-6 col-span-12">
-            <div class="box overflow-hidden">
+            <div class="box overflow-hidden pm-stat-tile">
               <div class="box-body">
                 <div class="mb-5 flex items-start justify-between">
-                  <span class="avatar avatar-sm bg-primarytint3color svg-white">
+                  <span class="avatar avatar-sm avatar-rounded bg-primarytint3color svg-white">
                     <i class="ri-time-line text-[1rem]"></i>
                   </span>
                   <span class="badge leading-none bg-success/10 text-success">+5.20%</span>
@@ -837,7 +840,7 @@ const initializeCharts = () => {
                 <div class="flex align-items-end justify-between flex-wrap">
                   <div class="flex-shrink-0 leading-none">
                     <div class="text-textmuted dark:text-textmuted/50 mb-2">Pending Projects</div>
-                    <h4 class="mb-0 text-xl font-medium">1,265</h4>
+                    <h4 class="mb-0 text-2xl font-semibold">1,265</h4>
                   </div>
                   <div class="flex-shrink-0 text-end ms-auto" id="Projects-4"></div>
                 </div>
@@ -927,9 +930,9 @@ const initializeCharts = () => {
             <div class="box-title">Running Projects List</div>
             <button class="ti-btn ti-btn-sm bg-primary/10 text-primary" type="button">View All</button>
           </div>
-          <div class="p-4 space-y-4">
+          <div class="p-4 space-y-0">
             <!-- Project 1 -->
-            <div>
+            <div class="pm-running-item">
               <div class="flex items-start gap-4 mb-3">
                 <div class="grow">
                   <div class="flex items-center gap-1">
@@ -985,7 +988,7 @@ const initializeCharts = () => {
             </div>
 
             <!-- Project 2 -->
-            <div>
+            <div class="pm-running-item">
               <div class="flex items-start gap-4 mb-3">
                 <div class="grow">
                   <div class="flex items-center gap-1">
@@ -1041,7 +1044,7 @@ const initializeCharts = () => {
             </div>
 
             <!-- Project 3 -->
-            <div>
+            <div class="pm-running-item">
               <div class="flex items-start gap-4 mb-3">
                 <div class="grow">
                   <div class="flex items-center gap-1">
@@ -1177,7 +1180,7 @@ const initializeCharts = () => {
                         >09:15 AM</span
                       >
                     </div>
-                    <div class="box border border-primary/25 shadow-none mb-0 bg-primary/10 w-full">
+                    <div class="box border border-primary/25 shadow-none mb-0 bg-primary/10 w-full pm-accent-card pm-accent-primary">
                       <div class="box-body">
                         <div class="flex items-center gap-2 justify-between">
                           <p class="font-medium mb-2 leading-none">Home Page Design</p>
@@ -1224,7 +1227,7 @@ const initializeCharts = () => {
                       >
                     </div>
                     <div
-                      class="box border border-primarytint1color/25 shadow-none mb-0 bg-primarytint1color/10 w-full"
+                      class="box border border-primarytint1color/25 shadow-none mb-0 bg-primarytint1color/10 w-full pm-accent-card pm-accent-tint1"
                     >
                       <div class="box-body">
                         <div class="flex items-center gap-2 justify-between">
@@ -1278,7 +1281,7 @@ const initializeCharts = () => {
                       >
                     </div>
                     <div
-                      class="box border border-primarytint2color/25 shadow-none mb-0 bg-primarytint2color/10 w-full"
+                      class="box border border-primarytint2color/25 shadow-none mb-0 bg-primarytint2color/10 w-full pm-accent-card pm-accent-tint2"
                     >
                       <div class="box-body">
                         <div class="flex items-center gap-2 justify-between">
