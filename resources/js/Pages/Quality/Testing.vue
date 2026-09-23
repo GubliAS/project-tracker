@@ -38,36 +38,44 @@ const stats = ref({
     <div class="grid grid-cols-12 gap-6">
       <!-- Stats -->
       <div class="col-span-12 md:col-span-6 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-test-tube-line text-4xl text-primary mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-primary/10 text-primary mx-auto mb-3">
+              <i class="ri-test-tube-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold">{{ stats.total }}</h4>
             <p class="text-textmuted">Total Tests</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 md:col-span-6 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-checkbox-circle-line text-4xl text-success mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-success/10 text-success mx-auto mb-3">
+              <i class="ri-checkbox-circle-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold text-success">{{ stats.passed }}</h4>
             <p class="text-textmuted">Passed</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 md:col-span-6 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-close-circle-line text-4xl text-danger mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-danger/10 text-danger mx-auto mb-3">
+              <i class="ri-close-circle-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold text-danger">{{ stats.failed }}</h4>
             <p class="text-textmuted">Failed</p>
           </div>
         </div>
       </div>
       <div class="col-span-12 md:col-span-6 xl:col-span-3">
-        <div class="box">
+        <div class="box h-full">
           <div class="box-body text-center">
-            <i class="ri-time-line text-4xl text-warning mb-2"></i>
+            <span class="avatar avatar-lg avatar-rounded pm-icon-tile bg-warning/10 text-warning mx-auto mb-3">
+              <i class="ri-time-line text-2xl"></i>
+            </span>
             <h4 class="text-2xl font-bold text-warning">{{ stats.pending }}</h4>
             <p class="text-textmuted">Pending</p>
           </div>
