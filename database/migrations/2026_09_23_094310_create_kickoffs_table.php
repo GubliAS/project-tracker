@@ -13,10 +13,6 @@ return new class extends Migration
     {
         Schema::create('kickoffs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('title');
-            $table->dateTime('scheduled_at');
-            $table->text('agenda')->nullable();
             $table->timestamps();
         });
     }

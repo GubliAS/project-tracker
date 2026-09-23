@@ -13,12 +13,6 @@ return new class extends Migration
     {
         Schema::create('backlog_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('sprint_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('priority')->default('medium');
-            $table->string('status')->default('backlog');
             $table->timestamps();
         });
     }

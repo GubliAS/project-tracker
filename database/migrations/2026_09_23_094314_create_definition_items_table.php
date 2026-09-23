@@ -13,9 +13,6 @@ return new class extends Migration
     {
         Schema::create('definition_items', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
-            $table->string('title');
-            $table->boolean('is_required')->default(true);
             $table->timestamps();
         });
     }

@@ -41,12 +41,12 @@ class ResourceController extends Controller
 
     public function team(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Team Resources', ['items' => Resource::query()->where('type', 'human')->latest()->get(), 'fields' => [['label' => 'Name', 'path' => 'name'], ['label' => 'Role', 'path' => 'role_or_category'], ['label' => 'Availability', 'path' => 'availability_status'], ['label' => 'Hourly cost', 'path' => 'cost_per_hour']]]);
+        return $this->inertiaPage('Resources/Team', 'Team Resources', ['resources' => Resource::query()->where('type', 'human')->latest()->get()]);
     }
 
     public function timeTracking(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Time Tracking', ['items' => TimeEntry::query()->with(['project:id,name', 'resource:id,name', 'task:id,title'])->latest('entry_date')->get(), 'fields' => [['label' => 'Date', 'path' => 'entry_date'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Resource', 'path' => 'resource.name'], ['label' => 'Task', 'path' => 'task.title'], ['label' => 'Hours', 'path' => 'hours']]]);
+        return $this->inertiaPage('Resources/TimeTracking', 'Time Tracking', ['entries' => TimeEntry::query()->with(['project:id,name', 'resource:id,name', 'task:id,title'])->latest('entry_date')->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name']), 'resources' => Resource::query()->where('type', 'human')->orderBy('name')->get(['id', 'name']), 'tasks' => Task::query()->orderBy('title')->get(['id', 'title'])]);
     }
 
     public function storeTime(Request $request): RedirectResponse
@@ -67,12 +67,12 @@ class ResourceController extends Controller
     {
         $resources = Resource::query()->get();
 
-        return $this->inertiaPage('DatabaseList', 'Budget', ['items' => $resources, 'fields' => [['label' => 'Resource', 'path' => 'name'], ['label' => 'Category', 'path' => 'role_or_category'], ['label' => 'Hourly cost', 'path' => 'cost_per_hour'], ['label' => 'Availability', 'path' => 'availability_status']]]);
+        return $this->inertiaPage('Resources/Budget', 'Budget', ['resources' => $resources, 'summary' => ['total_hourly_cost' => $resources->sum('cost_per_hour'), 'allocated_hourly_cost' => $resources->where('availability_status', 'allocated')->sum('cost_per_hour')]]);
     }
 
     public function milestones(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Milestones', ['items' => Milestone::query()->with('project:id,name')->orderBy('due_date')->get(), 'fields' => [['label' => 'Milestone', 'path' => 'title'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Due date', 'path' => 'due_date'], ['label' => 'Status', 'path' => 'status']]]);
+        return $this->inertiaPage('Resources/Milestones', 'Milestones', ['milestones' => Milestone::query()->with('project:id,name')->orderBy('due_date')->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name'])]);
     }
 
     public function storeMilestone(Request $request): RedirectResponse
@@ -98,7 +98,7 @@ class ResourceController extends Controller
 
     public function gantt(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Gantt Chart', ['items' => Task::query()->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(), 'fields' => [['label' => 'Task', 'path' => 'title'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Due date', 'path' => 'due_date'], ['label' => 'Status', 'path' => 'status']]]);
+        return $this->inertiaPage('Resources/Gantt', 'Gantt Chart', ['tasks' => Task::query()->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(), 'milestones' => Milestone::query()->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get()]);
     }
 
     private function resourceData(Request $request, bool $partial = false): array

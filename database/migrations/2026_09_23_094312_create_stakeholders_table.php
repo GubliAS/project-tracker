@@ -13,11 +13,6 @@ return new class extends Migration
     {
         Schema::create('stakeholders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('name');
-            $table->string('email')->nullable();
-            $table->string('role');
-            $table->string('influence')->default('medium');
             $table->timestamps();
         });
     }
