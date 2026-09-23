@@ -24,13 +24,17 @@ class WorkspaceInviteTest extends TestCase
 
         $this->signInAs(WorkspaceRole::WorkspaceAdmin);
 
-        $this->post('/workspace/members/invite', [
+        $response = $this->post('/workspace/members/invite', [
             'email' => 'new.member@example.com',
             'name' => 'New Member',
             'role' => WorkspaceRole::Member->value,
-        ])->assertRedirect();
+        ]);
+
+        $response->assertRedirect();
 
         $invitee = User::query()->where('email', 'new.member@example.com')->first();
+        $invitation = Invitation::query()->firstOrFail();
+        $path = '/invitations/'.$invitation->token;
 
         $this->assertNotNull($invitee);
         $this->assertSame('New Member', $invitee->name);
@@ -44,7 +48,19 @@ class WorkspaceInviteTest extends TestCase
             'role' => WorkspaceRole::Member->value,
         ]);
 
-        Notification::assertSentTo($invitee, WorkspaceInvitation::class);
+        $response->assertSessionHas('message', function (string $message) use ($path): bool {
+            return str_contains($message, $path)
+                && str_contains($message, 'APP_URL');
+        });
+
+        Notification::assertSentTo($invitee, WorkspaceInvitation::class, function (WorkspaceInvitation $notification) use ($invitee, $path): bool {
+            $mail = $notification->toMail($invitee);
+
+            $this->assertStringContainsString($path, $mail->actionUrl);
+            $this->assertStringNotContainsString('signature=', $mail->actionUrl);
+
+            return true;
+        });
     }
 
     public function test_invite_attaches_an_existing_user_without_resetting_their_password(): void
@@ -89,12 +105,36 @@ class WorkspaceInviteTest extends TestCase
 
         $this->post('/logout');
 
+        $this->assertGuest();
+
         $this->get('/invitations/'.$invitation->token)
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Auth/SetPassword')
                 ->where('invitation.email', 'join@example.com')
-                ->where('invitation.name', 'Join User'));
+                ->where('invitation.name', 'Join User')
+                ->where('invitation.token', $invitation->token));
+    }
+
+    public function test_members_page_shows_a_shareable_invite_path(): void
+    {
+        Notification::fake();
+
+        $this->signInAs(WorkspaceRole::WorkspaceAdmin);
+        $this->post('/workspace/members/invite', [
+            'email' => 'share@example.com',
+            'role' => WorkspaceRole::Member->value,
+        ]);
+
+        $invitation = Invitation::query()->firstOrFail();
+        $path = '/invitations/'.$invitation->token;
+
+        $this->get('/workspace/members')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Workspace/Members')
+                ->where('invites.0.invite_path', $path)
+                ->where('invites.0.token', $invitation->token));
     }
 
     public function test_invitee_cannot_log_in_before_setting_a_password(): void
