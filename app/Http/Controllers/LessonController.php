@@ -12,10 +12,7 @@ class LessonController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Reports/LessonsLearned', 'Lessons Learned', [
-            'lessons' => LessonLearned::query()->with('project:id,name')->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return $this->inertiaPage('Reports/Lessons', 'Lessons Learned', ['lessons' => LessonLearned::query()->with('project:id,name')->latest()->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name'])]);
     }
 
     public function store(Request $request): RedirectResponse

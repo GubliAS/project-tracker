@@ -18,13 +18,14 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => Inertia::render('Dashboard'))->name('home');
 Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
-Route::get('/projects', fn () => Inertia::render('Projects'))->name('projects.index');
+Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 Route::get('/initiation', fn () => Inertia::render('Initiation'))->name('initiation.index');
 Route::get('/agile', fn () => Inertia::render('Agile'))->name('agile.index');
 
 Route::prefix('projects')->name('projects.')->group(function () {
     Route::get('/create', [ProjectController::class, 'create'])->name('create');
-    Route::get('/{id}', [ProjectController::class, 'show'])->name('show');
+    Route::post('/', [ProjectController::class, 'store'])->name('store');
+    Route::get('/{project}', [ProjectController::class, 'show'])->name('show');
 });
 
 Route::prefix('initiation')->name('initiation.')->group(function () {

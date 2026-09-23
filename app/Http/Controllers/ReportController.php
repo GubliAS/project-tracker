@@ -85,7 +85,7 @@ class ReportController extends Controller
 
     public function analytics(): Response
     {
-        return $this->inertiaPage('Reports/Analytics', 'Reports & Analytics');
+        return $this->index();
     }
 
     public function documents(): Response

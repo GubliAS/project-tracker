@@ -26,7 +26,7 @@ class SupplementalModulesTest extends TestCase
 
         $this->get('/quality/qa-testing')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Quality/Testing')->has('testCases', 1));
+            ->assertInertia(fn ($page) => $page->component('DatabaseList')->has('items', 1));
 
         $this->post('/quality/qa-testing', [
             'project_id' => $project->id,

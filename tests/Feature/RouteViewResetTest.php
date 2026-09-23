@@ -21,7 +21,7 @@ class RouteViewResetTest extends TestCase
 
         $this->get('/projects')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Projects'));
+            ->assertInertia(fn ($page) => $page->component('Projects/Index')->has('projects'));
 
         $this->get('/initiation')
             ->assertOk()
@@ -61,29 +61,29 @@ class RouteViewResetTest extends TestCase
     {
         $this->get('/quality/change-log')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Quality/ChangeLog'));
+            ->assertInertia(fn ($page) => $page->component('DatabaseList')->has('items'));
 
         $this->get('/quality/qa-testing')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Quality/Testing'));
+            ->assertInertia(fn ($page) => $page->component('DatabaseList')->has('items'));
 
         $this->get('/quality/risks')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Quality/Risks'));
+            ->assertInertia(fn ($page) => $page->component('DatabaseList')->has('items'));
 
         $this->get('/reports/analytics')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/Analytics'));
+            ->assertInertia(fn ($page) => $page->component('Reports/Index')->has('stats'));
 
         $this->get('/reports/documents')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/Documents'));
+            ->assertInertia(fn ($page) => $page->component('DatabaseList')->has('items'));
 
         $this->get('/reports/lessons')
             ->assertRedirect('/reports/lessons-learned');
 
         $this->get('/reports/lessons-learned')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/LessonsLearned'));
+            ->assertInertia(fn ($page) => $page->component('Reports/Lessons')->has('lessons'));
     }
 }

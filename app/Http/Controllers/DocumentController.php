@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
-use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,10 +13,7 @@ class DocumentController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Reports/Documents', 'Documents', [
-            'documents' => Document::query()->with('project:id,name')->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return $this->inertiaPage('DatabaseList', 'Documents', ['items' => Document::query()->with('project:id,name')->latest()->get(), 'fields' => [['label' => 'Document', 'path' => 'name'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Category', 'path' => 'category'], ['label' => 'Size', 'path' => 'size']]]);
     }
 
     public function store(Request $request): RedirectResponse

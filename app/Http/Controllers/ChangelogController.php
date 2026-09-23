@@ -11,9 +11,7 @@ class ChangelogController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Quality/ChangeLog', 'Change Log', [
-            'changes' => Changelog::query()->orderByDesc('release_date')->latest()->get(),
-        ]);
+        return $this->inertiaPage('DatabaseList', 'Change Log', ['items' => Changelog::query()->orderByDesc('release_date')->latest()->get(), 'fields' => [['label' => 'Version', 'path' => 'version'], ['label' => 'Title', 'path' => 'title'], ['label' => 'Type', 'path' => 'type'], ['label' => 'Released', 'path' => 'release_date']]]);
     }
 
     public function store(Request $request): RedirectResponse
