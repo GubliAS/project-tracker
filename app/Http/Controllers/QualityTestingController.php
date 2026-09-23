@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\QualityCheck;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,16 +17,7 @@ class QualityTestingController extends Controller
             ->latest()
             ->get();
 
-        return $this->inertiaPage('Quality/Testing', 'QA & Testing', [
-            'testCases' => $testCases,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'summary' => [
-                'total' => $testCases->count(),
-                'passed' => $testCases->where('status', 'passed')->count(),
-                'failed' => $testCases->where('status', 'failed')->count(),
-                'untested' => $testCases->where('status', 'pending')->count(),
-            ],
-        ]);
+        return $this->inertiaPage('DatabaseList', 'QA & Testing', ['items' => $testCases, 'fields' => [['label' => 'Test', 'path' => 'title'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Status', 'path' => 'status'], ['label' => 'Notes', 'path' => 'notes']]]);
     }
 
     public function store(Request $request): RedirectResponse

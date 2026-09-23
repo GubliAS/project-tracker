@@ -114,9 +114,9 @@ class CoreModulesTest extends TestCase
         $this->get('/quality/qa-testing')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('Quality/Testing')
-                ->has('testCases')
-                ->has('summary'));
+                ->component('DatabaseList')
+                ->has('items')
+                ->has('fields'));
 
         $this->post('/quality', [
             'project_id' => $project->id,
@@ -149,6 +149,6 @@ class CoreModulesTest extends TestCase
 
         $this->get('/reports/analytics')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Reports/Analytics'));
+            ->assertInertia(fn ($page) => $page->component('Reports/Index')->has('stats'));
     }
 }

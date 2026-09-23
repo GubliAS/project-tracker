@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\Risk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,10 +11,7 @@ class RiskController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Quality/Risks', 'Risks & Issues', [
-            'risks' => Risk::query()->with('project:id,name')->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return $this->inertiaPage('DatabaseList', 'Risks & Issues', ['items' => Risk::query()->with('project:id,name')->latest()->get(), 'fields' => [['label' => 'Risk', 'path' => 'title'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Impact', 'path' => 'impact'], ['label' => 'Status', 'path' => 'status']]]);
     }
 
     public function store(Request $request): RedirectResponse
