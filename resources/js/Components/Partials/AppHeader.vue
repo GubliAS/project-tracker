@@ -7,9 +7,13 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  mobileNavOpen: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-defineEmits(['toggle-dark'])
+defineEmits(['toggle-dark', 'toggle-mobile-nav'])
 
 const isSearchOpen = ref(false)
 const searchQuery = ref('')
@@ -65,7 +69,14 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="header-element mx-lg-0">
-          <a aria-label="Hide Sidebar" class="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle" href="javascript:void(0);">
+          <a
+            :aria-label="mobileNavOpen ? 'Close menu' : 'Open menu'"
+            :aria-expanded="mobileNavOpen"
+            class="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
+            :class="{ 'pm-nav-toggle-open': mobileNavOpen }"
+            href="javascript:void(0);"
+            @click.stop="$emit('toggle-mobile-nav')"
+          >
             <span></span>
           </a>
         </div>

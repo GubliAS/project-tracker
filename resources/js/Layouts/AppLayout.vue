@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, nextTick, ref } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onBeforeUnmount, nextTick, ref } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import AppHeader from '@/Components/Partials/AppHeader.vue';
 import AppSidebar from '@/Components/Partials/AppSidebar.vue';
 import AppFooter from '@/Components/Partials/AppFooter.vue';
@@ -45,10 +45,24 @@ const toggleDarkMode = () => {
     applyChromeTheme(isDarkMode.value);
 };
 
+const isMobileNavOpen = ref(false);
+
+const toggleMobileNav = () => {
+    isMobileNavOpen.value = !isMobileNavOpen.value;
+};
+
+const closeMobileNav = () => {
+    isMobileNavOpen.value = false;
+};
+
+let stopNavigateListener = null;
+
 onMounted(() => {
     document.documentElement.setAttribute('data-nav-layout', 'horizontal');
     document.documentElement.setAttribute('data-nav-style', 'menu-click');
     applyChromeTheme(isDarkMode.value);
+
+    stopNavigateListener = router.on('navigate', closeMobileNav);
 
     nextTick(() => {
         setTimeout(() => {
@@ -58,15 +72,19 @@ onMounted(() => {
         }, 200);
     });
 });
+
+onBeforeUnmount(() => {
+    stopNavigateListener?.();
+});
 </script>
 
 <template>
     <div class="page" :class="{ dark: isDarkMode }">
         <Head :title="pageTitle" />
-        <AppHeader :dark="isDarkMode" @toggle-dark="toggleDarkMode" />
-        <AppSidebar />
+        <AppHeader :dark="isDarkMode" :mobile-nav-open="isMobileNavOpen" @toggle-dark="toggleDarkMode" @toggle-mobile-nav="toggleMobileNav" />
+        <AppSidebar :mobile-nav-open="isMobileNavOpen" @close-mobile-nav="closeMobileNav" />
 
-        <div class="main-content app-content">
+        <div class="main-content app-content" @click="closeMobileNav">
             <div class="container-fluid">
                 <slot />
             </div>

@@ -2,6 +2,13 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 
+defineProps({
+  mobileNavOpen: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const page = usePage()
 const openMenus = ref([])
 
@@ -139,7 +146,7 @@ const isChildActive = (children) => {
 </script>
 
 <template>
-  <aside class="app-sidebar sticky pm-nav" id="sidebar">
+  <aside class="app-sidebar sticky pm-nav" :class="{ 'pm-nav-open': mobileNavOpen }" id="sidebar">
     <div class="container-xl">
       <div class="main-sidebar" id="sidebar-scroll">
         <nav class="main-menu-container nav nav-pills sub-open">

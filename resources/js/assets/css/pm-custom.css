@@ -86,6 +86,12 @@
     align-items: center;
 }
 
+.pm-header .horizontal-logo {
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+}
+
 .pm-header .header-logo {
     display: flex;
     align-items: center;
@@ -269,6 +275,37 @@
 .app-sidebar.pm-nav .slide-left,
 .app-sidebar.pm-nav .slide-right {
     display: none !important;
+}
+
+/* Mobile/tablet: the horizontal nav is a closeable dropdown anchored right
+   below the header, not an always-open bar. The vendor stylesheet leaves
+   .app-sidebar as a `position: fixed; top: 0; width: 15rem` vertical-sidebar
+   rail at these widths, which overlaps the header instead of sitting under
+   it - override all of that explicitly. The hamburger toggles .pm-nav-open. */
+@media (max-width: 991.98px) {
+    .app-sidebar.pm-nav {
+        display: none;
+        position: fixed !important;
+        top: 4.25rem !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+    }
+
+    .app-sidebar.pm-nav.pm-nav-open {
+        display: block;
+        max-height: calc(100vh - 4.25rem);
+        overflow-y: auto;
+    }
+
+    [data-nav-layout="horizontal"] .pm-nav .main-menu {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    [data-nav-layout="horizontal"] .pm-nav .slide {
+        width: 100%;
+    }
 }
 
 [data-nav-layout="horizontal"] .pm-nav .main-menu {
@@ -489,6 +526,42 @@
     .pm-header-user {
         padding: 0.15rem !important;
         background: transparent !important;
+    }
+}
+
+/* Very narrow phones: the full icon cluster + logo genuinely don't fit on
+   one row at ~320-420px. .header-content-left has min-width:0 so it can
+   shrink, but nothing protected the logo from shrinking WITH it - its <img>
+   has max-width:100%, which resolved against a collapsing container and
+   rendered the logo at 0 width. Protect the logo, shrink it and the icon
+   buttons, and drop the least essential icon (fullscreen) to make room. */
+@media (max-width: 420px) {
+    .app-header.pm-header .main-header-container {
+        padding-inline: 0.75rem;
+    }
+
+    .pm-header .horizontal-logo,
+    .pm-header .header-logo {
+        flex-shrink: 0;
+    }
+
+    .pm-header .header-logo img {
+        max-height: 32px !important;
+        height: 32px !important;
+    }
+
+    .pm-header .header-content-right {
+        gap: 0.3rem;
+    }
+
+    .pm-header .sidemenu-toggle.header-link,
+    .pm-header .header-content-right .header-link:not(.pm-header-user) {
+        width: 2.15rem !important;
+        height: 2.15rem !important;
+    }
+
+    .pm-header .header-fullscreen {
+        display: none !important;
     }
 }
 
