@@ -1,6 +1,7 @@
 <script setup>
 import { Form, Link } from '@inertiajs/vue3'
 import AuthLayout from '@/Layouts/AuthLayout.vue'
+import PasswordInput from '@/Components/ui/PasswordInput.vue'
 
 defineProps({
     title: { type: String, default: 'Create account' },
@@ -30,19 +31,13 @@ defineProps({
 
             <div class="pm-auth__field">
                 <label class="ti-form-label" for="password">Password</label>
-                <div class="pm-auth__control">
-                    <i class="ri-lock-2-line" aria-hidden="true"></i>
-                    <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" required />
-                </div>
+                <PasswordInput id="password" name="password" autocomplete="new-password" required />
                 <p v-if="errors.password" class="pm-auth__error">{{ errors.password }}</p>
             </div>
 
             <div class="pm-auth__field">
                 <label class="ti-form-label" for="password_confirmation">Confirm password</label>
-                <div class="pm-auth__control">
-                    <i class="ri-lock-password-line" aria-hidden="true"></i>
-                    <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password" required />
-                </div>
+                <PasswordInput id="password_confirmation" name="password_confirmation" icon="ri-lock-password-line" autocomplete="new-password" required />
                 <p v-if="errors.password_confirmation" class="pm-auth__error">{{ errors.password_confirmation }}</p>
             </div>
 

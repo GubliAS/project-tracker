@@ -3,6 +3,7 @@ import { Form, Link, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import PasswordInput from '@/Components/ui/PasswordInput.vue'
 
 defineProps({
     title: { type: String, default: 'Account' },
@@ -109,19 +110,13 @@ const initials = computed(() => {
                                 <div class="pm-profile__row">
                                     <div class="pm-auth__field">
                                         <label class="ti-form-label" for="current_password">Current password</label>
-                                        <div class="pm-auth__control">
-                                            <i class="ri-lock-2-line" aria-hidden="true"></i>
-                                            <input id="current_password" name="current_password" type="password" class="form-control" autocomplete="current-password" required>
-                                        </div>
+                                        <PasswordInput id="current_password" name="current_password" autocomplete="current-password" required />
                                         <p v-if="errors.current_password" class="pm-auth__error">{{ errors.current_password }}</p>
                                     </div>
 
                                     <div class="pm-auth__field">
                                         <label class="ti-form-label" for="password">New password</label>
-                                        <div class="pm-auth__control">
-                                            <i class="ri-key-2-line" aria-hidden="true"></i>
-                                            <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" required>
-                                        </div>
+                                        <PasswordInput id="password" name="password" icon="ri-key-2-line" autocomplete="new-password" required />
                                         <p v-if="errors.password" class="pm-auth__error">{{ errors.password }}</p>
                                     </div>
                                 </div>
@@ -129,10 +124,7 @@ const initials = computed(() => {
                                 <div class="pm-profile__row">
                                     <div class="pm-auth__field">
                                         <label class="ti-form-label" for="password_confirmation">Confirm password</label>
-                                        <div class="pm-auth__control">
-                                            <i class="ri-checkbox-circle-line" aria-hidden="true"></i>
-                                            <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password" required>
-                                        </div>
+                                        <PasswordInput id="password_confirmation" name="password_confirmation" icon="ri-checkbox-circle-line" autocomplete="new-password" required />
                                     </div>
                                 </div>
 

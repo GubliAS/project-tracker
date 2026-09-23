@@ -36,7 +36,6 @@ class WorkspaceMemberController extends Controller
             ]),
             'invites' => $this->pendingInvites($workspace),
             'roles' => $this->roleOptions(),
-            'app_url' => $this->appUrl(),
         ]);
     }
 
@@ -51,7 +50,6 @@ class WorkspaceMemberController extends Controller
             'workspace' => $workspace,
             'invites' => $this->pendingInvites($workspace),
             'roles' => $this->roleOptions(),
-            'app_url' => $this->appUrl(),
         ]);
     }
 
@@ -121,7 +119,7 @@ class WorkspaceMemberController extends Controller
         $invitee = User::query()->where('email', $email)->firstOrFail();
         $invitee->notify(new WorkspaceInvitation($invitation));
 
-        return back()->with('message', $this->inviteShareMessage($email, $invitation, 'sent'));
+        return back()->with('message', $this->inviteShareMessage($email, 'sent'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -202,7 +200,7 @@ class WorkspaceMemberController extends Controller
             'email' => $invitation->email,
         ]);
 
-        return back()->with('message', $this->inviteShareMessage($invitation->email, $invitation, 'resent'));
+        return back()->with('message', $this->inviteShareMessage($invitation->email, 'resent'));
     }
 
     /**
@@ -240,17 +238,9 @@ class WorkspaceMemberController extends Controller
             ->all();
     }
 
-    private function appUrl(): string
+    private function inviteShareMessage(string $email, string $verb): string
     {
-        return rtrim((string) config('app.url'), '/');
-    }
-
-    private function inviteShareMessage(string $email, Invitation $invitation, string $verb): string
-    {
-        $path = $invitation->invitePath();
-        $appUrl = $this->appUrl();
-
-        return 'Invitation '.$verb.' to '.$email.'. Share '.$path.'. The email link uses APP_URL ('.$appUrl.'). If that host is localhost, the partner must open the path on their own running app (e.g. http://THEIR-IP:8000'.$path.') or use a shared APP_URL.';
+        return 'Invitation '.$verb.' to '.$email.'.';
     }
 
     /**

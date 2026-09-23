@@ -8,11 +8,9 @@ defineProps({
   title: { type: String, default: 'Pending Invites' },
   workspace: { type: Object, default: null },
   invites: { type: Array, default: () => [] },
-  app_url: { type: String, default: '' },
 })
 
 const copiedId = ref(null)
-const invitePathHint = '/invitations/{token}'
 
 function roleLabel(role) {
   const labels = {
@@ -81,17 +79,13 @@ function revoke(invite) {
           <div v-if="!invites.length" class="p-12 text-center text-textmuted">
             No pending invitations. Invite someone from Members.
           </div>
-          <p v-else class="text-textmuted text-sm px-4 pt-4 mb-0">
-            Share <code>{{ invitePathHint }}</code> on the environment that has this code. Email buttons use APP_URL (currently <code>{{ app_url }}</code>). If that is localhost, the partner should open the path on their own app (e.g. <code>http://THEIR-IP:8000/invitations/TOKEN</code>).
-          </p>
-          <div v-if="invites.length" class="table-responsive">
+          <div v-else class="table-responsive">
             <table class="table table-hover whitespace-nowrap mb-0 pm-admin-table">
               <thead>
                 <tr>
                   <th>Invite</th>
                   <th>Role</th>
                   <th>Expires</th>
-                  <th>Path</th>
                   <th></th>
                 </tr>
               </thead>
@@ -106,16 +100,10 @@ function revoke(invite) {
                   </td>
                   <td class="text-textmuted text-sm">{{ formatDate(invite.expires_at) }}</td>
                   <td>
-                    <div class="pm-copy-input min-w-[14rem]">
-                      <input type="text" class="ti-form-control" readonly :value="invite.invite_path">
-                      <button type="button" class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="copyLink(invite.invite_path, invite.id)">
-                        {{ copiedId === invite.id ? 'Copied' : 'Copy' }}
+                    <div class="flex gap-1 justify-end">
+                      <button type="button" class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="copyLink(invite.invite_url, invite.id)">
+                        {{ copiedId === invite.id ? 'Copied' : 'Copy link' }}
                       </button>
-                    </div>
-                    <div class="text-textmuted text-xs mt-1">Email button: {{ invite.invite_url }}</div>
-                  </td>
-                  <td>
-                    <div class="flex gap-1">
                       <button type="button" class="ti-btn ti-btn-soft-info ti-btn-sm" @click="resend(invite)">Resend</button>
                       <button type="button" class="ti-btn ti-btn-soft-danger ti-btn-sm" @click="revoke(invite)">Revoke</button>
                     </div>

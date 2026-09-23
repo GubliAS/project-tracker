@@ -2084,6 +2084,52 @@ html.dark body {
     padding-inline-start: 2.45rem !important;
 }
 
+.pm-password-input .form-control {
+    padding-inline-end: 2.65rem !important;
+}
+
+.pm-password-input__toggle {
+    position: absolute;
+    inset-inline-end: 0.45rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #5c67f7;
+    border-radius: 1rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.pm-password-input__toggle i {
+    position: static;
+    inset: auto;
+    transform: none;
+    pointer-events: none;
+    color: inherit;
+    font-size: 1.1rem;
+}
+
+.pm-password-input__toggle:hover,
+.pm-password-input__toggle:focus-visible {
+    background: rgb(92 103 247 / 0.12);
+    outline: none;
+}
+
+.dark .pm-password-input__toggle {
+    color: #5c67f7;
+}
+
+.dark .pm-password-input__toggle:hover,
+.dark .pm-password-input__toggle:focus-visible {
+    background: rgb(92 103 247 / 0.22);
+}
+
 .pm-auth__row {
     display: flex;
     align-items: center;

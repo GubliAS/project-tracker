@@ -1,6 +1,7 @@
 <script setup>
 import { Form, Link } from '@inertiajs/vue3'
 import AuthLayout from '@/Layouts/AuthLayout.vue'
+import PasswordInput from '@/Components/ui/PasswordInput.vue'
 
 defineProps({
     title: { type: String, default: 'Sign in' },
@@ -24,10 +25,7 @@ defineProps({
 
             <div class="pm-auth__field">
                 <label class="ti-form-label" for="password">Password</label>
-                <div class="pm-auth__control">
-                    <i class="ri-lock-2-line" aria-hidden="true"></i>
-                    <input id="password" name="password" type="password" class="form-control" autocomplete="current-password" required />
-                </div>
+                <PasswordInput id="password" name="password" autocomplete="current-password" required />
                 <p v-if="errors.password" class="pm-auth__error">{{ errors.password }}</p>
             </div>
 

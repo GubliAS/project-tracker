@@ -48,16 +48,15 @@ class WorkspaceInviteTest extends TestCase
             'role' => WorkspaceRole::Member->value,
         ]);
 
-        $response->assertSessionHas('message', function (string $message) use ($path): bool {
-            return str_contains($message, $path)
-                && str_contains($message, 'APP_URL');
-        });
+        $response->assertSessionHas('message', 'Invitation sent to new.member@example.com.');
 
         Notification::assertSentTo($invitee, WorkspaceInvitation::class, function (WorkspaceInvitation $notification) use ($invitee, $path): bool {
             $mail = $notification->toMail($invitee);
 
+            $this->assertSame('Set your password', $mail->actionText);
             $this->assertStringContainsString($path, $mail->actionUrl);
             $this->assertStringNotContainsString('signature=', $mail->actionUrl);
+            $this->assertStringNotContainsString('APP_URL', implode("\n", [...$mail->introLines, ...$mail->outroLines]));
 
             return true;
         });

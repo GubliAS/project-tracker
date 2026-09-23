@@ -11,14 +11,12 @@ defineProps({
   members: { type: Array, default: () => [] },
   invites: { type: Array, default: () => [] },
   roles: { type: Array, default: () => [] },
-  app_url: { type: String, default: '' },
 })
 
 const page = usePage()
 const abilities = computed(() => page.props.abilities || {})
 const currentUserId = computed(() => page.props.auth?.user?.id)
 const copiedId = ref(null)
-const invitePathHint = '/invitations/{token}'
 
 function initials(name) {
   const parts = String(name || '?').split(' ').filter(Boolean).slice(0, 2)
@@ -114,19 +112,15 @@ function copyLink(url, id) {
 
       <div v-if="abilities.manage_members && invites.length" class="box mb-4">
         <div class="box-header">
-          <h6 class="box-title mb-0">Shareable invite paths</h6>
+          <h6 class="box-title mb-0">Pending invites</h6>
         </div>
         <div class="box-body">
-          <p class="text-textmuted text-sm mb-3">
-            Share <code>{{ invitePathHint }}</code>. The partner must open it on the environment that has this code (their own <code>php artisan serve</code>, or a shared APP_URL).
-            Email buttons use APP_URL (currently <code>{{ app_url }}</code>). If that host is localhost, they will 404 on their machine — copy the path onto their host, e.g. <code>http://THEIR-IP:8000/invitations/TOKEN</code>.
-          </p>
           <div class="table-responsive">
             <table class="table table-hover whitespace-nowrap mb-0 pm-admin-table">
               <thead>
                 <tr>
                   <th>Invite</th>
-                  <th>Path</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -135,14 +129,10 @@ function copyLink(url, id) {
                     <div class="font-medium">{{ invite.name || invite.email }}</div>
                     <div class="text-textmuted text-xs">{{ invite.email }}</div>
                   </td>
-                  <td>
-                    <div class="pm-copy-input">
-                      <input type="text" class="ti-form-control" readonly :value="invite.invite_path">
-                      <button type="button" class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="copyLink(invite.invite_path, invite.id)">
-                        {{ copiedId === invite.id ? 'Copied' : 'Copy' }}
-                      </button>
-                    </div>
-                    <div class="text-textmuted text-xs mt-1">Email button: {{ invite.invite_url }}</div>
+                  <td class="text-end">
+                    <button type="button" class="ti-btn ti-btn-soft-primary ti-btn-sm" @click="copyLink(invite.invite_url, invite.id)">
+                      {{ copiedId === invite.id ? 'Copied' : 'Copy link' }}
+                    </button>
                   </td>
                 </tr>
               </tbody>
