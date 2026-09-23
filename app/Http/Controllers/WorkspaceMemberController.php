@@ -51,6 +51,7 @@ class WorkspaceMemberController extends Controller
             'workspace' => $workspace,
             'invites' => $this->pendingInvites($workspace),
             'roles' => $this->roleOptions(),
+            'app_url' => $this->appUrl(),
         ]);
     }
 
@@ -120,7 +121,7 @@ class WorkspaceMemberController extends Controller
         $invitee = User::query()->where('email', $email)->firstOrFail();
         $invitee->notify(new WorkspaceInvitation($invitation));
 
-        return back()->with('message', 'Invitation sent to '.$email.'.');
+        return back()->with('message', $this->inviteShareMessage($email, $invitation, 'sent'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -201,11 +202,11 @@ class WorkspaceMemberController extends Controller
             'email' => $invitation->email,
         ]);
 
-        return back()->with('message', 'Invitation resent to '.$invitation->email.'.');
+        return back()->with('message', $this->inviteShareMessage($invitation->email, $invitation, 'resent'));
     }
 
     /**
-     * @return list<array{id: int, email: string, name: ?string, role: string, token: string, invite_url: string, expires_at: mixed, must_set_password: bool}>
+     * @return list<array{id: int, email: string, name: ?string, role: string, token: string, invite_path: string, invite_url: string, expires_at: mixed, must_set_password: bool}>
      */
     private function pendingInvites(Workspace $workspace): array
     {
@@ -231,11 +232,25 @@ class WorkspaceMemberController extends Controller
                 'name' => $invitees->get($invite->email)?->name,
                 'role' => $invite->role?->value ?? $invite->role,
                 'token' => $invite->token,
-                'invite_url' => route('invitations.show', $invite),
+                'invite_path' => $invite->invitePath(),
+                'invite_url' => $invite->inviteUrl(),
                 'expires_at' => $invite->expires_at,
                 'must_set_password' => (bool) $invitees->get($invite->email)?->must_set_password,
             ])
             ->all();
+    }
+
+    private function appUrl(): string
+    {
+        return rtrim((string) config('app.url'), '/');
+    }
+
+    private function inviteShareMessage(string $email, Invitation $invitation, string $verb): string
+    {
+        $path = $invitation->invitePath();
+        $appUrl = $this->appUrl();
+
+        return 'Invitation '.$verb.' to '.$email.'. Share '.$path.'. The email link uses APP_URL ('.$appUrl.'). If that host is localhost, the partner must open the path on their own running app (e.g. http://THEIR-IP:8000'.$path.') or use a shared APP_URL.';
     }
 
     /**

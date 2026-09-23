@@ -11,6 +11,7 @@ defineProps({
   members: { type: Array, default: () => [] },
   invites: { type: Array, default: () => [] },
   roles: { type: Array, default: () => [] },
+  app_url: { type: String, default: '' },
 })
 
 const page = usePage()
