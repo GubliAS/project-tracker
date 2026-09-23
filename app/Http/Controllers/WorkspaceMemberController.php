@@ -36,6 +36,7 @@ class WorkspaceMemberController extends Controller
             ]),
             'invites' => $this->pendingInvites($workspace),
             'roles' => $this->roleOptions(),
+            'app_url' => $this->appUrl(),
         ]);
     }
 

@@ -13,6 +13,7 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $projects = $this->workspace()->projects()
+            ->with(['tasks:id,project_id,status,weight'])
             ->withCount([
                 'tasks',
                 'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
@@ -68,9 +69,7 @@ class DashboardController extends Controller
      */
     private function runningProject(Project $project): array
     {
-        $progress = $project->tasks_count > 0
-            ? (int) round(($project->completed_tasks_count / $project->tasks_count) * 100)
-            : 0;
+        $progress = $project->progressPercent();
 
         return [
             'id' => $project->id,
@@ -121,9 +120,7 @@ class DashboardController extends Controller
      */
     private function summaryProject(Project $project, int $index): array
     {
-        $progress = $project->tasks_count > 0
-            ? (int) round(($project->completed_tasks_count / $project->tasks_count) * 100)
-            : 0;
+        $progress = $project->progressPercent();
 
         $statusClasses = [
             'planning' => 'bg-warning/10 text-warning',

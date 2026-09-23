@@ -29,9 +29,8 @@ const projects = computed(() => props.projects.map((project) => ({
   dueDate: project.end_date,
   budget: Number(project.budget || 0),
   spent: Number(project.spent || 0),
-  progress: project.tasks_count
-    ? Math.round((project.completed_tasks_count / project.tasks_count) * 100)
-    : 0,
+  progress: project.progress_percent
+    ?? (project.tasks_count ? Math.round((project.completed_tasks_count / project.tasks_count) * 100) : 0),
 })))
 
 const filteredProjects = computed(() => projects.value.filter((project) => {

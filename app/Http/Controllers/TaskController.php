@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
-use App\Models\User;
 use App\Models\Workflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Response;
 
 class TaskController extends Controller
@@ -99,7 +99,7 @@ class TaskController extends Controller
      */
     private function taskPageData(): array
     {
-        $workspaceId = $this->currentWorkspaceId();
+        $members = $this->workspaceMembers();
 
         return [
             'tasks' => $this->workspace()->scopeViaProject(Task::query())
@@ -107,13 +107,8 @@ class TaskController extends Controller
                 ->latest()
                 ->get(),
             'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()
-                ->when($workspaceId, fn ($query) => $query->whereHas(
-                    'workspaces',
-                    fn ($workspaces) => $workspaces->where('workspaces.id', $workspaceId),
-                ), fn ($query) => $query->whereRaw('0 = 1'))
-                ->orderBy('name')
-                ->get(['id', 'name']),
+            'users' => $members,
+            'members' => $members,
         ];
     }
 
@@ -122,15 +117,29 @@ class TaskController extends Controller
      */
     private function taskData(Request $request, bool $partial = false): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'title' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'project_id' => ['sometimes', 'nullable', 'exists:projects,id'],
-            'user_id' => ['sometimes', 'nullable', 'exists:users,id'],
+            'user_id' => [
+                'sometimes',
+                'nullable',
+                Rule::exists('workspace_user', 'user_id')->where(
+                    'workspace_id',
+                    $this->currentWorkspaceId() ?? 0,
+                ),
+            ],
             'status' => [$partial ? 'sometimes' : 'nullable', 'in:todo,in_progress,review,done'],
-            'priority' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high,urgent'],
+            'priority' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high'],
+            'weight' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:8'],
             'due_date' => ['sometimes', 'nullable', 'date'],
         ]);
+
+        if (array_key_exists('weight', $validated) && $validated['weight'] === null) {
+            $validated['weight'] = 1;
+        }
+
+        return $validated;
     }
 
     /**

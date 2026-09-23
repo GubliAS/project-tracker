@@ -15,8 +15,10 @@ use Inertia\Response;
 
 class InvitationController extends Controller
 {
-    public function show(Invitation $invitation): Response|RedirectResponse
+    public function show(string $token): Response|RedirectResponse
     {
+        $invitation = $this->invitationByToken($token);
+
         abort_unless($invitation->isPending(), 403, 'This invitation is no longer valid.');
 
         $user = User::query()->where('email', $invitation->email)->first();
@@ -41,8 +43,10 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function store(Request $request, Invitation $invitation): RedirectResponse
+    public function store(Request $request, string $token): RedirectResponse
     {
+        $invitation = $this->invitationByToken($token);
+
         abort_unless($invitation->isPending(), 403, 'This invitation is no longer valid.');
 
         $user = User::query()->where('email', $invitation->email)->firstOrFail();
@@ -78,5 +82,10 @@ class InvitationController extends Controller
         ]);
 
         return redirect()->route('dashboard')->with('message', 'Welcome to '.$workspace->name.'.');
+    }
+
+    private function invitationByToken(string $token): Invitation
+    {
+        return Invitation::query()->where('token', $token)->firstOrFail();
     }
 }

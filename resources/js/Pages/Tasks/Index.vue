@@ -10,6 +10,7 @@ const props = defineProps({
   tasks: { type: Array, default: () => [] },
   projects: { type: Array, default: () => [] },
   users: { type: Array, default: () => [] },
+  members: { type: Array, default: () => [] },
 })
 
 const search = ref('')
@@ -22,16 +23,26 @@ const form = useForm({
   user_id: '',
   status: 'todo',
   priority: 'medium',
+  weight: 1,
   due_date: '',
 })
 
+const assignees = computed(() => (props.members.length ? props.members : props.users))
 const tasks = computed(() => props.tasks.filter((task) => task.title.toLowerCase().includes(search.value.toLowerCase())))
+
+const priorityClass = (priority) => ({
+  high: 'bg-danger/10 text-danger',
+  medium: 'bg-warning/10 text-warning',
+  low: 'bg-success/10 text-success',
+}[priority] || 'bg-secondary/10 text-secondary')
 
 const openCreate = () => {
   editing.value = null
   form.reset()
   form.status = 'todo'
   form.priority = 'medium'
+  form.weight = 1
+  form.user_id = ''
   showModal.value = true
 }
 
@@ -44,6 +55,7 @@ const openEdit = (task) => {
     user_id: task.user_id || '',
     status: task.status,
     priority: task.priority,
+    weight: task.weight || 1,
     due_date: task.due_date || '',
   })
   showModal.value = true
@@ -88,6 +100,7 @@ const remove = (task) => {
                 <th>Project</th>
                 <th>Assignee</th>
                 <th>Status</th>
+                <th>Priority</th>
                 <th>Due</th>
                 <th>Actions</th>
               </tr>
@@ -98,6 +111,7 @@ const remove = (task) => {
                 <td>{{ task.project?.name || 'Unassigned' }}</td>
                 <td>{{ task.user?.name || 'Unassigned' }}</td>
                 <td><span class="badge bg-primary/10 text-primary">{{ task.status }}</span></td>
+                <td><span class="badge" :class="priorityClass(task.priority)">{{ task.priority }}</span></td>
                 <td>{{ task.due_date || '—' }}</td>
                 <td>
                   <div class="flex gap-1">
@@ -136,9 +150,9 @@ const remove = (task) => {
               </div>
               <div>
                 <label class="ti-form-label text-sm mb-1">Assignee</label>
-                <select v-model="form.user_id" class="ti-form-select">
+                <select v-model="form.user_id" name="user_id" class="ti-form-select">
                   <option value="">Unassigned</option>
-                  <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                  <option v-for="user in assignees" :key="user.id" :value="user.id">{{ user.name }}</option>
                 </select>
               </div>
               <div>
@@ -156,8 +170,11 @@ const remove = (task) => {
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
                 </select>
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">Weight</label>
+                <input v-model.number="form.weight" type="number" min="1" max="8" class="ti-form-control">
               </div>
             </div>
             <div>

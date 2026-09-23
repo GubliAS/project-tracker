@@ -50,6 +50,12 @@ return [
     | the Artisan command line tool. You should set this to the root of
     | the application so that it's available within Artisan commands.
     |
+    | Workspace invite emails use this value for the "Set your password"
+    | button (route invitations.show → /invitations/{token}). If APP_URL
+    | is http://127.0.0.1:8000 or http://localhost, the invitee opens that
+    | host on their own machine. Use a shared host, or have them open
+    | /invitations/{token} on their running app.
+    |
     */
 
     'url' => env('APP_URL', 'http://localhost'),

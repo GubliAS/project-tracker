@@ -27,8 +27,8 @@ use Inertia\Inertia;
 
 require __DIR__.'/auth.php';
 
-Route::get('/invitations/{invitation}', [InvitationController::class, 'show'])->name('invitations.show');
-Route::post('/invitations/{invitation}', [InvitationController::class, 'store'])
+Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+Route::post('/invitations/{token}', [InvitationController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('invitations.store');
 

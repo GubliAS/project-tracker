@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\WorkspaceRole;
 use App\Models\Project;
 use App\Models\QualityCheck;
 use App\Models\Resource;
@@ -48,6 +49,7 @@ class CoreModulesTest extends TestCase
     {
         $project = Project::factory()->create();
         $user = User::factory()->create();
+        $this->workspace?->users()->attach($user->id, ['role' => WorkspaceRole::Member->value]);
 
         $this->from(route('tasks.index'))->post('/tasks', [
             'title' => 'Write API tests',
@@ -62,6 +64,7 @@ class CoreModulesTest extends TestCase
             'title' => 'Write API tests',
             'status' => 'todo',
             'priority' => 'high',
+            'user_id' => $user->id,
         ]);
 
         $task = Task::query()->first();

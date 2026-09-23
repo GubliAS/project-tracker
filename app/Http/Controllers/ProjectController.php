@@ -17,10 +17,20 @@ class ProjectController extends Controller
     public function index(): Response
     {
         return $this->inertiaPage('Projects/Index', 'Projects List', [
-            'projects' => $this->workspace()->projects()->withCount([
-                'tasks',
-                'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
-            ])->latest()->get(),
+            'projects' => $this->workspace()->projects()
+                ->with(['tasks:id,project_id,status,weight'])
+                ->withCount([
+                    'tasks',
+                    'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
+                ])
+                ->latest()
+                ->get()
+                ->map(function (Project $project): Project {
+                    $project->setAttribute('progress_percent', $project->progressPercent());
+                    $project->unsetRelation('tasks');
+
+                    return $project;
+                }),
         ]);
     }
 
@@ -98,8 +108,14 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         $project->load(['tasks.project:id,name', 'tasks.user:id,name', 'documents.user:id,name']);
+        $project->setAttribute('progress_percent', $project->progressPercent());
+        $members = $this->workspaceMembers();
 
-        return $this->inertiaPage('Projects/Show', 'Project Details', ['project' => $project]);
+        return $this->inertiaPage('Projects/Show', 'Project Details', [
+            'project' => $project,
+            'members' => $members,
+            'users' => $members,
+        ]);
     }
 
     public function update(Request $request, Project $project): RedirectResponse

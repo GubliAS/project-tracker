@@ -24,6 +24,7 @@ class TaskFactory extends Factory
             'description' => fake()->paragraph(),
             'status' => 'todo',
             'priority' => 'medium',
+            'weight' => 1,
             'due_date' => fake()->optional()->date(),
         ];
     }

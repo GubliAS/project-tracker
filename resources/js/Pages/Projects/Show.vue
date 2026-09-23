@@ -9,6 +9,8 @@ import { useCurrency } from '@/composables/useCurrency'
 const props = defineProps({
   title: { type: String, default: 'Project Details' },
   project: { type: Object, required: true },
+  members: { type: Array, default: () => [] },
+  users: { type: Array, default: () => [] },
 })
 
 const page = usePage()
@@ -49,7 +51,7 @@ const project = computed(() => {
     endDate: current.end_date,
     budget: Number(current.budget || 0),
     spent: Number(current.spent || 0),
-    progress: tasks.length ? Math.round((done / tasks.length) * 100) : 0,
+    progress: current.progress_percent ?? (tasks.length ? Math.round((done / tasks.length) * 100) : 0),
   }
 })
 
@@ -66,13 +68,17 @@ const uploadForm = useForm({
   project_id: props.project.id,
   return_to_project: true,
 })
+const assignees = computed(() => (props.members.length ? props.members : props.users))
 const showAddTaskModal = ref(false)
 const showEditModal = ref(false)
-const newTask = ref({
+const emptyTask = () => ({
   title: '',
-  assignee: '',
+  user_id: '',
   status: 'todo',
+  priority: 'medium',
+  weight: 1,
 })
+const newTask = ref(emptyTask())
 const editForm = ref({
   name: '',
   description: '',
@@ -112,7 +118,7 @@ const openAddTaskModal = () => {
 
 const closeAddTaskModal = () => {
   showAddTaskModal.value = false
-  newTask.value = { title: '', assignee: '', status: 'todo' }
+  newTask.value = emptyTask()
 }
 
 const openEditModal = () => {
@@ -154,8 +160,10 @@ const saveTask = () => {
   router.post('/tasks', {
     title: newTask.value.title.trim(),
     project_id: props.project.id,
+    user_id: newTask.value.user_id || null,
     status: newTask.value.status,
-    priority: 'medium',
+    priority: newTask.value.priority,
+    weight: newTask.value.weight || 1,
   }, {
     onSuccess: () => {
       closeAddTaskModal()
@@ -310,16 +318,26 @@ const deleteDocument = (document) => {
                         <span class="block text-xs text-textmuted">{{ task.assignee }}</span>
                       </div>
                     </div>
-                    <span
-                      class="badge"
-                      :class="{
-                        'bg-success/10 text-success': task.status === 'done',
-                        'bg-primary/10 text-primary': task.status === 'in_progress',
-                        'bg-warning/10 text-warning': task.status === 'todo' || task.status === 'review',
-                      }"
-                    >
-                      {{ task.label }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="badge"
+                        :class="{
+                          'bg-danger/10 text-danger': task.priority === 'high',
+                          'bg-warning/10 text-warning': task.priority === 'medium',
+                          'bg-success/10 text-success': task.priority === 'low',
+                        }"
+                      >{{ task.priority }}</span>
+                      <span
+                        class="badge"
+                        :class="{
+                          'bg-success/10 text-success': task.status === 'done',
+                          'bg-primary/10 text-primary': task.status === 'in_progress',
+                          'bg-warning/10 text-warning': task.status === 'todo' || task.status === 'review',
+                        }"
+                      >
+                        {{ task.label }}
+                      </span>
+                    </div>
                   </li>
                 </ul>
               </div>
@@ -607,12 +625,33 @@ const deleteDocument = (document) => {
               <input v-model="newTask.title" type="text" class="ti-form-control" placeholder="Enter task title">
             </div>
             <div>
-              <label class="ti-form-label text-sm mb-1">Status</label>
-              <select v-model="newTask.status" class="ti-form-select">
-                <option value="todo">Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="done">Completed</option>
+              <label class="ti-form-label text-sm mb-1">Assignee</label>
+              <select v-model="newTask.user_id" name="user_id" class="ti-form-select">
+                <option value="">Unassigned</option>
+                <option v-for="member in assignees" :key="member.id" :value="member.id">{{ member.name }}</option>
               </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="ti-form-label text-sm mb-1">Status</label>
+                <select v-model="newTask.status" class="ti-form-select">
+                  <option value="todo">Pending</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="done">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">Priority</label>
+                <select v-model="newTask.priority" class="ti-form-select">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">Weight</label>
+                <input v-model.number="newTask.weight" type="number" min="1" max="8" class="ti-form-control">
+              </div>
             </div>
           </div>
           <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light rounded-b-xl">

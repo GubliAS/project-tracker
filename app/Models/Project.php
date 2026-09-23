@@ -122,4 +122,34 @@ class Project extends Model
     {
         return $this->hasMany(Milestone::class);
     }
+
+    public function progressPercent(): int
+    {
+        $tasks = $this->relationLoaded('tasks')
+            ? $this->tasks
+            : $this->tasks()->get(['id', 'status', 'weight']);
+
+        $totalWeight = (int) $tasks->sum(fn (Task $task): int => $this->normalizedTaskWeight($task->weight));
+
+        if ($totalWeight === 0) {
+            return 0;
+        }
+
+        $doneWeight = (int) $tasks
+            ->where('status', 'done')
+            ->sum(fn (Task $task): int => $this->normalizedTaskWeight($task->weight));
+
+        return (int) round(($doneWeight / $totalWeight) * 100);
+    }
+
+    private function normalizedTaskWeight(mixed $weight): int
+    {
+        if ($weight === null || $weight === '') {
+            return 1;
+        }
+
+        $value = (int) $weight;
+
+        return $value > 0 ? $value : 1;
+    }
 }

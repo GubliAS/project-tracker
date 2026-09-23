@@ -34,7 +34,17 @@ const move = (task, status) => {
           <div class="box-body space-y-3">
             <p v-if="!column.tasks.length" class="text-sm text-textmuted">No tasks</p>
             <article v-for="task in column.tasks" :key="task.id" class="rounded border p-3">
-              <p class="mb-1 font-medium">{{ task.title }}</p>
+              <div class="mb-1 flex items-center justify-between gap-2">
+                <p class="mb-0 font-medium">{{ task.title }}</p>
+                <span
+                  class="badge"
+                  :class="{
+                    'bg-danger/10 text-danger': task.priority === 'high',
+                    'bg-warning/10 text-warning': task.priority === 'medium',
+                    'bg-success/10 text-success': task.priority === 'low',
+                  }"
+                >{{ task.priority }}</span>
+              </div>
               <p class="mb-3 text-xs text-textmuted">{{ task.project?.name || 'No project' }} · {{ task.user?.name || 'Unassigned' }}</p>
               <div class="flex flex-wrap gap-1">
                 <button

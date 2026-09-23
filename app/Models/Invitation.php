@@ -64,6 +64,16 @@ class Invitation extends Model
         return 'token';
     }
 
+    public function invitePath(): string
+    {
+        return '/invitations/'.$this->token;
+    }
+
+    public function inviteUrl(): string
+    {
+        return route('invitations.show', $this->token);
+    }
+
     /**
      * @param  Builder<Invitation>  $query
      * @return Builder<Invitation>
