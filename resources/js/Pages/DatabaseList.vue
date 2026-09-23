@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { router, useForm } from '@inertiajs/vue3'
+import { router, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 
@@ -13,11 +13,13 @@ const props = defineProps({
   form: { type: Object, default: null },
 })
 
+const page = usePage()
+const abilities = computed(() => page.props.abilities || {})
 const showModal = ref(false)
 const editing = ref(null)
-const canCreate = computed(() => Boolean(props.form?.storeUrl))
-const canEdit = computed(() => Boolean(props.form?.updateUrl))
-const canDelete = computed(() => Boolean(props.form?.destroyUrl))
+const canCreate = computed(() => Boolean(props.form?.storeUrl) && !abilities.value.is_viewer)
+const canEdit = computed(() => Boolean(props.form?.updateUrl) && !abilities.value.is_viewer)
+const canDelete = computed(() => Boolean(props.form?.destroyUrl) && abilities.value.write_ops)
 const isDocumentList = computed(() => props.form?.storeUrl === '/reports/documents')
 
 const emptyValues = () => Object.fromEntries((props.form?.fields || []).map((field) => [field.name, field.type === 'file' ? null : (field.options?.[0] || '')]))

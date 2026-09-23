@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Milestones' },
@@ -81,6 +82,8 @@ const remove = (milestone) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Milestones" subtitle="Mark the dates that tell you the work is landing." pill="Milestone" />
 
       <div class="box">
         <div class="box-body">

@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\Currency;
 use App\Models\Project;
+use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,6 +18,7 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
+            'workspace_id' => session('current_workspace_id') ?: Workspace::factory(),
             'name' => fake()->unique()->words(3, true).' Project',
             'description' => fake()->sentence(),
             'status' => 'planning',
@@ -27,6 +30,7 @@ class ProjectFactory extends Factory
             'end_date' => now()->addMonths(2)->toDateString(),
             'budget' => fake()->numberBetween(15000, 120000),
             'spent' => fake()->numberBetween(0, 14000),
+            'currency' => Currency::Usd,
             'settings' => [],
         ];
     }

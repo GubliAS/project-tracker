@@ -12,7 +12,7 @@ class ChangelogController extends Controller
     public function index(): Response
     {
         return $this->inertiaPage('DatabaseList', 'Change Log', [
-            'items' => Changelog::query()->orderByDesc('release_date')->latest()->get(),
+            'items' => $this->workspace()->scopeDirect(Changelog::query())->orderByDesc('release_date')->latest()->get(),
             'fields' => [
                 ['label' => 'Version', 'path' => 'version'],
                 ['label' => 'Title', 'path' => 'title'],
@@ -37,13 +37,20 @@ class ChangelogController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Changelog::query()->create($this->validated($request));
+        $this->authorizer()->authorizeWriteOps();
+        abort_unless($this->currentWorkspaceId(), 403);
+        Changelog::query()->create([
+            'workspace_id' => $this->currentWorkspaceId(),
+            ...$this->validated($request),
+        ]);
 
         return redirect()->route('quality.changelog')->with('message', 'Change record created successfully.');
     }
 
     public function update(Request $request, Changelog $changelog): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($changelog);
+        $this->authorizer()->authorizeWriteOps();
         $changelog->update($this->validated($request));
 
         return redirect()->route('quality.changelog')->with('message', 'Change record updated successfully.');
@@ -51,6 +58,8 @@ class ChangelogController extends Controller
 
     public function destroy(Changelog $changelog): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($changelog);
+        $this->authorizer()->authorizeWriteOps();
         $changelog->delete();
 
         return redirect()->route('quality.changelog')->with('message', 'Change record deleted successfully.');

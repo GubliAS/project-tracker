@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'DoR / DoD Framework' },
@@ -51,6 +52,8 @@ const remove = (item) => {
   <AppLayout>
     <div class="pm-dash">
       <PageHeader title="DoR / DoD Framework" subtitle="Definition of Ready and Definition of Done checklists" />
+
+      <CreateHero title="DoR / DoD Framework" subtitle="Write the criteria that make a story ready or done." pill="Definition" />
 
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 xl:col-span-6">

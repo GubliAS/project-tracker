@@ -78,10 +78,11 @@ class SupplementalModulesTest extends TestCase
         Storage::fake('public');
         $project = Project::factory()->create();
 
-        $this->post('/reports/documents', ['file' => UploadedFile::fake()->create('plan.pdf', 120, 'application/pdf'), 'category' => 'planning', 'project_id' => $project->id])
+        $this->post('/reports/documents', ['file' => UploadedFile::fake()->createWithContent('plan.pdf', "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF"), 'category' => 'planning', 'project_id' => $project->id])
             ->assertRedirect(route('reports.documents.index'));
 
         $document = Document::query()->firstOrFail();
+        $this->assertSame($project->id, $document->project_id);
         Storage::disk('public')->assertExists($document->file_path);
         $this->get("/reports/documents/{$document->id}/preview")->assertOk();
         $this->get("/reports/documents/{$document->id}/download")->assertOk();

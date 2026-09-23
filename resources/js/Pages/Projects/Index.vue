@@ -1,14 +1,17 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import { useCurrency } from '@/composables/useCurrency'
 
 const props = defineProps({
   title: { type: String, default: 'Projects List' },
   projects: { type: Array, default: () => [] },
 })
 
+const page = usePage()
+const abilities = computed(() => page.props.abilities || {})
 const searchQuery = ref('')
 const statusFilter = ref('all')
 
@@ -72,20 +75,14 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(amount || 0)
-}
+const { formatCurrency } = useCurrency()
 </script>
 
 <template>
   <AppLayout :title="title">
     <div class="pm-dash">
       <PageHeader :title="title" subtitle="Manage and track all your projects">
-        <template #actions>
+        <template v-if="abilities.write_projects" #actions>
           <Link href="/projects/create" class="ti-btn ti-btn-primary btn-wave">
             <i class="ri-add-line me-1"></i> New Project
           </Link>
@@ -177,8 +174,8 @@ const formatCurrency = (amount) => {
                   </td>
                   <td>
                     <div>
-                      <span class="font-medium">{{ formatCurrency(project.spent) }}</span>
-                      <span class="text-textmuted text-xs"> / {{ formatCurrency(project.budget) }}</span>
+                      <span class="font-medium">{{ formatCurrency(project.spent, { currency: project.currency }) }}</span>
+                      <span class="text-textmuted text-xs"> / {{ formatCurrency(project.budget, { currency: project.currency }) }}</span>
                     </div>
                   </td>
                   <td>{{ formatDate(project.dueDate) }}</td>

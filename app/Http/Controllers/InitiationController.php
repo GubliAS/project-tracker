@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kickoff;
-use App\Models\Project;
 use App\Models\Stakeholder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,14 +18,16 @@ class InitiationController extends Controller
     public function kickoff(): Response
     {
         return $this->inertiaPage('Initiation/Kickoff', 'Project Kick-Off', [
-            'kickoffs' => Kickoff::query()->with('project:id,name')->latest('scheduled_on')->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'kickoffs' => $this->workspace()->scopeViaProject(Kickoff::query())->with('project:id,name')->latest('scheduled_on')->latest()->get(),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function storeKickoff(Request $request): RedirectResponse
     {
+        $this->authorizer()->authorizeWriteOps();
         $data = $this->kickoffData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
         $data['objectives'] ??= [
             ['text' => 'Define project scope and deliverables', 'completed' => false],
             ['text' => 'Identify key stakeholders and roles', 'completed' => false],
@@ -41,6 +42,8 @@ class InitiationController extends Controller
 
     public function updateKickoff(Request $request, Kickoff $kickoff): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($kickoff);
+        $this->authorizer()->authorizeWriteOps();
         $kickoff->update($this->kickoffData($request, true));
 
         return redirect()->route('initiation.kickoff')->with('message', 'Kick-off updated successfully.');
@@ -48,6 +51,8 @@ class InitiationController extends Controller
 
     public function destroyKickoff(Kickoff $kickoff): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($kickoff);
+        $this->authorizer()->authorizeWriteOps();
         $kickoff->delete();
 
         return redirect()->route('initiation.kickoff')->with('message', 'Kick-off deleted successfully.');
@@ -56,20 +61,25 @@ class InitiationController extends Controller
     public function stakeholders(): Response
     {
         return $this->inertiaPage('Initiation/Stakeholders', 'Stakeholders', [
-            'stakeholders' => Stakeholder::query()->with('project:id,name')->latest()->get(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'stakeholders' => $this->workspace()->scopeViaProject(Stakeholder::query())->with('project:id,name')->latest()->get(),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function storeStakeholder(Request $request): RedirectResponse
     {
-        Stakeholder::query()->create($this->stakeholderData($request));
+        $this->authorizer()->authorizeWriteOps();
+        $data = $this->stakeholderData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        Stakeholder::query()->create($data);
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder added successfully.');
     }
 
     public function updateStakeholder(Request $request, Stakeholder $stakeholder): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($stakeholder);
+        $this->authorizer()->authorizeWriteOps();
         $stakeholder->update($this->stakeholderData($request, true));
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder updated successfully.');
@@ -77,6 +87,8 @@ class InitiationController extends Controller
 
     public function destroyStakeholder(Stakeholder $stakeholder): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($stakeholder);
+        $this->authorizer()->authorizeWriteOps();
         $stakeholder->delete();
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder deleted successfully.');

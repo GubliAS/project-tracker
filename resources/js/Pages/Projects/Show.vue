@@ -1,13 +1,25 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CurrencyPrefix from '@/Components/ui/CurrencyPrefix.vue'
+import { useCurrency } from '@/composables/useCurrency'
 
 const props = defineProps({
   title: { type: String, default: 'Project Details' },
   project: { type: Object, required: true },
 })
+
+const page = usePage()
+const abilities = computed(() => page.props.abilities || {})
+const canUploadDocuments = computed(() => Boolean(abilities.value.write_member))
+const canDeleteDocuments = computed(() => Boolean(abilities.value.write_ops))
+const documents = computed(() => props.project.documents || [])
+const tabFromUrl = typeof window !== 'undefined'
+  ? new URL(window.location.href).searchParams.get('tab')
+  : null
+const isDragging = ref(false)
 
 const statusLabels = {
   planning: 'Planning',
@@ -47,7 +59,13 @@ const tasks = computed(() => (props.project.tasks || []).map((task) => ({
   label: taskStatusLabels[task.status] || task.status,
 })))
 
-const activeTab = ref('overview')
+const activeTab = ref(tabFromUrl === 'files' ? 'files' : 'overview')
+const uploadForm = useForm({
+  file: null,
+  category: 'other',
+  project_id: props.project.id,
+  return_to_project: true,
+})
 const showAddTaskModal = ref(false)
 const showEditModal = ref(false)
 const newTask = ref({
@@ -66,6 +84,7 @@ const editForm = ref({
   end_date: '',
   budget: 0,
   spent: 0,
+  currency: '',
 })
 
 const formatDate = (dateStr) => {
@@ -80,13 +99,7 @@ const formatDate = (dateStr) => {
   })
 }
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(amount || 0)
-}
+const { formatCurrency, currencies } = useCurrency(computed(() => props.project.currency))
 
 const navigateToStakeholders = () => {
   router.visit(`/initiation/stakeholders?projectId=${props.project.id}`)
@@ -114,6 +127,7 @@ const openEditModal = () => {
     end_date: props.project.end_date || '',
     budget: props.project.budget || 0,
     spent: props.project.spent || 0,
+    currency: props.project.currency || '',
   }
   showEditModal.value = true
 }
@@ -146,6 +160,55 @@ const saveTask = () => {
     onSuccess: () => {
       closeAddTaskModal()
       router.visit(`/projects/${props.project.id}`)
+    },
+  })
+}
+
+const formatBytes = (bytes) => {
+  if (!bytes) {
+    return '—'
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const assignUploadFile = (fileList) => {
+  uploadForm.file = fileList?.[0] || null
+}
+
+const submitUpload = () => {
+  if (!uploadForm.file) {
+    return
+  }
+
+  uploadForm.post('/reports/documents', {
+    forceFormData: true,
+    preserveScroll: true,
+    onSuccess: () => {
+      uploadForm.reset('file')
+      activeTab.value = 'files'
+    },
+  })
+}
+
+const deleteDocument = (document) => {
+  if (!confirm(`Delete “${document.name}”?`)) {
+    return
+  }
+
+  router.delete(`/reports/documents/${document.id}`, {
+    data: { return_to_project: true },
+    preserveScroll: true,
+    onSuccess: () => {
+      activeTab.value = 'files'
     },
   })
 }
@@ -261,9 +324,78 @@ const saveTask = () => {
                 </ul>
               </div>
 
-              <div v-if="activeTab === 'files'" class="text-center py-8 text-textmuted">
-                <i class="ri-folder-open-line text-4xl mb-2"></i>
-                <p>No files uploaded yet</p>
+              <div v-if="activeTab === 'files'" class="space-y-5">
+                <form v-if="canUploadDocuments" class="space-y-3" @submit.prevent="submitUpload">
+                  <div class="grid grid-cols-12 gap-3">
+                    <div class="col-span-12 md:col-span-4">
+                      <label class="ti-form-label">Category</label>
+                      <select v-model="uploadForm.category" class="ti-form-select">
+                        <option value="planning">Planning</option>
+                        <option value="design">Design</option>
+                        <option value="technical">Technical</option>
+                        <option value="financial">Financial</option>
+                        <option value="quality">Quality</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div class="col-span-12 md:col-span-8">
+                      <label class="ti-form-label">Upload a document</label>
+                      <label
+                        class="pm-project-form__drop"
+                        :class="{ 'is-dragover': isDragging }"
+                        @dragover.prevent="isDragging = true"
+                        @dragleave.prevent="isDragging = false"
+                        @drop.prevent="isDragging = false; assignUploadFile($event.dataTransfer.files)"
+                      >
+                        <input
+                          type="file"
+                          class="pm-project-form__drop-input"
+                          @change="assignUploadFile($event.target.files)"
+                        >
+                        <i class="ri-upload-cloud-2-line" aria-hidden="true"></i>
+                        <p>{{ uploadForm.file ? uploadForm.file.name : 'Drag & drop a file here or click to browse' }}</p>
+                        <span class="pm-project-form__drop-hint">PDF, Office, images, or zip — up to 20 MB</span>
+                      </label>
+                      <p v-if="uploadForm.errors.file" class="pm-project-form__error">{{ uploadForm.errors.file }}</p>
+                    </div>
+                  </div>
+                  <button type="submit" class="ti-btn ti-btn-primary" :disabled="uploadForm.processing || !uploadForm.file">
+                    <i class="ri-upload-2-line me-1"></i>
+                    {{ uploadForm.processing ? 'Uploading…' : 'Upload document' }}
+                  </button>
+                </form>
+
+                <div v-if="!documents.length" class="text-center py-8 text-textmuted">
+                  <i class="ri-folder-open-line text-4xl mb-2"></i>
+                  <p>No files uploaded yet</p>
+                </div>
+                <ul v-else class="space-y-3">
+                  <li v-for="document in documents" :key="document.id" class="flex items-center justify-between gap-3 p-3 bg-light rounded-lg">
+                    <div>
+                      <p class="font-medium">{{ document.name }}</p>
+                      <p class="text-xs text-textmuted">
+                        {{ document.category }} · {{ formatBytes(document.size) }}
+                        <span v-if="document.user?.name"> · {{ document.user.name }}</span>
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <a class="ti-btn ti-btn-soft-primary ti-btn-icon ti-btn-sm" :href="`/reports/documents/${document.id}/preview`" target="_blank" rel="noreferrer">
+                        <i class="ri-eye-line"></i>
+                      </a>
+                      <a class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" :href="`/reports/documents/${document.id}/download`">
+                        <i class="ri-download-line"></i>
+                      </a>
+                      <button
+                        v-if="canDeleteDocuments"
+                        type="button"
+                        class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm"
+                        @click="deleteDocument(document)"
+                      >
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
+                    </div>
+                  </li>
+                </ul>
               </div>
 
               <div v-if="activeTab === 'activity'" class="text-center py-8 text-textmuted">
@@ -431,12 +563,26 @@ const saveTask = () => {
                 <input v-model="editForm.end_date" type="date" class="ti-form-control">
               </div>
               <div>
+                <label class="ti-form-label text-sm mb-1">Currency</label>
+                <select v-model="editForm.currency" class="ti-form-select">
+                  <option v-for="option in currencies" :key="option.code" :value="option.code">
+                    {{ option.symbol }} — {{ option.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
                 <label class="ti-form-label text-sm mb-1">Budget</label>
-                <input v-model="editForm.budget" type="number" min="0" class="ti-form-control">
+                <div class="input-group">
+                  <CurrencyPrefix :code="editForm.currency || project.currency" />
+                  <input v-model="editForm.budget" type="number" min="0" class="ti-form-control">
+                </div>
               </div>
               <div>
                 <label class="ti-form-label text-sm mb-1">Spent</label>
-                <input v-model="editForm.spent" type="number" min="0" class="ti-form-control">
+                <div class="input-group">
+                  <CurrencyPrefix :code="editForm.currency || project.currency" />
+                  <input v-model="editForm.spent" type="number" min="0" class="ti-form-control">
+                </div>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: String,
@@ -73,6 +74,7 @@ const remove = (task) => {
           </button>
         </template>
       </PageHeader>
+      <CreateHero :title="title" subtitle="Add a task or refine one already in the tracker." pill="Tasks" />
       <div class="box">
         <div class="box-header">
           <input v-model="search" class="ti-form-control max-w-sm" placeholder="Search tasks">

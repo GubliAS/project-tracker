@@ -1,12 +1,18 @@
 <script setup>
-import { computed } from 'vue'
-import { router, useForm } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
+import { router, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
+import CurrencyPrefix from '@/Components/ui/CurrencyPrefix.vue'
+import { useCurrency } from '@/composables/useCurrency'
 
 defineProps({
   title: { type: String, default: 'Create New Project' },
 })
+
+const page = usePage()
+const { currencies } = useCurrency()
 
 const form = useForm({
   project_type: '',
@@ -15,10 +21,13 @@ const form = useForm({
   start_date: '',
   end_date: '',
   budget: '',
+  currency: page.props.currency?.code || 'USD',
   priority: 'medium',
   status: 'planning',
   team: '',
   client: '',
+  documents: [],
+  document_category: 'other',
   settings: {
     phases: '',
     milestones: '',
@@ -32,12 +41,22 @@ const form = useForm({
   },
 })
 
+const isDragging = ref(false)
 const showPredictiveFields = computed(() => form.project_type === 'predictive')
 const showAgileFields = computed(() => form.project_type === 'agile')
 const showHybridFields = computed(() => form.project_type === 'hybrid')
 
+const addDocuments = (fileList) => {
+  const incoming = Array.from(fileList || [])
+  form.documents = [...form.documents, ...incoming]
+}
+
+const removeDocument = (index) => {
+  form.documents = form.documents.filter((_, current) => current !== index)
+}
+
 const handleSubmit = () => {
-  form.post('/projects')
+  form.post('/projects', { forceFormData: true })
 }
 
 const handleCancel = () => {
@@ -56,6 +75,8 @@ const handleCancel = () => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero :title="title" subtitle="Name the work, pick a method, and set dates." pill="New project" />
 
       <div class="pm-project-form grid grid-cols-12 gap-6">
         <div class="col-span-12 xl:col-span-8">
@@ -95,9 +116,18 @@ const handleCancel = () => {
                   <p v-if="form.errors.end_date" class="pm-project-form__error">{{ form.errors.end_date }}</p>
                 </div>
                 <div class="col-span-12 md:col-span-6">
+                  <label class="ti-form-label">Currency</label>
+                  <select v-model="form.currency" class="ti-form-select">
+                    <option v-for="option in currencies" :key="option.code" :value="option.code">
+                      {{ option.symbol }} — {{ option.label }}
+                    </option>
+                  </select>
+                  <p class="pm-project-form__hint">Defaults to the workspace currency. This project keeps its own code if the workspace default later changes.</p>
+                </div>
+                <div class="col-span-12 md:col-span-6">
                   <label class="ti-form-label">Budget</label>
                   <div class="input-group">
-                    <span class="input-group-text">$</span>
+                    <CurrencyPrefix :code="form.currency" />
                     <input v-model="form.budget" type="number" class="ti-form-control" placeholder="0.00">
                   </div>
                 </div>
@@ -216,11 +246,44 @@ const handleCancel = () => {
                   <input v-model="form.client" type="text" class="ti-form-control" placeholder="Enter client name">
                 </div>
                 <div>
+                  <label class="ti-form-label">Category</label>
+                  <select v-model="form.document_category" class="ti-form-select">
+                    <option value="planning">Planning</option>
+                    <option value="design">Design</option>
+                    <option value="technical">Technical</option>
+                    <option value="financial">Financial</option>
+                    <option value="quality">Quality</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
                   <label class="ti-form-label">Project Documents</label>
-                  <div class="pm-project-form__drop">
+                  <label
+                    class="pm-project-form__drop"
+                    :class="{ 'is-dragover': isDragging }"
+                    @dragover.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                    @drop.prevent="isDragging = false; addDocuments($event.dataTransfer.files)"
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      class="pm-project-form__drop-input"
+                      @change="addDocuments($event.target.files); $event.target.value = ''"
+                    >
                     <i class="ri-upload-cloud-2-line" aria-hidden="true"></i>
                     <p>Drag &amp; drop files here or click to browse</p>
-                  </div>
+                    <span class="pm-project-form__drop-hint">PDF, Office, images, or zip — up to 20 MB each</span>
+                  </label>
+                  <p v-if="form.errors.documents" class="pm-project-form__error">{{ form.errors.documents }}</p>
+                  <ul v-if="form.documents.length" class="pm-project-form__files">
+                    <li v-for="(file, index) in form.documents" :key="`${file.name}-${index}`">
+                      <span>{{ file.name }}</span>
+                      <button type="button" class="ti-btn ti-btn-sm ti-btn-icon ti-btn-light" @click="removeDocument(index)">
+                        <i class="ri-close-line"></i>
+                      </button>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>

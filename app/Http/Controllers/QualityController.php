@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\QualityCheck;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,14 +11,14 @@ class QualityController extends Controller
 {
     public function index(): Response
     {
-        $checks = QualityCheck::query()
+        $checks = $this->workspace()->scopeViaProject(QualityCheck::query())
             ->with('project:id,name')
             ->latest()
             ->get();
 
         return $this->inertiaPage('Quality/Index', 'Quality Control', [
             'qualityChecks' => $checks,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
             'summary' => [
                 'pending' => $checks->where('status', 'pending')->count(),
                 'passed' => $checks->where('status', 'passed')->count(),
@@ -39,6 +38,8 @@ class QualityController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+        $this->authorizer()->authorizeWriteQuality();
+        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
         QualityCheck::query()->create($validated);
 
         return redirect()->route('quality.index')->with('message', 'Quality check logged successfully.');
@@ -46,6 +47,8 @@ class QualityController extends Controller
 
     public function update(Request $request, QualityCheck $qualityCheck): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($qualityCheck);
+        $this->authorizer()->authorizeWriteQuality();
         $validated = $request->validate([
             'project_id' => ['sometimes', 'nullable', 'exists:projects,id'],
             'title' => ['sometimes', 'required', 'string', 'max:255'],
@@ -54,6 +57,7 @@ class QualityController extends Controller
             'notes' => ['sometimes', 'nullable', 'string'],
         ]);
 
+        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
         $qualityCheck->update($validated);
 
         return redirect()->route('quality.index')->with('message', 'Quality check updated successfully.');
@@ -61,6 +65,8 @@ class QualityController extends Controller
 
     public function destroy(QualityCheck $qualityCheck): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($qualityCheck);
+        $this->authorizer()->authorizeWriteOps();
         $qualityCheck->delete();
 
         return redirect()->route('quality.index')->with('message', 'Quality check deleted successfully.');

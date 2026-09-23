@@ -14,6 +14,7 @@ const props = defineProps({
 
 const page = usePage();
 const pageTitle = computed(() => props.title || page.props.title || '');
+const flashMessage = computed(() => page.props.flash?.message || '');
 
 const THEME_STORAGE_KEY = 'pm-theme';
 
@@ -81,11 +82,14 @@ onBeforeUnmount(() => {
 <template>
     <div class="page" :class="{ dark: isDarkMode }">
         <Head :title="pageTitle" />
-        <AppHeader :dark="isDarkMode" :mobile-nav-open="isMobileNavOpen" @toggle-dark="toggleDarkMode" @toggle-mobile-nav="toggleMobileNav" />
-        <AppSidebar :mobile-nav-open="isMobileNavOpen" @close-mobile-nav="closeMobileNav" />
+        <div class="pm-chrome">
+            <AppHeader :dark="isDarkMode" :mobile-nav-open="isMobileNavOpen" @toggle-dark="toggleDarkMode" @toggle-mobile-nav="toggleMobileNav" />
+            <AppSidebar :mobile-nav-open="isMobileNavOpen" @close-mobile-nav="closeMobileNav" />
+        </div>
 
         <div class="main-content app-content" @click="closeMobileNav">
             <div class="container-fluid">
+                <div v-if="flashMessage" class="pm-flash" role="status">{{ flashMessage }}</div>
                 <slot />
             </div>
         </div>

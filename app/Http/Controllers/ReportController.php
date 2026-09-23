@@ -12,10 +12,10 @@ class ReportController extends Controller
 {
     public function index(): Response
     {
-        $tasks = Task::query()->with(['project:id,name', 'user:id,name'])->get();
-        $resources = Resource::query()->get();
-        $qualityChecks = QualityCheck::query()->get();
-        $projects = Project::query()->withCount([
+        $tasks = $this->workspace()->scopeViaProject(Task::query())->with(['project:id,name', 'user:id,name'])->get();
+        $resources = $this->workspace()->scopeDirect(Resource::query())->get();
+        $qualityChecks = $this->workspace()->scopeViaProject(QualityCheck::query())->get();
+        $projects = $this->workspace()->projects()->withCount([
             'tasks',
             'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
         ])->orderBy('name')->get();

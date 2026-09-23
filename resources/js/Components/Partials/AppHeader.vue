@@ -1,5 +1,5 @@
 <script setup>
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 
 defineProps({
@@ -17,6 +17,11 @@ defineEmits(['toggle-dark', 'toggle-mobile-nav'])
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
+const currentWorkspace = computed(() => page.props.currentWorkspace)
+const workspaces = computed(() => page.props.workspaces || [])
+const abilities = computed(() => page.props.abilities || {})
+const canSwitchWorkspaces = computed(() => Boolean(page.props.canSwitchWorkspaces))
+const isWorkspaceSwitcherOpen = ref(false)
 const userName = computed(() => user.value?.name || 'Account')
 const userEmail = computed(() => user.value?.email || '')
 const userInitials = computed(() => {
@@ -44,6 +49,15 @@ const toggleProfileDropdown = () => {
   isProfileDropdownOpen.value = !isProfileDropdownOpen.value
 }
 
+const toggleWorkspaceSwitcher = () => {
+  isWorkspaceSwitcherOpen.value = !isWorkspaceSwitcherOpen.value
+}
+
+const switchWorkspace = (workspaceId) => {
+  isWorkspaceSwitcherOpen.value = false
+  router.post('/workspace/switch', { workspace_id: workspaceId }, { preserveScroll: true })
+}
+
 const closeProfileOnOutsideClick = (event) => {
   const profileDropdown = document.getElementById('headerProfileDropdown')
   if (profileDropdown && !profileDropdown.closest('.header-element')?.contains(event.target)) {
@@ -61,7 +75,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="app-header sticky pm-header" id="header">
+  <header class="app-header pm-header" id="header">
     <div class="main-header-container container-fluid">
       <div class="header-content-left">
         <div class="header-element">
@@ -103,6 +117,43 @@ onBeforeUnmount(() => {
       </div>
 
       <ul class="header-content-right">
+        <li v-if="currentWorkspace || canSwitchWorkspaces" class="header-element relative">
+          <button
+            v-if="canSwitchWorkspaces"
+            type="button"
+            class="header-link"
+            @click.stop="toggleWorkspaceSwitcher"
+          >
+            <i class="ri-building-2-line header-link-icon"></i>
+            <span class="hidden md:inline text-sm font-medium ms-1">{{ currentWorkspace?.name || 'Workspace' }}</span>
+          </button>
+          <span v-else class="header-link pointer-events-none">
+            <i class="ri-building-2-line header-link-icon"></i>
+            <span class="hidden md:inline text-sm font-medium ms-1">{{ currentWorkspace?.name || 'Workspace' }}</span>
+          </span>
+          <ul
+            v-show="canSwitchWorkspaces && isWorkspaceSwitcherOpen"
+            class="main-header-dropdown hs-dropdown-menu ti-dropdown-menu pt-0 overflow-hidden header-profile-dropdown"
+          >
+            <li v-for="workspace in workspaces" :key="workspace.id">
+              <button
+                type="button"
+                class="ti-dropdown-item flex items-center w-full text-start"
+                :class="{ 'text-primary': workspace.id === currentWorkspace?.id }"
+                @click="switchWorkspace(workspace.id)"
+              >
+                {{ workspace.name }}
+              </button>
+            </li>
+            <li v-if="abilities.manage_workspace || abilities.manage_members" class="border-t">
+              <Link class="ti-dropdown-item flex items-center" href="/workspace">Workspace</Link>
+            </li>
+            <li v-if="abilities.is_platform_admin">
+              <Link class="ti-dropdown-item flex items-center" href="/admin">Admin</Link>
+            </li>
+          </ul>
+        </li>
+
         <li class="header-element pm-header-search-toggle">
           <a class="header-link" href="javascript:void(0);" @click="toggleSearch">
             <i class="ri-search-line header-link-icon"></i>
@@ -160,7 +211,7 @@ onBeforeUnmount(() => {
               </Link>
             </li>
             <li>
-              <Link class="ti-dropdown-item flex items-center" href="/profile">
+              <Link class="ti-dropdown-item flex items-center" href="/settings">
                 <i class="ri-settings-3-line me-2"></i>Settings
               </Link>
             </li>

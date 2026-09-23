@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\QualityCheck;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,7 +11,7 @@ class QualityTestingController extends Controller
 {
     public function index(): Response
     {
-        $testCases = QualityCheck::query()
+        $testCases = $this->workspace()->scopeViaProject(QualityCheck::query())
             ->where('check_type', 'testing')
             ->with('project:id,name')
             ->latest()
@@ -26,7 +25,7 @@ class QualityTestingController extends Controller
                 ['label' => 'Status', 'path' => 'status'],
                 ['label' => 'Notes', 'path' => 'notes'],
             ],
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
             'form' => [
                 'storeUrl' => '/quality/qa-testing',
                 'updateUrl' => '/quality/qa-testing',
@@ -51,6 +50,9 @@ class QualityTestingController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+        $this->authorizer()->authorizeWriteQuality();
+        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
+
         QualityCheck::query()->create([
             ...$validated,
             'check_type' => 'testing',
@@ -69,6 +71,9 @@ class QualityTestingController extends Controller
         ]);
 
         abort_unless($qualityCheck->check_type === 'testing', 404);
+        $this->authorizer()->ensureRecordInWorkspace($qualityCheck);
+        $this->authorizer()->authorizeWriteQuality();
+        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
 
         $qualityCheck->update($validated);
 
@@ -78,6 +83,8 @@ class QualityTestingController extends Controller
     public function destroy(QualityCheck $qualityCheck): RedirectResponse
     {
         abort_unless($qualityCheck->check_type === 'testing', 404);
+        $this->authorizer()->ensureRecordInWorkspace($qualityCheck);
+        $this->authorizer()->authorizeWriteOps();
 
         $qualityCheck->delete();
 

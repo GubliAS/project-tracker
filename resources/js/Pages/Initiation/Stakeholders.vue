@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Stakeholders' },
@@ -73,6 +74,8 @@ const remove = (stakeholder) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Stakeholders" subtitle="Add the people who influence or care about this work." pill="Directory" />
 
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 xl:col-span-8">

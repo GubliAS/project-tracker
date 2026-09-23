@@ -47,6 +47,11 @@ const breadcrumbs = computed(() => {
             :class="{ 'active': !crumb.to }"
             :aria-current="!crumb.to ? 'page' : undefined"
           >
+            <i
+              v-if="index > 0"
+              class="ri-arrow-right-s-line breadcrumb-separator"
+              aria-hidden="true"
+            ></i>
             <Link v-if="crumb.to" :href="crumb.to">{{ crumb.label }}</Link>
             <span v-else>{{ crumb.label }}</span>
           </li>

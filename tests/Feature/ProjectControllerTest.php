@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Currency;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -74,6 +76,51 @@ class ProjectControllerTest extends TestCase
             'sprintDuration' => '2',
             'velocity' => '20',
         ], $project->settings);
+        $this->assertSame(Currency::Usd, $project->currency);
+    }
+
+    public function test_created_project_uses_submitted_currency_instead_of_workspace_default(): void
+    {
+        $workspace = Workspace::factory()->create(['currency' => Currency::Ghs]);
+        $this->signIn(null, $workspace);
+
+        $this->post('/projects', [
+            'name' => 'Cedi Then Euro',
+            'status' => 'planning',
+            'currency' => Currency::Eur->value,
+        ])->assertRedirect();
+
+        $project = Project::query()->firstOrFail();
+
+        $this->assertSame(Currency::Eur, $project->currency);
+        $this->assertSame(Currency::Ghs, $workspace->fresh()->currency);
+    }
+
+    public function test_created_project_defaults_to_workspace_currency_when_omitted(): void
+    {
+        $workspace = Workspace::factory()->create(['currency' => Currency::Ghs]);
+        $this->signIn(null, $workspace);
+
+        $this->post('/projects', [
+            'name' => 'Workspace Default',
+            'status' => 'planning',
+        ])->assertRedirect();
+
+        $this->assertSame(Currency::Ghs, Project::query()->firstOrFail()->currency);
+    }
+
+    public function test_create_project_page_defaults_shared_currency_to_workspace(): void
+    {
+        $workspace = Workspace::factory()->create(['currency' => Currency::Ghs]);
+        $this->signIn(null, $workspace);
+
+        $this->get(route('projects.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Projects/Create')
+                ->where('currency.code', 'GHS')
+                ->where('currency.symbol', 'GH₵')
+                ->has('currencies'));
     }
 
     public function test_empty_payload_fails_validation_and_does_not_create_a_project(): void

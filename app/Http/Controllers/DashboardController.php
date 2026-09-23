@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
-        $projects = Project::query()
+        $projects = $this->workspace()->projects()
             ->withCount([
                 'tasks',
                 'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
@@ -20,12 +20,17 @@ class DashboardController extends Controller
             ->latest()
             ->get();
 
-        $tasks = Task::query()
+        $tasks = $this->workspace()->scopeViaProject(Task::query())
             ->with(['project:id,name', 'user:id,name'])
             ->latest()
             ->get();
 
+        $workspaceId = $this->currentWorkspaceId();
         $users = User::query()
+            ->when($workspaceId, fn ($query) => $query->whereHas(
+                'workspaces',
+                fn ($workspaces) => $workspaces->where('workspaces.id', $workspaceId),
+            ), fn ($query) => $query->whereRaw('0 = 1'))
             ->withCount([
                 'tasks',
                 'tasks as completed_tasks_count' => fn ($query) => $query->where('status', 'done'),
@@ -54,7 +59,7 @@ class DashboardController extends Controller
             'dailyTasks' => $tasks->take(3)->values()->map(fn (Task $task) => $this->dailyTask($task)),
             'summaryProjects' => $projects->take(5)->values()->map(fn (Project $project, int $index) => $this->summaryProject($project, $index)),
             'teamMembers' => $users->take(5)->values()->map(fn (User $user) => $this->teamMember($user)),
-            'resourceCount' => Resource::query()->where('type', 'human')->count(),
+            'resourceCount' => $this->workspace()->scopeDirect(Resource::query())->where('type', 'human')->count(),
         ]);
     }
 

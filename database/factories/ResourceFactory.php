@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Resource;
+use App\Models\Workspace;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,6 +17,7 @@ class ResourceFactory extends Factory
     public function definition(): array
     {
         return [
+            'workspace_id' => session('current_workspace_id') ?: Workspace::factory(),
             'name' => fake()->unique()->jobTitle(),
             'email' => fake()->unique()->safeEmail(),
             'type' => fake()->randomElement(['human', 'hardware', 'software', 'material']),

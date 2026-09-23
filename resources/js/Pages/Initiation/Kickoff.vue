@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Project Kick-Off' },
@@ -74,6 +75,8 @@ const toggleObjective = (index) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Project Kick-Off" subtitle="Schedule a launch meeting and keep the checklist close." pill="Kick-off" />
 
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 xl:col-span-8">

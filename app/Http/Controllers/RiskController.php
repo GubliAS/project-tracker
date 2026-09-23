@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\Risk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,14 +12,14 @@ class RiskController extends Controller
     public function index(): Response
     {
         return $this->inertiaPage('DatabaseList', 'Risks & Issues', [
-            'items' => Risk::query()->with('project:id,name')->latest()->get(),
+            'items' => $this->workspace()->scopeViaProject(Risk::query())->with('project:id,name')->latest()->get(),
             'fields' => [
                 ['label' => 'Risk', 'path' => 'title'],
                 ['label' => 'Project', 'path' => 'project.name'],
                 ['label' => 'Impact', 'path' => 'impact'],
                 ['label' => 'Status', 'path' => 'status'],
             ],
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
             'form' => [
                 'storeUrl' => '/quality/risks',
                 'updateUrl' => '/quality/risks',
@@ -40,20 +39,29 @@ class RiskController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Risk::query()->create($this->validated($request));
+        $this->authorizer()->authorizeWriteQuality();
+        $data = $this->validated($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        Risk::query()->create($data);
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk created successfully.');
     }
 
     public function update(Request $request, Risk $risk): RedirectResponse
     {
-        $risk->update($this->validated($request));
+        $this->authorizer()->ensureRecordInWorkspace($risk);
+        $this->authorizer()->authorizeWriteQuality();
+        $data = $this->validated($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        $risk->update($data);
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk updated successfully.');
     }
 
     public function destroy(Risk $risk): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($risk);
+        $this->authorizer()->authorizeWriteOps();
         $risk->delete();
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk deleted successfully.');

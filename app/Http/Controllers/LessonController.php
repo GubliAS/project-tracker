@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\LessonLearned;
-use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -12,18 +11,26 @@ class LessonController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Reports/Lessons', 'Lessons Learned', ['lessons' => LessonLearned::query()->with('project:id,name')->latest()->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name'])]);
+        return $this->inertiaPage('Reports/Lessons', 'Lessons Learned', [
+            'lessons' => $this->workspace()->scopeViaProject(LessonLearned::query())->with('project:id,name')->latest()->get(),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        LessonLearned::query()->create($this->validated($request));
+        $this->authorizer()->authorizeWriteLessons();
+        $data = $this->validated($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        LessonLearned::query()->create($data);
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson recorded successfully.');
     }
 
     public function update(Request $request, LessonLearned $lesson): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($lesson);
+        $this->authorizer()->authorizeWriteOps();
         $lesson->update($this->validated($request));
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson updated successfully.');
@@ -31,6 +38,8 @@ class LessonController extends Controller
 
     public function destroy(LessonLearned $lesson): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($lesson);
+        $this->authorizer()->authorizeWriteOps();
         $lesson->delete();
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson deleted successfully.');

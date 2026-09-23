@@ -2,6 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Currency;
+use App\Models\User;
+use App\Models\Workspace;
+use App\Support\WorkspaceContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,15 +39,46 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $context = app(WorkspaceContext::class);
+        $current = $context->workspace();
+        $workspaces = $user instanceof User
+            ? ($user->is_platform_admin
+                ? Workspace::query()->orderBy('name')->get(['id', 'name', 'slug'])
+                : $user->workspaces()->orderBy('name')->get(['workspaces.id', 'name', 'slug']))
+            : collect();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'email_verified_at' => $request->user()->email_verified_at,
+                'user' => $user instanceof User ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_platform_admin' => $user->is_platform_admin,
                 ] : null,
+            ],
+            'currentWorkspace' => $current ? [
+                'id' => $current->id,
+                'name' => $current->name,
+                'slug' => $current->slug,
+                'role' => $context->role()?->value,
+            ] : null,
+            'currency' => Currency::shared($current?->currency),
+            'currencies' => Currency::options(),
+            'workspaces' => $workspaces,
+            'canSwitchWorkspaces' => $user instanceof User && (
+                $user->is_platform_admin || $workspaces->count() > 1
+            ),
+            'abilities' => $user instanceof User ? $context->abilities() : [
+                'manage_members' => false,
+                'manage_workspace' => false,
+                'write_projects' => false,
+                'write_ops' => false,
+                'write_member' => false,
+                'is_viewer' => false,
+                'is_platform_admin' => false,
             ],
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),

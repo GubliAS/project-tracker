@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Sprints' },
@@ -87,6 +88,8 @@ const remove = (sprint) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Sprints" subtitle="Plan a cycle, set a goal, and track remaining points." pill="Sprint" />
 
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 xl:col-span-4">

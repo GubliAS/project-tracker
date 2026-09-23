@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\BudgetItem;
 use App\Models\Milestone;
-use App\Models\Project;
 use App\Models\Resource;
 use App\Models\Task;
 use App\Models\TimeEntry;
@@ -16,18 +15,28 @@ class ResourceController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('Resources/Index', 'Resources Management', ['resources' => Resource::query()->latest()->get()]);
+        return $this->inertiaPage('Resources/Index', 'Resources Management', [
+            'resources' => $this->workspace()->scopeDirect(Resource::query())->latest()->get(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        Resource::query()->create($this->resourceData($request));
+        $this->authorizer()->authorizeWriteOps();
+        abort_unless($this->currentWorkspaceId(), 403);
+
+        Resource::query()->create([
+            'workspace_id' => $this->currentWorkspaceId(),
+            ...$this->resourceData($request),
+        ]);
 
         return redirect()->route('resources.index')->with('message', 'Resource created successfully.');
     }
 
     public function update(Request $request, Resource $resource): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($resource);
+        $this->authorizer()->authorizeWriteOps();
         $resource->update($this->resourceData($request, true));
 
         return redirect()->route('resources.index')->with('message', 'Resource updated successfully.');
@@ -35,6 +44,8 @@ class ResourceController extends Controller
 
     public function destroy(Resource $resource): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($resource);
+        $this->authorizer()->authorizeWriteOps();
         $resource->delete();
 
         return redirect()->route('resources.index')->with('message', 'Resource deleted successfully.');
@@ -42,23 +53,35 @@ class ResourceController extends Controller
 
     public function team(): Response
     {
-        return $this->inertiaPage('Resources/Team', 'Team Resources', ['resources' => Resource::query()->where('type', 'human')->latest()->get()]);
+        return $this->inertiaPage('Resources/Team', 'Team Resources', [
+            'resources' => $this->workspace()->scopeDirect(Resource::query())->where('type', 'human')->latest()->get(),
+        ]);
     }
 
     public function timeTracking(): Response
     {
-        return $this->inertiaPage('Resources/TimeTracking', 'Time Tracking', ['entries' => TimeEntry::query()->with(['project:id,name', 'resource:id,name', 'task:id,title'])->latest('entry_date')->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name']), 'resources' => Resource::query()->where('type', 'human')->orderBy('name')->get(['id', 'name']), 'tasks' => Task::query()->orderBy('title')->get(['id', 'title'])]);
+        return $this->inertiaPage('Resources/TimeTracking', 'Time Tracking', [
+            'entries' => $this->workspace()->scopeViaProject(TimeEntry::query())->with(['project:id,name', 'resource:id,name', 'task:id,title'])->latest('entry_date')->get(),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
+            'resources' => $this->workspace()->scopeDirect(Resource::query())->where('type', 'human')->orderBy('name')->get(['id', 'name']),
+            'tasks' => $this->workspace()->scopeViaProject(Task::query())->orderBy('title')->get(['id', 'title']),
+        ]);
     }
 
     public function storeTime(Request $request): RedirectResponse
     {
-        TimeEntry::query()->create($this->timeData($request));
+        $this->authorizer()->authorizeWriteTime();
+        $data = $this->timeData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        TimeEntry::query()->create($data);
 
         return redirect()->route('resources.time-tracking')->with('message', 'Time entry added successfully.');
     }
 
     public function destroyTime(TimeEntry $timeEntry): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($timeEntry);
+        $this->authorizer()->authorizeWriteOps();
         $timeEntry->delete();
 
         return redirect()->route('resources.time-tracking')->with('message', 'Time entry deleted successfully.');
@@ -66,13 +89,13 @@ class ResourceController extends Controller
 
     public function budget(): Response
     {
-        $items = BudgetItem::query()->with('project:id,name')->latest()->get();
+        $items = $this->workspace()->scopeViaProject(BudgetItem::query())->with('project:id,name,currency')->latest()->get();
         $allocated = (float) $items->sum('allocated');
         $spent = (float) $items->sum('spent');
 
         return $this->inertiaPage('Resources/Budget', 'Budget', [
             'items' => $items,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name', 'currency']),
             'summary' => [
                 'total_budget' => $allocated,
                 'spent' => $spent,
@@ -84,20 +107,29 @@ class ResourceController extends Controller
 
     public function storeBudget(Request $request): RedirectResponse
     {
-        BudgetItem::query()->create($this->budgetData($request));
+        $this->authorizer()->authorizeWriteOps();
+        $data = $this->budgetData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        BudgetItem::query()->create($data);
 
         return redirect()->route('resources.budget')->with('message', 'Budget item created successfully.');
     }
 
     public function updateBudget(Request $request, BudgetItem $budgetItem): RedirectResponse
     {
-        $budgetItem->update($this->budgetData($request, true));
+        $this->authorizer()->ensureRecordInWorkspace($budgetItem);
+        $this->authorizer()->authorizeWriteOps();
+        $data = $this->budgetData($request, true);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        $budgetItem->update($data);
 
         return redirect()->route('resources.budget')->with('message', 'Budget item updated successfully.');
     }
 
     public function destroyBudget(BudgetItem $budgetItem): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($budgetItem);
+        $this->authorizer()->authorizeWriteOps();
         $budgetItem->delete();
 
         return redirect()->route('resources.budget')->with('message', 'Budget item deleted successfully.');
@@ -105,25 +137,37 @@ class ResourceController extends Controller
 
     public function milestones(): Response
     {
-        return $this->inertiaPage('Resources/Milestones', 'Milestones', ['milestones' => Milestone::query()->with('project:id,name')->orderBy('due_date')->get(), 'projects' => Project::query()->orderBy('name')->get(['id', 'name'])]);
+        return $this->inertiaPage('Resources/Milestones', 'Milestones', [
+            'milestones' => $this->workspace()->scopeViaProject(Milestone::query())->with('project:id,name')->orderBy('due_date')->get(),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function storeMilestone(Request $request): RedirectResponse
     {
-        Milestone::query()->create($this->milestoneData($request));
+        $this->authorizer()->authorizeWriteOps();
+        $data = $this->milestoneData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        Milestone::query()->create($data);
 
         return redirect()->route('resources.milestones')->with('message', 'Milestone created successfully.');
     }
 
     public function updateMilestone(Request $request, Milestone $milestone): RedirectResponse
     {
-        $milestone->update($this->milestoneData($request));
+        $this->authorizer()->ensureRecordInWorkspace($milestone);
+        $this->authorizer()->authorizeWriteOps();
+        $data = $this->milestoneData($request);
+        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        $milestone->update($data);
 
         return redirect()->route('resources.milestones')->with('message', 'Milestone updated successfully.');
     }
 
     public function destroyMilestone(Milestone $milestone): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($milestone);
+        $this->authorizer()->authorizeWriteOps();
         $milestone->delete();
 
         return redirect()->route('resources.milestones')->with('message', 'Milestone deleted successfully.');
@@ -131,7 +175,10 @@ class ResourceController extends Controller
 
     public function gantt(): Response
     {
-        return $this->inertiaPage('Resources/Gantt', 'Gantt Chart', ['tasks' => Task::query()->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(), 'milestones' => Milestone::query()->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get()]);
+        return $this->inertiaPage('Resources/Gantt', 'Gantt Chart', [
+            'tasks' => $this->workspace()->scopeViaProject(Task::query())->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(),
+            'milestones' => $this->workspace()->scopeViaProject(Milestone::query())->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(),
+        ]);
     }
 
     private function resourceData(Request $request, bool $partial = false): array

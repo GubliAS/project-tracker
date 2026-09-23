@@ -1,8 +1,11 @@
 ﻿<script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
+import CurrencyPrefix from '@/Components/ui/CurrencyPrefix.vue'
+import { useCurrency } from '@/composables/useCurrency'
 
 const props = defineProps({
   title: { type: String, default: 'Budget Management' },
@@ -21,8 +24,13 @@ const form = useForm({
   status: 'on-track',
 })
 
-const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0)
+const { formatCurrency } = useCurrency()
 const percent = (item) => item.allocated > 0 ? Math.round((Number(item.spent) / Number(item.allocated)) * 100) : 0
+const projectCurrency = (project) => project?.currency || null
+const selectedProjectCurrency = computed(() => {
+  const project = props.projects.find((item) => String(item.id) === String(form.project_id))
+  return projectCurrency(project)
+})
 
 const openCreate = () => {
   editing.value = null
@@ -69,6 +77,8 @@ const remove = (item) => {
         </template>
       </PageHeader>
 
+      <CreateHero title="Budget Management" subtitle="Log an allocation or expense against a project." pill="Budget" />
+
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 md:col-span-6 xl:col-span-3">
           <div class="box"><div class="box-body"><div class="flex items-center gap-4"><span class="avatar avatar-lg bg-primary/10 text-primary"><i class="ri-money-dollar-circle-line text-2xl"></i></span><div><p class="text-textmuted text-sm">Total Budget</p><h4 class="text-xl font-bold">{{ formatCurrency(summary.total_budget) }}</h4></div></div></div></div>
@@ -106,8 +116,8 @@ const remove = (item) => {
                   <tr v-for="item in items" :key="item.id">
                     <td class="font-medium">{{ item.category }}</td>
                     <td>{{ item.project?.name || '—' }}</td>
-                    <td>{{ formatCurrency(item.allocated) }}</td>
-                    <td>{{ formatCurrency(item.spent) }}</td>
+                    <td>{{ formatCurrency(item.allocated, { currency: projectCurrency(item.project) }) }}</td>
+                    <td>{{ formatCurrency(item.spent, { currency: projectCurrency(item.project) }) }}</td>
                     <td>
                       <div class="flex items-center gap-2 min-w-[150px]">
                         <div class="progress progress-sm flex-1">
@@ -154,11 +164,17 @@ const remove = (item) => {
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="ti-form-label text-sm mb-1">Allocated</label>
-                <input v-model="form.allocated" type="number" min="0" step="0.01" class="ti-form-control" required>
+                <div class="input-group">
+                  <CurrencyPrefix :code="selectedProjectCurrency" />
+                  <input v-model="form.allocated" type="number" min="0" step="0.01" class="ti-form-control" required>
+                </div>
               </div>
               <div>
                 <label class="ti-form-label text-sm mb-1">Spent</label>
-                <input v-model="form.spent" type="number" min="0" step="0.01" class="ti-form-control" required>
+                <div class="input-group">
+                  <CurrencyPrefix :code="selectedProjectCurrency" />
+                  <input v-model="form.spent" type="number" min="0" step="0.01" class="ti-form-control" required>
+                </div>
               </div>
             </div>
             <div>

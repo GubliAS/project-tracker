@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
-use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +14,14 @@ class DocumentController extends Controller
     public function index(): Response
     {
         return $this->inertiaPage('DatabaseList', 'Documents', [
-            'items' => Document::query()->with('project:id,name')->latest()->get(),
+            'items' => $this->workspace()->scopeViaProject(Document::query())->with('project:id,name')->latest()->get(),
             'fields' => [
                 ['label' => 'Document', 'path' => 'name'],
                 ['label' => 'Project', 'path' => 'project.name'],
                 ['label' => 'Category', 'path' => 'category'],
                 ['label' => 'Size', 'path' => 'size'],
             ],
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => $this->workspace()->projects()->orderBy('name')->get(['id', 'name']),
             'form' => [
                 'storeUrl' => '/reports/documents',
                 'destroyUrl' => '/reports/documents',
@@ -40,27 +39,36 @@ class DocumentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'file' => ['required', 'file', 'max:20480'],
-            'category' => ['required', 'in:planning,design,technical,financial,quality,other'],
-            'project_id' => ['nullable', 'exists:projects,id'],
+            'file' => Document::uploadRules(),
+            'category' => Document::categoryRules(),
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'return_to_project' => ['sometimes', 'boolean'],
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('documents', 'public');
+        $projectId = isset($validated['project_id']) ? (int) $validated['project_id'] : null;
 
-        Document::query()->create([
-            'name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'category' => $validated['category'],
-            'size' => $file->getSize(),
-            'project_id' => $validated['project_id'] ?? null,
-        ]);
+        $this->authorizer()->authorizeWriteDocuments();
+        $this->authorizer()->ensureProjectIdInWorkspace($projectId);
+
+        $document = Document::storeUploaded(
+            $request->file('file'),
+            $projectId,
+            $validated['category'],
+            $request->user()?->id,
+        );
+
+        if ($request->boolean('return_to_project') && $document->project_id) {
+            return redirect()
+                ->route('projects.show', ['project' => $document->project_id, 'tab' => 'files'])
+                ->with('message', 'Document uploaded successfully.');
+        }
 
         return redirect()->route('reports.documents.index')->with('message', 'Document uploaded successfully.');
     }
 
     public function download(Document $document): StreamedResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($document);
         abort_unless(Storage::disk('public')->exists($document->file_path), 404);
 
         return Storage::disk('public')->download($document->file_path, $document->name);
@@ -68,6 +76,7 @@ class DocumentController extends Controller
 
     public function preview(Document $document): StreamedResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($document);
         abort_unless(Storage::disk('public')->exists($document->file_path), 404);
 
         return Storage::disk('public')->response($document->file_path, $document->name, [
@@ -75,10 +84,21 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function destroy(Document $document): RedirectResponse
+    public function destroy(Request $request, Document $document): RedirectResponse
     {
+        $this->authorizer()->ensureRecordInWorkspace($document);
+        $this->authorizer()->authorizeWriteOps();
+
+        $projectId = $document->project_id;
+
         Storage::disk('public')->delete($document->file_path);
         $document->delete();
+
+        if ($request->boolean('return_to_project') && $projectId) {
+            return redirect()
+                ->route('projects.show', ['project' => $projectId, 'tab' => 'files'])
+                ->with('message', 'Document deleted successfully.');
+        }
 
         return redirect()->route('reports.documents.index')->with('message', 'Document deleted successfully.');
     }

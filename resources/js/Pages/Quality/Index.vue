@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
+import CreateHero from '@/Components/ui/CreateHero.vue';
 
 const props = defineProps({
     title: {
@@ -139,6 +140,8 @@ const deleteCheck = (check) => {
                 </button>
             </template>
         </PageHeader>
+
+        <CreateHero :title="title" subtitle="Log a review, test, or audit against a project." pill="Quality" class="mb-4" />
 
         <div v-if="flashMessage" class="alert alert-success mb-4">
             {{ flashMessage }}

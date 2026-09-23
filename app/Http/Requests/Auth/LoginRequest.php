@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -32,6 +33,16 @@ class LoginRequest extends FormRequest
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
+
+        $user = User::query()->where('email', $this->string('email')->toString())->first();
+
+        if ($user?->must_set_password) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Check your email to set a password.',
+            ]);
+        }
 
         if (! Auth::attempt($this->safe()->only(['email', 'password']), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());

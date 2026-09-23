@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 
 defineProps({
@@ -11,8 +11,9 @@ defineProps({
 
 const page = usePage()
 const openMenus = ref([])
+const abilities = computed(() => page.props.abilities || {})
 
-const menuItems = [
+const menuItems = computed(() => [
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -26,8 +27,7 @@ const menuItems = [
     href: '/projects',
     children: [
       { label: 'Projects List', href: '/projects' },
-      { label: 'Create Project', href: '/projects/create' },
-      { label: 'Project Details', href: '/projects/1' }
+      ...(abilities.value.write_projects ? [{ label: 'Create Project', href: '/projects/create' }] : []),
     ]
   },
   {
@@ -102,8 +102,40 @@ const menuItems = [
     label: 'Chat',
     icon: 'ri-chat-3-line',
     href: '/chat'
-  }
-]
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: 'ri-settings-3-line',
+    href: '/settings'
+  },
+  ...(abilities.value.manage_members || abilities.value.manage_workspace ? [{
+    id: 'workspace',
+    label: 'Workspace',
+    icon: 'ri-building-2-line',
+    href: '/workspace',
+    children: [
+      { label: 'Overview', href: '/workspace' },
+      ...(abilities.value.manage_members ? [
+        { label: 'Members', href: '/workspace/members' },
+        { label: 'Invites', href: '/workspace/invites' },
+      ] : []),
+      ...(abilities.value.manage_workspace ? [{ label: 'Settings', href: '/workspace/settings' }] : []),
+    ]
+  }] : []),
+  ...(abilities.value.is_platform_admin ? [{
+    id: 'admin',
+    label: 'Admin',
+    icon: 'ri-shield-user-line',
+    href: '/admin',
+    children: [
+      { label: 'Overview', href: '/admin' },
+      { label: 'Workspaces', href: '/admin/workspaces' },
+      { label: 'Users', href: '/admin/users' },
+      { label: 'Audit', href: '/admin/audit' },
+    ]
+  }] : []),
+])
 
 const toggleMenu = (menuId) => {
   const index = openMenus.value.indexOf(menuId)
@@ -137,6 +169,10 @@ const isActive = (href) => {
     return currentPath === '/' || currentPath === '/dashboard'
   }
 
+  if (targetPath === '/admin' || targetPath === '/workspace') {
+    return currentPath === targetPath
+  }
+
   return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`)
 }
 
@@ -166,7 +202,8 @@ const isChildActive = (children) => {
               :class="{
                 'has-sub': item.children,
                 'open': isMenuOpen(item.id),
-                'active': isChildActive(item.children) || isActive(item.href)
+                'active': isChildActive(item.children) || isActive(item.href),
+                'slide--compact': item.id === 'workspace' || item.id === 'admin',
               }"
             >
               <template v-if="item.children">

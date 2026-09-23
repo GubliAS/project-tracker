@@ -3,6 +3,9 @@ import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PageHeader from '@/Components/ui/PageHeader.vue';
+import CreateHero from '@/Components/ui/CreateHero.vue';
+import CurrencyPrefix from '@/Components/ui/CurrencyPrefix.vue';
+import { useCurrency } from '@/composables/useCurrency';
 
 const props = defineProps({
     title: {
@@ -61,13 +64,8 @@ const availabilityClass = (status) => {
     return classes[status] || 'bg-secondary/10 text-secondary';
 };
 
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-    }).format(amount || 0);
-};
+const { formatCurrency: formatMoney } = useCurrency();
+const formatCurrency = (amount) => formatMoney(amount, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const nextAvailability = (status) => {
     const cycle = {
@@ -126,6 +124,8 @@ const deleteResource = (resource) => {
                 </button>
             </template>
         </PageHeader>
+
+        <CreateHero :title="title" subtitle="Add people, hardware, software, or materials." pill="Resource" class="mb-4" />
 
         <div v-if="flashMessage" class="alert alert-success mb-4">
             {{ flashMessage }}
@@ -236,7 +236,10 @@ const deleteResource = (resource) => {
                             </div>
                             <div>
                                 <label class="form-label">Cost Per Hour</label>
-                                <input v-model="form.cost_per_hour" type="number" min="0" step="0.01" class="ti-form-control" required>
+                                <div class="input-group">
+                                    <CurrencyPrefix />
+                                    <input v-model="form.cost_per_hour" type="number" min="0" step="0.01" class="ti-form-control" required>
+                                </div>
                                 <p v-if="form.errors.cost_per_hour" class="text-danger text-xs mt-1">{{ form.errors.cost_per_hour }}</p>
                             </div>
                             <div>

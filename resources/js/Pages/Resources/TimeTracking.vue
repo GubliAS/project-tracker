@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Time Tracking' },
@@ -68,6 +69,8 @@ const remove = (entry) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Time Tracking" subtitle="Log hours against a project, person, or task." pill="Time" />
 
       <div class="grid grid-cols-12 gap-6">
         <div class="col-span-12 md:col-span-6 xl:col-span-3">

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['project_id', 'kind', 'text', 'is_checked'])]
+#[Fillable(['workspace_id', 'project_id', 'kind', 'text', 'is_checked'])]
 class DefinitionItem extends Model
 {
     use HasFactory;

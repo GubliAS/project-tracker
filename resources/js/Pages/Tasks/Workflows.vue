@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: { type: String, default: 'Workflows' },
@@ -53,6 +54,8 @@ const remove = (workflow) => {
           </button>
         </template>
       </PageHeader>
+
+      <CreateHero title="Workflows" subtitle="Create the stages your tasks move through." pill="Workflow" />
 
       <div class="grid grid-cols-12 gap-6">
         <div v-if="!workflows.length" class="col-span-12">

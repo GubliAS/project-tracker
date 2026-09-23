@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\Currency;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
+    'workspace_id',
     'name',
     'description',
     'status',
@@ -19,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'end_date',
     'budget',
     'spent',
+    'currency',
     'settings',
 ])]
 class Project extends Model
@@ -35,8 +39,17 @@ class Project extends Model
             'end_date' => 'date',
             'budget' => 'decimal:2',
             'spent' => 'decimal:2',
+            'currency' => Currency::class,
             'settings' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Workspace, $this>
+     */
+    public function workspace(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class);
     }
 
     /**

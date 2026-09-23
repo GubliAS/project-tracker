@@ -4,6 +4,7 @@ import ApexCharts from 'apexcharts'
 import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
+import { useCurrency } from '@/composables/useCurrency'
 
 const props = defineProps({
   title: { type: String, default: 'Dashboard' },
@@ -17,7 +18,7 @@ const props = defineProps({
 let charts = []
 
 const formatNumber = (value) => Number(value || 0).toLocaleString()
-const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0)
+const { formatCurrency } = useCurrency()
 
 const kpiTiles = computed(() => [
   { id: 'Projects-2', label: 'New Projects', value: formatNumber(props.kpis.new_projects), badge: 'Planning', badgeClass: 'bg-primary/10 text-primary', icon: 'ri-pages-line', iconBg: 'bg-primary' },
