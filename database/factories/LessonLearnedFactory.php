@@ -16,7 +16,9 @@ class LessonLearnedFactory extends Factory
         return [
             'title' => fake()->sentence(5),
             'category' => 'Delivery',
+            'description' => fake()->paragraph(),
             'impact_level' => 'medium',
+            'impact_sentiment' => 'positive',
             'recommendation' => fake()->paragraph(),
             'project_id' => Project::factory(),
         ];

@@ -9,15 +9,22 @@ class RouteViewResetTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->signIn();
+    }
+
     public function test_primary_navigation_routes_render_their_current_inertia_pages(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Dashboard'));
+            ->assertInertia(fn ($page) => $page->component('Dashboard')->has('kpis'));
 
         $this->get('/dashboard')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Dashboard'));
+            ->assertInertia(fn ($page) => $page->component('Dashboard')->has('kpis')->has('runningProjects'));
 
         $this->get('/projects')
             ->assertOk()

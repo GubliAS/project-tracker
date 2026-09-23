@@ -21,6 +21,8 @@ class QualityCheckFactory extends Factory
             'title' => fake()->sentence(5),
             'check_type' => fake()->randomElement(['code_review', 'testing', 'security_audit', 'compliance']),
             'status' => 'pending',
+            'priority' => 'medium',
+            'last_run_at' => now(),
             'notes' => fake()->optional()->sentence(),
         ];
     }

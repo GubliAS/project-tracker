@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['title', 'impact', 'probability', 'status', 'mitigation_plan', 'project_id'])]
+#[Fillable(['title', 'category', 'owner', 'impact', 'probability', 'status', 'mitigation_plan', 'project_id'])]
 class Risk extends Model
 {
     use HasFactory;

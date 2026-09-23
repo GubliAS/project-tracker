@@ -18,6 +18,13 @@ class SupplementalModulesTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->signIn();
+    }
+
     public function test_testing_dashboard_renders_and_logs_test_runs(): void
     {
         $this->withoutVite();

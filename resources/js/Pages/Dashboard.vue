@@ -1,128 +1,43 @@
 ﻿<script setup>
-import { onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
 import ApexCharts from 'apexcharts'
 import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 
+const props = defineProps({
+  title: { type: String, default: 'Dashboard' },
+  kpis: { type: Object, default: () => ({}) },
+  runningProjects: { type: Array, default: () => [] },
+  dailyTasks: { type: Array, default: () => [] },
+  summaryProjects: { type: Array, default: () => [] },
+  teamMembers: { type: Array, default: () => [] },
+})
+
 let charts = []
 
-const kpiTiles = [
-  { id: 'Projects-2', label: 'New Projects', value: '432', badge: '-5.20%', badgeClass: 'bg-danger/10 text-danger', icon: 'ri-pages-line', iconBg: 'bg-primary' },
-  { id: 'Projects-1', label: 'Completed', value: '122', badge: '+7.20%', badgeClass: 'bg-success/10 text-success', icon: 'ri-check-double-line', iconBg: 'bg-primarytint1color' },
-  { id: 'Projects-3', label: 'Ongoing Projects', value: '1,265', badge: '-5.20%', badgeClass: 'bg-danger/10 text-danger', icon: 'ri-loop-left-fill', iconBg: 'bg-primarytint2color' },
-  { id: 'Projects-4', label: 'Pending Projects', value: '1,265', badge: '+5.20%', badgeClass: 'bg-success/10 text-success', icon: 'ri-time-line', iconBg: 'bg-primarytint3color' },
-]
+const formatNumber = (value) => Number(value || 0).toLocaleString()
+const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value || 0)
 
-const teamMembers = [
-  { name: 'Richard Dom', role: 'Team Leader', works: 457, status: 'Online', tasks: 564, tasksTotal: 1145, avatar: '/assets/img/2.jpg' },
-  { name: 'Nikki Jey', role: 'UI Developer', works: 647, status: 'Offline', tasks: 631, tasksTotal: 1145, avatar: '/assets/img/3.jpg' },
-  { name: 'Arifa Zed', role: 'Web Developer', works: 983, status: 'Online', tasks: 502, tasksTotal: 1236, avatar: '/assets/img/21.jpg' },
-  { name: 'Xiong Yu', role: 'Team Member', works: 631, status: 'Online', tasks: 360, tasksTotal: 457, avatar: '/assets/img/4.jpg' },
-  { name: 'Emanuel Gen', role: 'Project Manager', works: 478, status: 'Offline', tasks: 558, tasksTotal: 698, avatar: '/assets/img/11.jpg' },
-]
-
-const runningProjects = [
-  {
-    title: 'Web application design',
-    description: 'At vero eos et accusamus et iusto odio.',
-    statusLabel: '75% completed',
-    statusClass: 'text-success',
-    time: '2mins ago',
-    progress: 90,
-    trackClass: 'bg-primary/10',
-    barClass: '',
-    avatars: ['/assets/img/11.jpg', '/assets/img/2.jpg', '/assets/img/5.jpg', '/assets/img/6.jpg'],
-    extra: 0,
-  },
-  {
-    title: 'Designing New Template',
-    description: 'At vero eos et accusamus et iusto odio.',
-    statusLabel: '45% completed',
-    statusClass: 'text-warning',
-    time: '15mins ago',
-    progress: 45,
-    trackClass: 'bg-primarytint1color/10',
-    barClass: 'bg-primarytint1color',
-    avatars: ['/assets/img/11.jpg', '/assets/img/8.jpg', '/assets/img/2.jpg'],
-    extra: 0,
-  },
-  {
-    title: 'Projects Work Progress',
-    description: 'At vero eos et accusamus et iusto odio.',
-    statusLabel: '65% completed',
-    statusClass: 'text-success',
-    time: '20mins ago',
-    progress: 65,
-    trackClass: 'bg-primarytint2color/10',
-    barClass: 'bg-primarytint2color',
-    avatars: ['/assets/img/15.jpg', '/assets/img/3.jpg'],
-    extra: 2,
-  },
-]
-
-const dailyTasks = [
-  {
-    time: '09:15 AM',
-    title: 'Home Page Design',
-    accent: 'pm-accent-primary',
-    icon: 'ri-layout-4-line',
-    iconClass: 'text-primary bg-primary/10',
-    badges: [
-      { label: 'Framework', class: 'bg-primary/10 text-primary' },
-      { label: 'Angular', class: 'bg-secondary/10 text-secondary' },
-      { label: 'Php', class: 'bg-info/10 text-info' },
-    ],
-    avatars: ['/assets/img/2.jpg', '/assets/img/12.jpg', '/assets/img/8.jpg', '/assets/img/2.jpg'],
-  },
-  {
-    time: '10:15 AM',
-    title: 'Meeting Hour',
-    accent: 'pm-accent-tint1',
-    icon: 'ri-vidicon-line',
-    iconClass: 'text-primarytint1color bg-primarytint1color/10',
-    badges: [
-      { label: 'Framework', class: 'bg-primary/10 text-primary' },
-      { label: 'Angular', class: 'bg-secondary/10 text-secondary' },
-      { label: 'Php', class: 'bg-info/10 text-info' },
-      { label: 'Html', class: 'bg-danger/10 text-danger' },
-      { label: 'Laravel', class: 'bg-success/10 text-success' },
-    ],
-    avatars: ['/assets/img/2.jpg', '/assets/img/12.jpg', '/assets/img/8.jpg', '/assets/img/2.jpg'],
-  },
-  {
-    time: '04:30 AM',
-    title: 'Projects Work Progress',
-    accent: 'pm-accent-tint2',
-    icon: 'ri-stack-line',
-    iconClass: 'text-primarytint2color bg-primarytint2color/10',
-    badges: [
-      { label: 'Php', class: 'bg-info/10 text-info' },
-      { label: 'Html', class: 'bg-danger/10 text-danger' },
-      { label: 'Framework', class: 'bg-primary/10 text-primary' },
-    ],
-    avatars: ['/assets/img/2.jpg', '/assets/img/12.jpg', '/assets/img/8.jpg', '/assets/img/2.jpg'],
-  },
-]
-
-const summaryProjects = [
-  { no: 1, title: 'Home Page', tasks: 210, tasksTotal: 234, progress: 35, status: 'In Progress', statusClass: 'bg-primary/10 text-primary', due: '14-05-2024' },
-  { no: 2, title: 'Landing Design', tasks: 162, tasksTotal: 185, progress: 80, status: 'In Progress', statusClass: 'bg-primary/10 text-primary', due: '20-05-2024' },
-  { no: 3, title: 'Mobile App Development', tasks: 145, tasksTotal: 180, progress: 65, status: 'Completed', statusClass: 'bg-success/10 text-success', due: '25-05-2024' },
-]
+const kpiTiles = computed(() => [
+  { id: 'Projects-2', label: 'New Projects', value: formatNumber(props.kpis.new_projects), badge: 'Planning', badgeClass: 'bg-primary/10 text-primary', icon: 'ri-pages-line', iconBg: 'bg-primary' },
+  { id: 'Projects-1', label: 'Completed', value: formatNumber(props.kpis.completed), badge: 'Done', badgeClass: 'bg-success/10 text-success', icon: 'ri-check-double-line', iconBg: 'bg-primarytint1color' },
+  { id: 'Projects-3', label: 'Ongoing Projects', value: formatNumber(props.kpis.ongoing), badge: 'Active', badgeClass: 'bg-info/10 text-info', icon: 'ri-loop-left-fill', iconBg: 'bg-primarytint2color' },
+  { id: 'Projects-4', label: 'Pending Projects', value: formatNumber(props.kpis.pending), badge: 'On hold', badgeClass: 'bg-warning/10 text-warning', icon: 'ri-time-line', iconBg: 'bg-primarytint3color' },
+])
 
 const summaryAvatars = ['/assets/img/8.jpg', '/assets/img/4.jpg', '/assets/img/6.jpg', '/assets/img/7.jpg']
 const heroArtMissing = ref(false)
 
 const statsPeriod = ref('Last Week')
-const statsTotals = ref({
-  revenue: '$475,896',
-  projects: '75,896',
-  revenueDelta: '5.6%',
-  projectsDelta: '1.6%',
+const statsTotals = computed(() => ({
+  revenue: formatCurrency(props.kpis.total_budget),
+  projects: formatNumber(props.kpis.total_projects),
+  revenueDelta: `${props.kpis.task_completion_rate || 0}%`,
+  projectsDelta: `${props.kpis.ongoing || 0} live`,
   revenueUp: true,
-  projectsUp: false,
-})
+  projectsUp: (props.kpis.ongoing || 0) > 0,
+}))
 
 const statsRanges = {
   Today: {
@@ -290,7 +205,6 @@ const setStatsPeriod = (period) => {
   }
 
   statsPeriod.value = period
-  statsTotals.value = statsRanges[period].totals
   renderProjectStatsChart()
 }
 
@@ -561,14 +475,14 @@ const initializeCharts = () => {
                   <i class="ri-add-circle-fill" aria-hidden="true"></i>
                   <div>
                     <span>New</span>
-                    <b>432</b>
-                  </div>
+                  <b>{{ formatNumber(kpis.new_projects) }}</b>
                 </div>
-                <div class="pm-focus-chip">
-                  <i class="ri-checkbox-circle-fill" aria-hidden="true"></i>
-                  <div>
-                    <span>Done</span>
-                    <b>122</b>
+              </div>
+              <div class="pm-focus-chip">
+                <i class="ri-checkbox-circle-fill" aria-hidden="true"></i>
+                <div>
+                  <span>Done</span>
+                  <b>{{ formatNumber(kpis.completed) }}</b>
                   </div>
                 </div>
               </div>
@@ -595,13 +509,13 @@ const initializeCharts = () => {
           <div class="box h-full">
             <div class="box-header justify-between">
               <div class="box-title">Activity</div>
-              <a class="ti-btn ti-btn-sm bg-light" href="javascript:void(0);">View All</a>
+              <Link class="ti-btn ti-btn-sm bg-light" href="/tasks">View All</Link>
             </div>
             <div class="box-body">
               <div class="pm-activity-head">
                 <div>
                   <p class="text-xs text-textmuted mb-1">Tasks completed rate</p>
-                  <h3 class="mb-0">85%</h3>
+                  <h3 class="mb-0">{{ kpis.task_completion_rate || 0 }}%</h3>
                 </div>
                 <span class="badge leading-none bg-success/10 text-success">+1.5%</span>
               </div>
@@ -614,25 +528,11 @@ const initializeCharts = () => {
           <div class="box h-full">
             <div class="box-header justify-between">
               <div class="box-title">Today’s tasks</div>
-              <div class="ti-dropdown hs-dropdown">
-                <a
-                  aria-expanded="false"
-                  class="ti-btn ti-btn-sm bg-light"
-                  data-bs-toggle="dropdown"
-                  href="javascript:void(0);"
-                >
-                  View All<i class="ri-arrow-down-s-line align-middle ms-1 inline-block"></i>
-                </a>
-                <ul class="ti-dropdown-menu hs-dropdown-menu hidden" role="menu">
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Download</a></li>
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Import</a></li>
-                  <li><a class="ti-dropdown-item" href="javascript:void(0);">Export</a></li>
-                </ul>
-              </div>
+              <Link class="ti-btn ti-btn-sm bg-light" href="/tasks">View All</Link>
             </div>
             <div class="box-body pt-2">
-              <ul class="pm-task-list">
-                <li v-for="task in dailyTasks" :key="task.title" :class="['pm-task-row', task.accent]">
+              <ul v-if="dailyTasks.length" class="pm-task-list">
+                <li v-for="task in dailyTasks" :key="task.id || task.title" :class="['pm-task-row', task.accent]">
                   <span class="pm-task-time">{{ task.time }}</span>
                   <span class="pm-task-icon" :class="task.iconClass">
                     <i :class="task.icon"></i>
@@ -660,6 +560,7 @@ const initializeCharts = () => {
                   </div>
                 </li>
               </ul>
+              <p v-else class="py-8 text-center text-textmuted mb-0">No tasks have been created yet.</p>
             </div>
           </div>
         </div>
@@ -668,7 +569,7 @@ const initializeCharts = () => {
           <div class="box h-full">
             <div class="box-header justify-between">
               <div class="box-title">Projects worked</div>
-              <a class="ti-btn ti-btn-sm bg-light" href="javascript:void(0);">View All</a>
+              <Link class="ti-btn ti-btn-sm bg-light" href="/projects">View All</Link>
             </div>
             <div class="box-body">
               <div id="monthly-target"></div>
@@ -676,20 +577,17 @@ const initializeCharts = () => {
                 <li>
                   <i class="ri-circle-fill text-[8px] text-primary"></i>
                   <span>New Projects</span>
-                  <b>4,896</b>
-                  <em class="text-success">+3.5%</em>
+                  <b>{{ formatNumber(kpis.new_projects) }}</b>
                 </li>
                 <li>
                   <i class="ri-circle-fill text-[8px] text-primarytint1color"></i>
                   <span>Completed</span>
-                  <b>2,475</b>
-                  <em class="text-danger">-1.5%</em>
+                  <b>{{ formatNumber(kpis.completed) }}</b>
                 </li>
                 <li>
                   <i class="ri-circle-fill text-[8px] text-primarytint2color"></i>
                   <span>Pending</span>
-                  <b>456</b>
-                  <em class="text-success">+0.1%</em>
+                  <b>{{ formatNumber(kpis.pending) }}</b>
                 </li>
               </ul>
             </div>
@@ -724,11 +622,12 @@ const initializeCharts = () => {
       <div class="box">
         <div class="box-header justify-between">
           <div class="box-title">Running Projects</div>
-          <button class="ti-btn ti-btn-sm bg-primary/10 text-primary" type="button">View All</button>
+          <Link class="ti-btn ti-btn-sm bg-primary/10 text-primary" href="/projects">View All</Link>
         </div>
         <div class="box-body">
           <div class="grid grid-cols-12 gap-4">
-            <div v-for="project in runningProjects" :key="project.title" class="xxl:col-span-4 md:col-span-6 col-span-12">
+            <p v-if="!runningProjects.length" class="col-span-12 text-center text-textmuted py-8 mb-0">No running projects yet.</p>
+            <div v-for="project in runningProjects" :key="project.id || project.title" class="xxl:col-span-4 md:col-span-6 col-span-12">
               <div class="pm-run-card">
                 <div class="flex items-start justify-between gap-3 mb-3">
                   <div>
@@ -820,7 +719,10 @@ const initializeCharts = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="row in summaryProjects" :key="row.no">
+                    <tr v-if="!summaryProjects.length">
+                      <td colspan="8" class="text-center text-textmuted py-8">No projects have been created yet.</td>
+                    </tr>
+                    <tr v-for="row in summaryProjects" :key="row.id || row.no">
                       <td>{{ row.no }}</td>
                       <td><span class="font-medium">{{ row.title }}</span></td>
                       <td>{{ row.tasks }} <span class="opacity-70">/{{ row.tasksTotal }}</span></td>
@@ -844,10 +746,10 @@ const initializeCharts = () => {
                       <td>
                         <div class="flex items-center gap-2">
                           <div class="hs-tooltip ti-main-tooltip [--placement:top]">
-                            <a aria-label="anchor" class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-primary !m-0" href="javascript:void(0);">
+                            <Link :href="`/projects/${row.id}`" aria-label="View project" class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-primary !m-0">
                               <i class="ri-eye-line"></i>
                               <span class="hs-tooltip-content ti-main-tooltip-content py-1 px-2 !bg-black !text-xs !font-medium !text-white shadow-sm dark:bg-slate-700" role="tooltip">View</span>
-                            </a>
+                            </Link>
                           </div>
                           <div class="hs-tooltip ti-main-tooltip [--placement:top]">
                             <a aria-label="anchor" class="hs-tooltip-toggle ti-btn ti-btn-icon ti-btn-sm !rounded-full ti-btn-soft-secondary !m-0" href="javascript:void(0);">
@@ -875,10 +777,11 @@ const initializeCharts = () => {
           <div class="box h-full">
             <div class="box-header justify-between">
               <div class="box-title">Team</div>
-              <a class="ti-btn ti-btn-sm bg-light" href="javascript:void(0);">View All</a>
+              <Link class="ti-btn ti-btn-sm bg-light" href="/resources/team">View All</Link>
             </div>
             <div class="box-body pt-2">
-              <div v-for="member in teamMembers" :key="member.name" class="pm-team-row">
+              <p v-if="!teamMembers.length" class="py-8 text-center text-textmuted mb-0">No team members yet.</p>
+              <div v-for="member in teamMembers" :key="member.id || member.name" class="pm-team-row">
                 <span class="avatar avatar-sm avatar-rounded">
                   <img alt="" :src="member.avatar" />
                 </span>

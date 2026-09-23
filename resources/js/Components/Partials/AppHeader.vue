@@ -1,6 +1,6 @@
 <script setup>
-import { Link } from '@inertiajs/vue3'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 
 defineProps({
   dark: {
@@ -14,6 +14,15 @@ defineProps({
 })
 
 defineEmits(['toggle-dark', 'toggle-mobile-nav'])
+
+const page = usePage()
+const user = computed(() => page.props.auth?.user)
+const userName = computed(() => user.value?.name || 'Account')
+const userEmail = computed(() => user.value?.email || '')
+const userInitials = computed(() => {
+    const parts = userName.value.split(' ').filter(Boolean).slice(0, 2)
+    return parts.map((part) => part[0]).join('').toUpperCase() || '?'
+})
 
 const isSearchOpen = ref(false)
 const searchQuery = ref('')
@@ -127,10 +136,10 @@ onBeforeUnmount(() => {
             @click.stop="toggleProfileDropdown"
             :aria-expanded="isProfileDropdownOpen"
           >
-            <span class="avatar avatar-sm bg-primary text-white">PM</span>
+            <span class="avatar avatar-sm bg-primary text-white">{{ userInitials }}</span>
             <span class="pm-header-user__meta">
-              <b>Project Manager</b>
-              <small>Admin</small>
+              <b>{{ userName }}</b>
+              <small>{{ userEmail }}</small>
             </span>
             <i class="ri-arrow-down-s-line pm-header-user__caret"></i>
           </a>
@@ -141,13 +150,25 @@ onBeforeUnmount(() => {
           >
             <li>
               <div class="ti-dropdown-item text-center border-b block">
-                <span>Project Manager</span>
-                <span class="block text-xs text-textmuted">Admin</span>
+                <span>{{ userName }}</span>
+                <span class="block text-xs text-textmuted">{{ userEmail }}</span>
               </div>
             </li>
-            <li><a class="ti-dropdown-item flex items-center" href="javascript:void(0);"><i class="ri-user-line me-2"></i>Profile</a></li>
-            <li><a class="ti-dropdown-item flex items-center" href="javascript:void(0);"><i class="ri-settings-3-line me-2"></i>Settings</a></li>
-            <li class="border-t"><a class="ti-dropdown-item flex items-center" href="javascript:void(0);"><i class="ri-logout-box-line me-2"></i>Log Out</a></li>
+            <li>
+              <Link class="ti-dropdown-item flex items-center" href="/profile">
+                <i class="ri-user-line me-2"></i>Profile
+              </Link>
+            </li>
+            <li>
+              <Link class="ti-dropdown-item flex items-center" href="/profile">
+                <i class="ri-settings-3-line me-2"></i>Settings
+              </Link>
+            </li>
+            <li class="border-t">
+              <Link class="ti-dropdown-item flex items-center w-full text-start" href="/logout" method="post" as="button">
+                <i class="ri-logout-box-line me-2"></i>Log Out
+              </Link>
+            </li>
           </ul>
         </li>
       </ul>

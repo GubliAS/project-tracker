@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BudgetItem;
 use App\Models\Milestone;
 use App\Models\Project;
 use App\Models\Resource;
@@ -65,9 +66,41 @@ class ResourceController extends Controller
 
     public function budget(): Response
     {
-        $resources = Resource::query()->get();
+        $items = BudgetItem::query()->with('project:id,name')->latest()->get();
+        $allocated = (float) $items->sum('allocated');
+        $spent = (float) $items->sum('spent');
 
-        return $this->inertiaPage('Resources/Budget', 'Budget', ['resources' => $resources, 'summary' => ['total_hourly_cost' => $resources->sum('cost_per_hour'), 'allocated_hourly_cost' => $resources->where('availability_status', 'allocated')->sum('cost_per_hour')]]);
+        return $this->inertiaPage('Resources/Budget', 'Budget', [
+            'items' => $items,
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'summary' => [
+                'total_budget' => $allocated,
+                'spent' => $spent,
+                'remaining' => $allocated - $spent,
+                'projected' => $spent,
+            ],
+        ]);
+    }
+
+    public function storeBudget(Request $request): RedirectResponse
+    {
+        BudgetItem::query()->create($this->budgetData($request));
+
+        return redirect()->route('resources.budget')->with('message', 'Budget item created successfully.');
+    }
+
+    public function updateBudget(Request $request, BudgetItem $budgetItem): RedirectResponse
+    {
+        $budgetItem->update($this->budgetData($request, true));
+
+        return redirect()->route('resources.budget')->with('message', 'Budget item updated successfully.');
+    }
+
+    public function destroyBudget(BudgetItem $budgetItem): RedirectResponse
+    {
+        $budgetItem->delete();
+
+        return redirect()->route('resources.budget')->with('message', 'Budget item deleted successfully.');
     }
 
     public function milestones(): Response
@@ -103,7 +136,29 @@ class ResourceController extends Controller
 
     private function resourceData(Request $request, bool $partial = false): array
     {
-        return $request->validate(['name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'], 'type' => [$partial ? 'sometimes' : 'required', 'in:human,hardware,software,material'], 'role_or_category' => ['nullable', 'string', 'max:255'], 'cost_per_hour' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'], 'availability_status' => [$partial ? 'sometimes' : 'required', 'in:available,allocated,unavailable']]);
+        return $request->validate([
+            'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'type' => [$partial ? 'sometimes' : 'required', 'in:human,hardware,software,material'],
+            'role_or_category' => ['nullable', 'string', 'max:255'],
+            'cost_per_hour' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
+            'availability_status' => [$partial ? 'sometimes' : 'required', 'in:available,allocated,unavailable'],
+            'availability_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function budgetData(Request $request, bool $partial = false): array
+    {
+        return $request->validate([
+            'project_id' => ['nullable', 'exists:projects,id'],
+            'category' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
+            'allocated' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
+            'spent' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
+            'status' => [$partial ? 'sometimes' : 'required', 'in:on-track,under,over'],
+        ]);
     }
 
     private function timeData(Request $request): array

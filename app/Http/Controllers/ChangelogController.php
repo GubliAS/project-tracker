@@ -11,7 +11,28 @@ class ChangelogController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Change Log', ['items' => Changelog::query()->orderByDesc('release_date')->latest()->get(), 'fields' => [['label' => 'Version', 'path' => 'version'], ['label' => 'Title', 'path' => 'title'], ['label' => 'Type', 'path' => 'type'], ['label' => 'Released', 'path' => 'release_date']]]);
+        return $this->inertiaPage('DatabaseList', 'Change Log', [
+            'items' => Changelog::query()->orderByDesc('release_date')->latest()->get(),
+            'fields' => [
+                ['label' => 'Version', 'path' => 'version'],
+                ['label' => 'Title', 'path' => 'title'],
+                ['label' => 'Type', 'path' => 'type'],
+                ['label' => 'Released', 'path' => 'release_date'],
+            ],
+            'form' => [
+                'storeUrl' => '/quality/change-log',
+                'updateUrl' => '/quality/change-log',
+                'destroyUrl' => '/quality/change-log',
+                'createLabel' => 'Add change',
+                'fields' => [
+                    ['name' => 'version', 'label' => 'Version', 'type' => 'text', 'required' => true],
+                    ['name' => 'title', 'label' => 'Title', 'type' => 'text', 'required' => true],
+                    ['name' => 'type', 'label' => 'Type', 'type' => 'select', 'options' => ['feature', 'improvement', 'fix', 'security'], 'required' => true],
+                    ['name' => 'release_date', 'label' => 'Release date', 'type' => 'date', 'required' => true],
+                    ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'required' => true],
+                ],
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

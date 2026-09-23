@@ -15,6 +15,8 @@ class RiskFactory extends Factory
     {
         return [
             'title' => fake()->sentence(5),
+            'category' => 'resource',
+            'owner' => fake()->name(),
             'impact' => 'medium',
             'probability' => 'medium',
             'status' => 'open',

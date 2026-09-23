@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['name', 'file_path', 'category', 'size', 'project_id'])]
+#[Fillable(['name', 'file_path', 'category', 'size', 'project_id', 'user_id'])]
 class Document extends Model
 {
     use HasFactory;
@@ -15,5 +15,10 @@ class Document extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

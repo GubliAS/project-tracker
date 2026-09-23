@@ -30,6 +30,15 @@ class ProjectController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'in:planning,active,on_hold,completed'],
+            'team' => ['nullable', 'string', 'max:255'],
+            'client' => ['nullable', 'string', 'max:255'],
+            'priority' => ['nullable', 'in:low,medium,high'],
+            'project_type' => ['nullable', 'in:hybrid,predictive,agile'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'budget' => ['nullable', 'numeric', 'min:0'],
+            'spent' => ['nullable', 'numeric', 'min:0'],
+            'settings' => ['nullable', 'array'],
         ]));
 
         return redirect()->route('projects.show', $project)->with('message', 'Project created successfully.');
@@ -40,5 +49,32 @@ class ProjectController extends Controller
         $project->load(['tasks.project:id,name', 'tasks.user:id,name']);
 
         return $this->inertiaPage('Projects/Show', 'Project Details', ['project' => $project]);
+    }
+
+    public function update(Request $request, Project $project): RedirectResponse
+    {
+        $project->update($request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['sometimes', 'required', 'in:planning,active,on_hold,completed'],
+            'team' => ['nullable', 'string', 'max:255'],
+            'client' => ['nullable', 'string', 'max:255'],
+            'priority' => ['nullable', 'in:low,medium,high'],
+            'project_type' => ['nullable', 'in:hybrid,predictive,agile'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'budget' => ['nullable', 'numeric', 'min:0'],
+            'spent' => ['nullable', 'numeric', 'min:0'],
+            'settings' => ['nullable', 'array'],
+        ]));
+
+        return redirect()->route('projects.show', $project)->with('message', 'Project updated successfully.');
+    }
+
+    public function destroy(Project $project): RedirectResponse
+    {
+        $project->delete();
+
+        return redirect()->route('projects.index')->with('message', 'Project deleted successfully.');
     }
 }

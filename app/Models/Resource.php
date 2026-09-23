@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'type', 'role_or_category', 'cost_per_hour', 'availability_status'])]
+#[Fillable(['name', 'email', 'type', 'role_or_category', 'cost_per_hour', 'availability_status', 'availability_percent'])]
 class Resource extends Model
 {
     use HasFactory;

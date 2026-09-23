@@ -14,6 +14,13 @@ class CoreModulesTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->signIn();
+    }
+
     public function test_tasks_index_renders_kanban_with_related_data(): void
     {
         $project = Project::factory()->create(['name' => 'Website Rebuild']);
@@ -42,7 +49,7 @@ class CoreModulesTest extends TestCase
         $project = Project::factory()->create();
         $user = User::factory()->create();
 
-        $this->post('/tasks', [
+        $this->from(route('tasks.index'))->post('/tasks', [
             'title' => 'Write API tests',
             'description' => 'Cover store and update paths',
             'project_id' => $project->id,
@@ -59,16 +66,16 @@ class CoreModulesTest extends TestCase
 
         $task = Task::query()->first();
 
-        $this->put("/tasks/{$task->id}", [
+        $this->from(route('tasks.kanban'))->put("/tasks/{$task->id}", [
             'status' => 'in_progress',
-        ])->assertRedirect(route('tasks.index'));
+        ])->assertRedirect(route('tasks.kanban'));
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'status' => 'in_progress',
         ]);
 
-        $this->delete("/tasks/{$task->id}")->assertRedirect(route('tasks.index'));
+        $this->from(route('tasks.index'))->delete("/tasks/{$task->id}")->assertRedirect(route('tasks.index'));
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
 

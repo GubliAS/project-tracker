@@ -1,132 +1,233 @@
 ﻿<script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
+import { router, useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 
-const sprints = ref([
-  { id: 1, name: 'Sprint 12', startDate: '2024-12-02', endDate: '2024-12-15', status: 'active', points: 34, completed: 22 },
-  { id: 2, name: 'Sprint 11', startDate: '2024-11-18', endDate: '2024-12-01', status: 'completed', points: 40, completed: 38 },
-  { id: 3, name: 'Sprint 13', startDate: '2024-12-16', endDate: '2024-12-29', status: 'planned', points: 30, completed: 0 }
-])
-
-const currentSprint = ref({
-  name: 'Sprint 12',
-  goal: 'Complete user authentication and dashboard features',
-  daysRemaining: 8,
-  totalPoints: 34,
-  completedPoints: 22,
-  tasks: { total: 20, done: 13, inProgress: 5, todo: 2 }
+const props = defineProps({
+  title: { type: String, default: 'Sprints' },
+  sprints: { type: Array, default: () => [] },
+  projects: { type: Array, default: () => [] },
+  currentSprint: { type: Object, default: null },
 })
+
+const showModal = ref(false)
+const editing = ref(null)
+const form = useForm({
+  project_id: '',
+  name: '',
+  goal: '',
+  start_date: '',
+  end_date: '',
+  status: 'planned',
+  story_points: 0,
+  completed_points: 0,
+})
+
+const current = computed(() => props.currentSprint)
+const daysRemaining = computed(() => {
+  if (!current.value?.end_date) {
+    return 0
+  }
+
+  return Math.max(0, Math.ceil((new Date(current.value.end_date) - new Date()) / 86400000))
+})
+const progress = computed(() => {
+  if (!current.value?.story_points) {
+    return 0
+  }
+
+  return Math.round((Number(current.value.completed_points) / Number(current.value.story_points)) * 100)
+})
+
+const openCreate = () => {
+  editing.value = null
+  form.reset()
+  form.status = 'planned'
+  showModal.value = true
+}
+
+const openEdit = (sprint) => {
+  editing.value = sprint
+  Object.assign(form, {
+    project_id: sprint.project_id || '',
+    name: sprint.name,
+    goal: sprint.goal || '',
+    start_date: sprint.start_date || '',
+    end_date: sprint.end_date || '',
+    status: sprint.status,
+    story_points: sprint.story_points,
+    completed_points: sprint.completed_points,
+  })
+  showModal.value = true
+}
+
+const submit = () => {
+  const options = { onSuccess: () => { showModal.value = false; form.reset() } }
+  const data = { ...form.data(), project_id: form.project_id || null }
+  editing.value
+    ? form.transform(() => data).put(`/agile/sprints/${editing.value.id}`, options)
+    : form.transform(() => data).post('/agile/sprints', options)
+}
+
+const remove = (sprint) => {
+  if (confirm(`Delete “${sprint.name}”?`)) {
+    router.delete(`/agile/sprints/${sprint.id}`, { preserveScroll: true })
+  }
+}
 </script>
 
 <template>
-    <AppLayout>
-        <div class="pm-dash">
-    <PageHeader title="Sprints" subtitle="Manage sprint cycles and iterations">
-      <template #actions>
-        <button class="ti-btn ti-btn-primary">
-          <i class="ri-add-line me-1"></i> New Sprint
-        </button>
-      </template>
-    </PageHeader>
+  <AppLayout>
+    <div class="pm-dash">
+      <PageHeader title="Sprints" subtitle="Manage sprint cycles and iterations">
+        <template #actions>
+          <button class="ti-btn ti-btn-primary" type="button" @click="openCreate">
+            <i class="ri-add-line me-1"></i> New Sprint
+          </button>
+        </template>
+      </PageHeader>
 
-    <div class="grid grid-cols-12 gap-6">
-      <!-- Current Sprint Overview -->
-      <div class="col-span-12 xl:col-span-4">
-        <div class="box">
-          <div class="box-header">
-            <div class="flex items-center justify-between">
-              <h5 class="box-title">{{ currentSprint.name }}</h5>
-              <span class="badge bg-primary/10 text-primary">Active</span>
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 xl:col-span-4">
+          <div class="box">
+            <div class="box-header">
+              <div class="flex items-center justify-between">
+                <h5 class="box-title">{{ current?.name || 'No active sprint' }}</h5>
+                <span v-if="current" class="badge bg-primary/10 text-primary">{{ current.status }}</span>
+              </div>
+            </div>
+            <div class="box-body">
+              <p v-if="!current" class="text-textmuted mb-0">Create a sprint to see progress here.</p>
+              <template v-else>
+                <p class="text-textmuted mb-4">{{ current.goal || 'No sprint goal yet.' }}</p>
+                <div class="text-center mb-4">
+                  <span class="text-4xl font-bold text-primary">{{ daysRemaining }}</span>
+                  <span class="text-textmuted block">days remaining</span>
+                </div>
+                <div class="mb-4">
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>Progress</span>
+                    <span>{{ progress }}%</span>
+                  </div>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-primary" :style="{ width: progress + '%' }"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-textmuted mt-1">
+                    <span>{{ current.completed_points }} points</span>
+                    <span>{{ current.story_points }} points</span>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
-          <div class="box-body">
-            <p class="text-textmuted mb-4">{{ currentSprint.goal }}</p>
-            
-            <div class="text-center mb-4">
-              <span class="text-4xl font-bold text-primary">{{ currentSprint.daysRemaining }}</span>
-              <span class="text-textmuted block">days remaining</span>
-            </div>
+        </div>
 
-            <div class="mb-4">
-              <div class="flex justify-between text-sm mb-1">
-                <span>Progress</span>
-                <span>{{ Math.round((currentSprint.completedPoints / currentSprint.totalPoints) * 100) }}%</span>
-              </div>
-              <div class="progress progress-sm">
-                <div class="progress-bar bg-primary" :style="{ width: (currentSprint.completedPoints / currentSprint.totalPoints) * 100 + '%' }"></div>
-              </div>
-              <div class="flex justify-between text-xs text-textmuted mt-1">
-                <span>{{ currentSprint.completedPoints }} points</span>
-                <span>{{ currentSprint.totalPoints }} points</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center">
-              <div class="p-2 bg-warning/10 rounded-2xl">
-                <span class="block text-lg font-bold text-warning">{{ currentSprint.tasks.todo }}</span>
-                <span class="text-xs text-textmuted">To Do</span>
-              </div>
-              <div class="p-2 bg-primary/10 rounded-2xl">
-                <span class="block text-lg font-bold text-primary">{{ currentSprint.tasks.inProgress }}</span>
-                <span class="text-xs text-textmuted">In Progress</span>
-              </div>
-              <div class="p-2 bg-success/10 rounded-2xl">
-                <span class="block text-lg font-bold text-success">{{ currentSprint.tasks.done }}</span>
-                <span class="text-xs text-textmuted">Done</span>
-              </div>
+        <div class="col-span-12 xl:col-span-8">
+          <div class="box">
+            <div class="box-header"><h5 class="box-title">All Sprints</h5></div>
+            <div class="box-body p-0">
+              <table class="table table-hover whitespace-nowrap">
+                <thead>
+                  <tr>
+                    <th>Sprint</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Progress</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="!sprints.length">
+                    <td colspan="5" class="text-center text-textmuted py-8">No sprints have been created yet.</td>
+                  </tr>
+                  <tr v-for="sprint in sprints" :key="sprint.id">
+                    <td class="font-medium">{{ sprint.name }}</td>
+                    <td class="text-textmuted">{{ sprint.start_date || '—' }} - {{ sprint.end_date || '—' }}</td>
+                    <td>
+                      <span class="badge" :class="{
+                        'bg-primary/10 text-primary': sprint.status === 'active',
+                        'bg-success/10 text-success': sprint.status === 'completed',
+                        'bg-secondary/10 text-secondary': sprint.status === 'planned',
+                      }">{{ sprint.status }}</span>
+                    </td>
+                    <td>
+                      <div class="flex items-center gap-2 min-w-[120px]">
+                        <div class="progress progress-xs flex-1">
+                          <div class="progress-bar bg-primary" :style="{ width: (sprint.story_points ? (sprint.completed_points / sprint.story_points) * 100 : 0) + '%' }"></div>
+                        </div>
+                        <span class="text-xs">{{ sprint.completed_points }}/{{ sprint.story_points }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex gap-1">
+                        <button class="ti-btn ti-btn-soft-info ti-btn-sm" type="button" @click="openEdit(sprint)">Edit</button>
+                        <button class="ti-btn ti-btn-soft-danger ti-btn-sm" type="button" @click="remove(sprint)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Sprint List -->
-      <div class="col-span-12 xl:col-span-8">
-        <div class="box">
-          <div class="box-header">
-            <h5 class="box-title">All Sprints</h5>
+      <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
+        <form class="bg-white dark:bg-bodybg2 rounded-xl shadow-xl w-full max-w-lg mx-4" @submit.prevent="submit">
+          <div class="px-6 py-4 border-b border-defaultborder/60 flex items-center justify-between">
+            <h3 class="text-base font-semibold">{{ editing ? 'Edit Sprint' : 'New Sprint' }}</h3>
+            <button class="ti-btn ti-btn-sm ti-btn-icon ti-btn-light" type="button" @click="showModal = false"><i class="ri-close-line"></i></button>
           </div>
-          <div class="box-body p-0">
-            <table class="table table-hover whitespace-nowrap">
-              <thead>
-                <tr>
-                  <th>Sprint</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                  <th>Progress</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="sprint in sprints" :key="sprint.id">
-                  <td class="font-medium">{{ sprint.name }}</td>
-                  <td class="text-textmuted">{{ sprint.startDate }} - {{ sprint.endDate }}</td>
-                  <td>
-                    <span class="badge" :class="{
-                      'bg-primary/10 text-primary': sprint.status === 'active',
-                      'bg-success/10 text-success': sprint.status === 'completed',
-                      'bg-secondary/10 text-secondary': sprint.status === 'planned'
-                    }">{{ sprint.status }}</span>
-                  </td>
-                  <td>
-                    <div class="flex items-center gap-2 min-w-[120px]">
-                      <div class="progress progress-xs flex-1">
-                        <div class="progress-bar bg-primary" :style="{ width: (sprint.completed / sprint.points) * 100 + '%' }"></div>
-                      </div>
-                      <span class="text-xs">{{ sprint.completed }}/{{ sprint.points }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <button class="ti-btn ti-btn-soft-primary ti-btn-sm">View</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="px-6 py-5 space-y-4">
+            <div>
+              <label class="ti-form-label text-sm mb-1">Name</label>
+              <input v-model="form.name" class="ti-form-control" required>
+            </div>
+            <div>
+              <label class="ti-form-label text-sm mb-1">Goal</label>
+              <textarea v-model="form.goal" class="ti-form-control" rows="3"></textarea>
+            </div>
+            <div>
+              <label class="ti-form-label text-sm mb-1">Project</label>
+              <select v-model="form.project_id" class="ti-form-select">
+                <option value="">Unassigned</option>
+                <option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="ti-form-label text-sm mb-1">Start</label>
+                <input v-model="form.start_date" type="date" class="ti-form-control">
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">End</label>
+                <input v-model="form.end_date" type="date" class="ti-form-control">
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">Story points</label>
+                <input v-model="form.story_points" type="number" min="0" class="ti-form-control">
+              </div>
+              <div>
+                <label class="ti-form-label text-sm mb-1">Completed points</label>
+                <input v-model="form.completed_points" type="number" min="0" class="ti-form-control">
+              </div>
+            </div>
+            <div>
+              <label class="ti-form-label text-sm mb-1">Status</label>
+              <select v-model="form.status" class="ti-form-select">
+                <option value="planned">Planned</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
           </div>
-        </div>
+          <div class="px-6 py-4 border-t border-defaultborder/60 flex justify-end gap-3 bg-light rounded-b-xl">
+            <button class="ti-btn ti-btn-light" type="button" @click="showModal = false">Cancel</button>
+            <button class="ti-btn ti-btn-primary" :disabled="form.processing">Save Sprint</button>
+          </div>
+        </form>
       </div>
     </div>
-          </div>
-    </AppLayout>
+  </AppLayout>
 </template>

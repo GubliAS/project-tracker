@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,27 @@ class DocumentController extends Controller
 {
     public function index(): Response
     {
-        return $this->inertiaPage('DatabaseList', 'Documents', ['items' => Document::query()->with('project:id,name')->latest()->get(), 'fields' => [['label' => 'Document', 'path' => 'name'], ['label' => 'Project', 'path' => 'project.name'], ['label' => 'Category', 'path' => 'category'], ['label' => 'Size', 'path' => 'size']]]);
+        return $this->inertiaPage('DatabaseList', 'Documents', [
+            'items' => Document::query()->with('project:id,name')->latest()->get(),
+            'fields' => [
+                ['label' => 'Document', 'path' => 'name'],
+                ['label' => 'Project', 'path' => 'project.name'],
+                ['label' => 'Category', 'path' => 'category'],
+                ['label' => 'Size', 'path' => 'size'],
+            ],
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'form' => [
+                'storeUrl' => '/reports/documents',
+                'destroyUrl' => '/reports/documents',
+                'createLabel' => 'Upload document',
+                'forceFormData' => true,
+                'fields' => [
+                    ['name' => 'file', 'label' => 'File', 'type' => 'file', 'required' => true],
+                    ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['planning', 'design', 'technical', 'financial', 'quality', 'other'], 'required' => true],
+                    ['name' => 'project_id', 'label' => 'Project', 'type' => 'project'],
+                ],
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

@@ -15,8 +15,11 @@ class ChangelogFactory extends Factory
         return [
             'version' => 'v'.fake()->numerify('#.#.#'),
             'title' => fake()->sentence(4),
+            'requestor' => fake()->name(),
             'description' => fake()->paragraph(),
             'type' => 'feature',
+            'approval_status' => 'pending',
+            'impact' => 'medium',
             'release_date' => fake()->date(),
         ];
     }

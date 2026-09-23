@@ -17,10 +17,12 @@ class ResourceFactory extends Factory
     {
         return [
             'name' => fake()->unique()->jobTitle(),
+            'email' => fake()->unique()->safeEmail(),
             'type' => fake()->randomElement(['human', 'hardware', 'software', 'material']),
             'role_or_category' => fake()->word(),
             'cost_per_hour' => fake()->randomFloat(2, 10, 250),
             'availability_status' => 'available',
+            'availability_percent' => 80,
         ];
     }
 }
