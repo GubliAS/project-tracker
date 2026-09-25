@@ -169,8 +169,8 @@ const remove = (member) => {
                     <td><span class="badge bg-primary/10 text-primary">{{ member.availability_status }}</span></td>
                     <td>
                       <div class="flex gap-1">
-                        <button class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" type="button" @click="openEdit(member)"><i class="ri-edit-line"></i></button>
-                        <button class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm" type="button" @click="remove(member)"><i class="ri-delete-bin-line"></i></button>
+                        <button class="pm-table-action pm-table-action--primary" type="button" title="Edit" @click="openEdit(member)"><i class="ri-pencil-line"></i></button>
+                        <button class="pm-table-action pm-table-action--danger" type="button" title="Delete" @click="remove(member)"><i class="ri-delete-bin-line"></i></button>
                       </div>
                     </td>
                   </tr>

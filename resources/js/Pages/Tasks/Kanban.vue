@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 
@@ -9,14 +9,23 @@ const props = defineProps({
   tasks: { type: Array, default: () => [] },
 })
 
+const page = usePage()
+const abilities = computed(() => page.props.abilities || {})
+const currentUserId = computed(() => page.props.auth?.user?.id)
+const canManageTasks = computed(() => Boolean(abilities.value.write_ops || abilities.value.write_task_details))
+
 const statuses = ['todo', 'in_progress', 'review', 'done']
 const columns = computed(() => statuses.map((status) => ({
   status,
   tasks: props.tasks.filter((task) => task.status === status),
 })))
 
+function canChangeStatus(task) {
+  return canManageTasks.value || task.user_id === currentUserId.value
+}
+
 const move = (task, status) => {
-  if (task.status === status) {
+  if (task.status === status || !canChangeStatus(task)) {
     return
   }
 
@@ -46,7 +55,7 @@ const move = (task, status) => {
                 >{{ task.priority }}</span>
               </div>
               <p class="mb-3 text-xs text-textmuted">{{ task.project?.name || 'No project' }} · {{ task.user?.name || 'Unassigned' }}</p>
-              <div class="flex flex-wrap gap-1">
+              <div v-if="canChangeStatus(task)" class="flex flex-wrap gap-1">
                 <button
                   v-for="status in statuses"
                   :key="status"
@@ -58,6 +67,7 @@ const move = (task, status) => {
                   {{ status.replace('_', ' ') }}
                 </button>
               </div>
+              <span v-else class="badge bg-primary/10 text-primary">{{ task.status.replace('_', ' ') }}</span>
             </article>
           </div>
         </section>

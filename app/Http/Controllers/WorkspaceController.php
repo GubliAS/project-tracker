@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Currency;
+use App\Enums\WorkspaceRole;
+use App\Http\Requests\Workspace\StoreWorkspaceRequest;
+use App\Http\Requests\Workspace\SwitchWorkspaceRequest;
+use App\Http\Requests\Workspace\UpdateWorkspaceRequest;
 use App\Models\AuditLog;
 use App\Models\Project;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 
 class WorkspaceController extends Controller
@@ -56,6 +60,38 @@ class WorkspaceController extends Controller
         ]);
     }
 
+    public function store(StoreWorkspaceRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user, 403);
+
+        $validated = $request->safe()->only(['name', 'currency']);
+
+        $workspace = DB::transaction(function () use ($user, $validated): Workspace {
+            $attributes = ['name' => $validated['name']];
+
+            if (! empty($validated['currency'])) {
+                $attributes['currency'] = $validated['currency'];
+            }
+
+            $workspace = Workspace::query()->create($attributes);
+
+            $user->workspaces()->attach($workspace->id, [
+                'role' => WorkspaceRole::WorkspaceAdmin->value,
+            ]);
+
+            return $workspace;
+        });
+
+        $request->session()->put('current_workspace_id', $workspace->id);
+
+        AuditLog::record('workspace.created', $workspace, $user, $workspace, [
+            'name' => $workspace->name,
+        ]);
+
+        return redirect()->route('dashboard')->with('message', 'Workspace created.');
+    }
+
     public function settings(): Response
     {
         $workspace = $this->workspace()->workspace();
@@ -74,17 +110,13 @@ class WorkspaceController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateWorkspaceRequest $request): RedirectResponse
     {
         $workspace = $this->workspace()->workspace();
 
         abort_unless($workspace, 403, 'No workspace selected.');
-        $this->authorize('update', $workspace);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'currency' => ['required', 'string', Rule::enum(Currency::class)],
-        ]);
+        $validated = $request->validated();
 
         $updates = [
             'name' => $validated['name'],
@@ -122,14 +154,12 @@ class WorkspaceController extends Controller
         return redirect()->route('dashboard')->with('message', 'Workspace deleted.');
     }
 
-    public function switch(Request $request): RedirectResponse
+    public function switch(SwitchWorkspaceRequest $request): RedirectResponse
     {
         $user = $request->user();
         abort_unless($user, 403);
 
-        $validated = $request->validate([
-            'workspace_id' => ['required', 'integer', Rule::exists('workspaces', 'id')],
-        ]);
+        $validated = $request->validated();
 
         $workspace = Workspace::query()->findOrFail($validated['workspace_id']);
 

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Initiation\StoreKickoffRequest;
+use App\Http\Requests\Initiation\StoreStakeholderRequest;
+use App\Http\Requests\Initiation\UpdateKickoffRequest;
+use App\Http\Requests\Initiation\UpdateStakeholderRequest;
 use App\Models\Kickoff;
 use App\Models\Stakeholder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class InitiationController extends Controller
@@ -23,11 +26,9 @@ class InitiationController extends Controller
         ]);
     }
 
-    public function storeKickoff(Request $request): RedirectResponse
+    public function storeKickoff(StoreKickoffRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->kickoffData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        $data = $request->validated();
         $data['objectives'] ??= [
             ['text' => 'Define project scope and deliverables', 'completed' => false],
             ['text' => 'Identify key stakeholders and roles', 'completed' => false],
@@ -40,11 +41,10 @@ class InitiationController extends Controller
         return redirect()->route('initiation.kickoff')->with('message', 'Kick-off scheduled successfully.');
     }
 
-    public function updateKickoff(Request $request, Kickoff $kickoff): RedirectResponse
+    public function updateKickoff(UpdateKickoffRequest $request, Kickoff $kickoff): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($kickoff);
-        $this->authorizer()->authorizeWriteOps();
-        $kickoff->update($this->kickoffData($request, true));
+        $kickoff->update($request->validated());
 
         return redirect()->route('initiation.kickoff')->with('message', 'Kick-off updated successfully.');
     }
@@ -66,21 +66,17 @@ class InitiationController extends Controller
         ]);
     }
 
-    public function storeStakeholder(Request $request): RedirectResponse
+    public function storeStakeholder(StoreStakeholderRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->stakeholderData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        Stakeholder::query()->create($data);
+        Stakeholder::query()->create($request->validated());
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder added successfully.');
     }
 
-    public function updateStakeholder(Request $request, Stakeholder $stakeholder): RedirectResponse
+    public function updateStakeholder(UpdateStakeholderRequest $request, Stakeholder $stakeholder): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($stakeholder);
-        $this->authorizer()->authorizeWriteOps();
-        $stakeholder->update($this->stakeholderData($request, true));
+        $stakeholder->update($request->validated());
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder updated successfully.');
     }
@@ -92,36 +88,5 @@ class InitiationController extends Controller
         $stakeholder->delete();
 
         return redirect()->route('initiation.stakeholders')->with('message', 'Stakeholder deleted successfully.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function kickoffData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => [$partial ? 'sometimes' : 'required', 'exists:projects,id'],
-            'scheduled_on' => [$partial ? 'sometimes' : 'required', 'date'],
-            'attendees' => [$partial ? 'sometimes' : 'required', 'integer', 'min:0', 'max:500'],
-            'status' => [$partial ? 'sometimes' : 'required', 'in:scheduled,completed'],
-            'objectives' => ['nullable', 'array'],
-            'objectives.*.text' => ['required_with:objectives', 'string', 'max:255'],
-            'objectives.*.completed' => ['nullable', 'boolean'],
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function stakeholderData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'role' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'influence' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high'],
-            'interest' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high'],
-        ]);
     }
 }

@@ -32,21 +32,33 @@
 .header-content-right {
     gap: 0.4rem;
     margin-inline-start: auto;
+    flex-wrap: nowrap !important;
+    min-width: 0;
 }
 
 .header-content-right > li {
     display: flex !important;
     align-items: center !important;
     position: relative;
+    flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
-    .pm-header-search-toggle {
+/* Only the workspace pill gives up width; its name truncates. */
+.header-content-right > li.pm-workspace-switcher-wrap {
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* The inline search bar only fits next to the workspace switcher + icon
+   cluster on wide screens; tablets and phones use the toggle + drop-down bar. */
+@media (min-width: 1200px) {
+    .pm-header-search-toggle,
+    .pm-header-search-mobile {
         display: none !important;
     }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1199.98px) {
     .pm-header .pm-header-search {
         display: none !important;
     }
@@ -62,12 +74,6 @@
     [data-nav-layout="horizontal"] .main-header-container .sidemenu-toggle,
     [data-nav-layout="horizontal"] .main-header-container .header-element:has(.sidemenu-toggle) {
         display: none !important;
-    }
-}
-
-@media (min-width: 992px) {
-    [data-header-styles="dark"] .app-header .horizontal-logo .header-logo .desktop-white {
-        display: block !important;
     }
 }
 
@@ -104,22 +110,30 @@
     align-items: center;
 }
 
+/* The logo must never shrink with .header-content-left (min-width:0), or its
+   <img> resolves max-width:100% against a collapsing box and renders at 0px.
+   It is a single <img> without Ynex's desktop-logo/toggle-logo classes,
+   because Ynex hides every one of those variants below 992px. */
 .pm-header .horizontal-logo {
     padding: 0 !important;
-    display: flex;
+    display: flex !important;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .pm-header .header-logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     text-decoration: none;
 }
 
 .pm-header .header-logo img {
+    display: block !important;
     max-height: 44px !important;
     height: 44px !important;
     width: auto !important;
+    max-width: none !important;
     object-fit: contain;
 }
 
@@ -327,26 +341,91 @@
     .app-sidebar.pm-nav.pm-nav-open {
         display: block;
         max-height: calc(100vh - 4.25rem);
-        overflow-y: auto;
+        max-height: calc(100dvh - 4.25rem);
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        background: rgb(255 255 255 / 0.98) !important;
+        box-shadow: 0 18px 40px rgb(15 23 42 / 0.14) !important;
     }
 
+    .dark .app-sidebar.pm-nav.pm-nav-open {
+        background: rgb(20 22 34 / 0.98) !important;
+        box-shadow: 0 18px 40px rgb(4 6 16 / 0.5) !important;
+    }
+
+    .app-sidebar.pm-nav .container-xl {
+        padding-inline: 0.75rem;
+    }
+
+    /* A vertical list: one full-width row per item, left-aligned,
+       with sub-links expanding inline instead of floating over siblings. */
     [data-nav-layout="horizontal"] .pm-nav .main-menu {
-        flex-direction: column;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
         align-items: stretch;
+        gap: 0.15rem;
+        padding: 0.6rem 0 0.9rem;
+        margin: 0 !important;
+        transform: none !important;
     }
 
     [data-nav-layout="horizontal"] .pm-nav .main-menu > .slide,
     [data-nav-layout="horizontal"] .pm-nav .slide {
         width: 100% !important;
-        flex: 1 1 100%;
+        flex: 0 0 auto;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     [data-nav-layout="horizontal"] .pm-nav .side-menu__item,
     [data-nav-layout="horizontal"] .pm-nav .slide--compact .side-menu__item {
         width: 100% !important;
-        font-size: 0.875rem;
-        min-height: 2.35rem;
-        padding: 0.45rem 0.85rem !important;
+        justify-content: flex-start;
+        gap: 0.7rem;
+        font-size: 0.9rem;
+        min-height: 2.75rem;
+        padding: 0.6rem 0.9rem !important;
+        border-radius: 0.75rem !important;
+    }
+
+    [data-nav-layout="horizontal"] .pm-nav .side-menu__icon,
+    [data-nav-layout="horizontal"] .pm-nav .slide--compact .side-menu__icon {
+        font-size: 1.1rem;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    [data-nav-layout="horizontal"] .pm-nav .side-menu__label {
+        font-size: 0.9rem;
+    }
+
+    [data-nav-layout="horizontal"] .pm-nav .side-menu__angle {
+        margin-left: auto !important;
+        font-size: 1.05rem;
+    }
+
+    .pm-nav .pm-dropdown-menu {
+        position: static !important;
+        min-width: 0 !important;
+        margin: 0.15rem 0 0.35rem 1.9rem !important;
+        padding: 0.15rem 0 0.15rem 0.6rem !important;
+        border: 0 !important;
+        border-inline-start: 2px solid rgb(92 103 247 / 0.18) !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .pm-nav .pm-dropdown-menu a {
+        white-space: normal !important;
+        padding: 0.6rem 0.8rem !important;
+    }
+
+    .dark .pm-nav .pm-dropdown-menu {
+        background: transparent !important;
+        box-shadow: none !important;
+        border-inline-start-color: rgb(92 103 247 / 0.3) !important;
     }
 }
 
@@ -616,45 +695,124 @@
         display: none;
     }
 
-    .pm-header-user {
-        padding: 0.15rem !important;
-        background: transparent !important;
+    /* Must match the base rule's specificity, or its asymmetric pill
+       padding survives and pushes the avatar off-center in the circle. */
+    .app-header.pm-header .header-content-right .header-link.pm-header-user {
+        justify-content: center !important;
+        gap: 0 !important;
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        padding: 0 !important;
     }
 }
 
-/* Very narrow phones: the full icon cluster + logo genuinely don't fit on
-   one row at ~320-420px. .header-content-left has min-width:0 so it can
-   shrink, but nothing protected the logo from shrinking WITH it - its <img>
-   has max-width:100%, which resolved against a collapsing container and
-   rendered the logo at 0 width. Protect the logo, shrink it and the icon
-   buttons, and drop the least essential icon (fullscreen) to make room. */
-@media (max-width: 420px) {
+/* Tablet: the workspace pill truncates harder and the Admin pill becomes
+   an icon button (Admin is also in the nav menu). */
+@media (max-width: 1199.98px) {
+    .pm-header .pm-workspace-switcher {
+        max-width: 12rem;
+    }
+
+    .pm-header .pm-admin-link {
+        width: 2.5rem;
+        min-height: 2.5rem;
+        padding: 0;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .pm-header .pm-admin-link span {
+        display: none;
+    }
+}
+
+/* Phones: the workspace pill collapses to an icon button (name stays in
+   title/aria-label and the menu highlights the current one), the Admin
+   shortcut and fullscreen drop out, and header dropdowns span the screen
+   instead of hanging off their trigger past the left edge. */
+@media (max-width: 575.98px) {
     .app-header.pm-header .main-header-container {
         padding-inline: 0.75rem;
     }
 
-    .pm-header .horizontal-logo,
-    .pm-header .header-logo {
-        flex-shrink: 0;
-    }
-
-    .pm-header .header-logo img {
-        max-height: 32px !important;
-        height: 32px !important;
+    .pm-header .header-content-left {
+        gap: 0.5rem;
     }
 
     .pm-header .header-content-right {
         gap: 0.3rem;
     }
 
-    .pm-header .sidemenu-toggle.header-link,
-    .pm-header .header-content-right .header-link:not(.pm-header-user) {
-        width: 2.15rem !important;
-        height: 2.15rem !important;
+    .pm-header .header-logo img {
+        max-height: 34px !important;
+        height: 34px !important;
     }
 
+    /* Icon-only now, so it must not shrink like the truncating pill does. */
+    .header-content-right > li.pm-workspace-switcher-wrap {
+        flex-shrink: 0;
+    }
+
+    .pm-header .pm-workspace-switcher {
+        flex-shrink: 0;
+        justify-content: center;
+        width: 2.5rem;
+        max-width: none;
+        min-height: 2.5rem;
+        padding: 0;
+        font-size: 1.1rem;
+    }
+
+    .pm-header .pm-workspace-switcher__name,
+    .pm-header .pm-workspace-switcher__caret {
+        display: none;
+    }
+
+    .pm-header .pm-admin-link-wrap,
     .pm-header .header-fullscreen {
         display: none !important;
+    }
+
+    .pm-header .header-profile-dropdown,
+    .pm-header .main-header-dropdown {
+        position: fixed !important;
+        top: 4.4rem;
+        left: 0.75rem !important;
+        right: 0.75rem !important;
+        min-width: 0;
+        max-height: calc(100dvh - 5.5rem);
+        overflow-y: auto;
+    }
+}
+
+/* Very narrow phones (~320-420px): shrink the logo and icon buttons so
+   logo + toggle + switcher + search + theme + bell + avatar fit one row. */
+@media (max-width: 420px) {
+    .pm-header .header-logo img {
+        max-height: 28px !important;
+        height: 28px !important;
+    }
+
+    .pm-header .header-content-right {
+        gap: 0.25rem;
+    }
+
+    .pm-header .sidemenu-toggle.header-link,
+    .pm-header .header-content-right .header-link:not(.pm-header-user),
+    .pm-header .pm-workspace-switcher {
+        width: 2.1rem !important;
+        height: 2.1rem !important;
+        min-height: 2.1rem;
+    }
+
+    .app-header.pm-header .header-content-right .header-link.pm-header-user {
+        width: 2.1rem !important;
+        height: 2.1rem !important;
+    }
+
+    .pm-header-user .avatar {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
     }
 }
 
@@ -2146,12 +2304,16 @@ html.dark body {
 }
 
 .pm-auth__link {
+    position: relative;
+    z-index: 2;
     color: #5c67f7;
     font-weight: 600;
     background: none;
     border: 0;
     padding: 0;
     text-decoration: none;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .pm-auth__link:hover {
@@ -2174,6 +2336,8 @@ html.dark body {
 }
 
 .pm-auth__switch {
+    position: relative;
+    z-index: 2;
     margin-top: 1.15rem;
     text-align: center;
     font-size: 0.86rem;
@@ -2888,5 +3052,278 @@ html.dark body {
     background-color: rgb(20 22 34) !important;
     border-color: #5c67f7 !important;
     box-shadow: 0 0 0 4px rgb(92 103 247 / 0.22) !important;
+}
+
+/* ============================================
+   TABLE ACTIONS + TASK BOARD + HEADER SWITCHER
+   ============================================ */
+
+.pm-table-action,
+.table .ti-btn-icon.ti-btn-sm {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 2.25rem !important;
+    min-height: 2.25rem !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    padding: 0 !important;
+    border-radius: 0.55rem !important;
+    font-size: 1.1rem !important;
+    line-height: 1 !important;
+    border: 1px solid transparent !important;
+    text-decoration: none !important;
+}
+
+.pm-table-action--primary,
+.table .ti-btn-soft-primary.ti-btn-icon,
+.table .ti-btn-soft-info.ti-btn-icon {
+    color: #5c67f7 !important;
+    background: rgb(92 103 247 / 0.12) !important;
+}
+
+.pm-table-action--danger,
+.table .ti-btn-soft-danger.ti-btn-icon {
+    color: #dc2626 !important;
+    background: rgb(220 38 38 / 0.1) !important;
+}
+
+.dark .pm-table-action--primary,
+.dark .table .ti-btn-soft-primary.ti-btn-icon,
+.dark .table .ti-btn-soft-info.ti-btn-icon {
+    color: #8b93ff !important;
+    background: rgb(92 103 247 / 0.22) !important;
+}
+
+.dark .pm-table-action--danger,
+.dark .table .ti-btn-soft-danger.ti-btn-icon {
+    color: #fca5a5 !important;
+    background: rgb(220 38 38 / 0.18) !important;
+}
+
+.pm-workspace-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.35rem;
+    min-width: 0;
+    max-width: 16rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgb(92 103 247 / 0.28);
+    background: rgb(92 103 247 / 0.1);
+    color: #3d46c7;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.pm-workspace-switcher__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pm-workspace-switcher__menu {
+    min-width: 14rem;
+}
+
+.pm-admin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.35rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: #5c67f7;
+    color: #fff !important;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.dark .pm-workspace-switcher {
+    color: #c7cbff;
+    background: rgb(92 103 247 / 0.2);
+    border-color: rgb(92 103 247 / 0.4);
+}
+
+.pm-workspace-create {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgb(15 23 42 / 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.pm-workspace-create__card {
+    width: min(22rem, 100%);
+    padding: 1.25rem 1.35rem 1.35rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgb(92 103 247 / 0.22);
+    background: rgb(255 255 255 / 0.92);
+    backdrop-filter: blur(20px) saturate(1.25);
+    -webkit-backdrop-filter: blur(20px) saturate(1.25);
+    box-shadow: 0 18px 50px rgb(92 103 247 / 0.16);
+}
+
+.pm-workspace-create__title {
+    margin: 0 0 0.35rem;
+    color: #3d46c7;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.pm-workspace-create__hint {
+    margin: 0 0 0.9rem;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+}
+
+.pm-workspace-create__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.dark .pm-workspace-create__card {
+    background: rgb(15 23 42 / 0.88);
+    border-color: rgb(92 103 247 / 0.35);
+}
+
+.dark .pm-workspace-create__title {
+    color: #c7cbff;
+}
+
+.pm-task-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pm-task-search {
+    max-width: 18rem;
+}
+
+.pm-task-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.pm-task-filter {
+    min-height: 2rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgb(15 23 42 / 0.08);
+    background: rgb(255 255 255 / 0.7);
+    color: #475569;
+    font-size: 0.8125rem;
+}
+
+.pm-task-filter.is-active {
+    background: #5c67f7;
+    border-color: #5c67f7;
+    color: #fff;
+}
+
+.pm-task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1rem;
+}
+
+.pm-task-card,
+.pm-task-empty {
+    border-radius: 1.15rem;
+    border: 1px solid rgb(92 103 247 / 0.14);
+    background: rgb(255 255 255 / 0.78);
+    box-shadow: 0 12px 28px rgb(92 103 247 / 0.08);
+    backdrop-filter: blur(16px);
+}
+
+.pm-task-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1rem 1.05rem 1.05rem;
+}
+
+.pm-task-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: #64748b;
+}
+
+.pm-task-card__top,
+.pm-task-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.pm-task-card__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: #1e1b4b;
+}
+
+.pm-task-card__copy,
+.pm-task-card__meta {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+.pm-task-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.75rem;
+}
+
+.pm-task-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.pm-task-pill--high { background: rgb(220 38 38 / 0.12); color: #b91c1c; }
+.pm-task-pill--medium { background: rgb(217 119 6 / 0.14); color: #b45309; }
+.pm-task-pill--low { background: rgb(22 163 74 / 0.12); color: #15803d; }
+.pm-task-pill--todo { background: rgb(92 103 247 / 0.12); color: #5c67f7; }
+.pm-task-pill--progress { background: rgb(37 99 235 / 0.12); color: #1d4ed8; }
+.pm-task-pill--review { background: rgb(124 58 237 / 0.12); color: #6d28d9; }
+.pm-task-pill--done { background: rgb(22 163 74 / 0.12); color: #15803d; }
+
+.dark .pm-task-card,
+.dark .pm-task-empty,
+.dark .pm-task-filter {
+    background: rgb(20 22 34 / 0.78);
+    border-color: rgb(92 103 247 / 0.22);
+    color: #cbd5e1;
+}
+
+.dark .pm-task-card__title {
+    color: #eef0ff;
+}
+
+.dark .pm-task-filter.is-active {
+    background: #5c67f7;
+    color: #fff;
 }
 

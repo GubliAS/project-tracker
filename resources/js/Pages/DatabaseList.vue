@@ -101,10 +101,10 @@ function remove(item) {
                   <td v-for="field in fields" :key="field.path">{{ value(item, field) }}</td>
                   <td v-if="canEdit || canDelete || isDocumentList">
                     <div class="flex gap-1">
-                      <a v-if="isDocumentList" class="ti-btn ti-btn-soft-primary ti-btn-icon ti-btn-sm" :href="`/reports/documents/${item.id}/preview`" target="_blank" rel="noreferrer"><i class="ri-eye-line"></i></a>
-                      <a v-if="isDocumentList" class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" :href="`/reports/documents/${item.id}/download`"><i class="ri-download-line"></i></a>
-                      <button v-if="canEdit" class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" type="button" @click="openEdit(item)"><i class="ri-edit-line"></i></button>
-                      <button v-if="canDelete" class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm" type="button" @click="remove(item)"><i class="ri-delete-bin-line"></i></button>
+                      <a v-if="isDocumentList" class="pm-table-action pm-table-action--primary" :href="`/reports/documents/${item.id}/preview`" target="_blank" rel="noreferrer" title="View"><i class="ri-eye-line"></i></a>
+                      <a v-if="isDocumentList" class="pm-table-action pm-table-action--primary" :href="`/reports/documents/${item.id}/download`" title="Download"><i class="ri-download-line"></i></a>
+                      <button v-if="canEdit" class="pm-table-action pm-table-action--primary" type="button" title="Edit" @click="openEdit(item)"><i class="ri-pencil-line"></i></button>
+                      <button v-if="canDelete" class="pm-table-action pm-table-action--danger" type="button" title="Delete" @click="remove(item)"><i class="ri-delete-bin-line"></i></button>
                     </div>
                   </td>
                 </tr>

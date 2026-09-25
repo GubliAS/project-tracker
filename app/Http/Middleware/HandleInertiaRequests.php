@@ -69,7 +69,7 @@ class HandleInertiaRequests extends Middleware
             'currencies' => Currency::options(),
             'workspaces' => $workspaces,
             'canSwitchWorkspaces' => $user instanceof User && (
-                $user->is_platform_admin || $workspaces->count() > 1
+                $user->is_platform_admin || $workspaces->isNotEmpty()
             ),
             'abilities' => $user instanceof User ? $context->abilities() : [
                 'manage_members' => false,
@@ -77,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                 'write_projects' => false,
                 'write_ops' => false,
                 'write_member' => false,
+                'write_task_details' => false,
                 'is_viewer' => false,
                 'is_platform_admin' => false,
             ],

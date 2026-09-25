@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Lesson\StoreLessonRequest;
+use App\Http\Requests\Lesson\UpdateLessonRequest;
 use App\Models\LessonLearned;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class LessonController extends Controller
@@ -17,21 +18,17 @@ class LessonController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreLessonRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteLessons();
-        $data = $this->validated($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        LessonLearned::query()->create($data);
+        LessonLearned::query()->create($request->validated());
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson recorded successfully.');
     }
 
-    public function update(Request $request, LessonLearned $lesson): RedirectResponse
+    public function update(UpdateLessonRequest $request, LessonLearned $lesson): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($lesson);
-        $this->authorizer()->authorizeWriteOps();
-        $lesson->update($this->validated($request));
+        $lesson->update($request->validated());
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson updated successfully.');
     }
@@ -43,19 +40,5 @@ class LessonController extends Controller
         $lesson->delete();
 
         return redirect()->route('reports.lessons')->with('message', 'Lesson deleted successfully.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validated(Request $request): array
-    {
-        return $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'max:100'],
-            'impact_level' => ['required', 'in:low,medium,high'],
-            'recommendation' => ['required', 'string'],
-            'project_id' => ['nullable', 'exists:projects,id'],
-        ]);
     }
 }

@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Agile\StoreBacklogItemRequest;
+use App\Http\Requests\Agile\StoreDefinitionItemRequest;
+use App\Http\Requests\Agile\StoreSprintRequest;
+use App\Http\Requests\Agile\UpdateBacklogItemRequest;
+use App\Http\Requests\Agile\UpdateDefinitionItemRequest;
+use App\Http\Requests\Agile\UpdateSprintRequest;
 use App\Models\BacklogItem;
 use App\Models\DefinitionItem;
 use App\Models\Sprint;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class AgileController extends Controller
@@ -27,21 +32,17 @@ class AgileController extends Controller
         ]);
     }
 
-    public function storeSprint(Request $request): RedirectResponse
+    public function storeSprint(StoreSprintRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->sprintData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        Sprint::query()->create($data);
+        Sprint::query()->create($request->validated());
 
         return redirect()->route('agile.sprints')->with('message', 'Sprint created successfully.');
     }
 
-    public function updateSprint(Request $request, Sprint $sprint): RedirectResponse
+    public function updateSprint(UpdateSprintRequest $request, Sprint $sprint): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($sprint);
-        $this->authorizer()->authorizeWriteOps();
-        $sprint->update($this->sprintData($request, true));
+        $sprint->update($request->validated());
 
         return redirect()->route('agile.sprints')->with('message', 'Sprint updated successfully.');
     }
@@ -64,21 +65,17 @@ class AgileController extends Controller
         ]);
     }
 
-    public function storeBacklog(Request $request): RedirectResponse
+    public function storeBacklog(StoreBacklogItemRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->backlogData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        BacklogItem::query()->create($data);
+        BacklogItem::query()->create($request->validated());
 
         return redirect()->route('agile.backlog')->with('message', 'Backlog item created successfully.');
     }
 
-    public function updateBacklog(Request $request, BacklogItem $backlogItem): RedirectResponse
+    public function updateBacklog(UpdateBacklogItemRequest $request, BacklogItem $backlogItem): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($backlogItem);
-        $this->authorizer()->authorizeUpdateBacklog();
-        $backlogItem->update($this->backlogData($request, true));
+        $backlogItem->update($request->validated());
 
         return redirect()->route('agile.backlog')->with('message', 'Backlog item updated successfully.');
     }
@@ -103,25 +100,20 @@ class AgileController extends Controller
         ]);
     }
 
-    public function storeDefinition(Request $request): RedirectResponse
+    public function storeDefinition(StoreDefinitionItemRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        abort_unless($this->currentWorkspaceId(), 403);
-        $data = $this->definitionData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
         DefinitionItem::query()->create([
             'workspace_id' => $this->currentWorkspaceId(),
-            ...$data,
+            ...$request->validated(),
         ]);
 
         return redirect()->route('agile.definitions')->with('message', 'Criteria added successfully.');
     }
 
-    public function updateDefinition(Request $request, DefinitionItem $definitionItem): RedirectResponse
+    public function updateDefinition(UpdateDefinitionItemRequest $request, DefinitionItem $definitionItem): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($definitionItem);
-        $this->authorizer()->authorizeWriteOps();
-        $definitionItem->update($this->definitionData($request, true));
+        $definitionItem->update($request->validated());
 
         return redirect()->route('agile.definitions')->with('message', 'Criteria updated successfully.');
     }
@@ -133,51 +125,5 @@ class AgileController extends Controller
         $definitionItem->delete();
 
         return redirect()->route('agile.definitions')->with('message', 'Criteria deleted successfully.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function sprintData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'goal' => ['nullable', 'string'],
-            'start_date' => ['nullable', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'status' => [$partial ? 'sometimes' : 'required', 'in:planned,active,completed'],
-            'story_points' => ['nullable', 'integer', 'min:0'],
-            'completed_points' => ['nullable', 'integer', 'min:0'],
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function backlogData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'sprint_id' => ['nullable', 'exists:sprints,id'],
-            'title' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'type' => [$partial ? 'sometimes' : 'required', 'in:epic,feature,story'],
-            'priority' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high'],
-            'points' => ['nullable', 'integer', 'min:0'],
-            'status' => [$partial ? 'sometimes' : 'required', 'in:backlog,ready,in-progress,done'],
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function definitionData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'kind' => [$partial ? 'sometimes' : 'required', 'in:dor,dod'],
-            'text' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'is_checked' => ['sometimes', 'boolean'],
-        ]);
     }
 }

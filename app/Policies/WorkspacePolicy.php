@@ -19,7 +19,7 @@ class WorkspacePolicy
 
     public function create(User $user): bool
     {
-        return $user->is_platform_admin;
+        return true;
     }
 
     public function update(User $user, Workspace $workspace): bool

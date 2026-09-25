@@ -1,9 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { router, useForm } from '@inertiajs/vue3'
+import { router, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
-import CreateHero from '@/Components/ui/CreateHero.vue'
 
 const props = defineProps({
   title: String,
@@ -13,7 +12,12 @@ const props = defineProps({
   members: { type: Array, default: () => [] },
 })
 
+const page = usePage()
+const abilities = computed(() => page.props.abilities || {})
+const currentUserId = computed(() => page.props.auth?.user?.id)
+const canManageTasks = computed(() => Boolean(abilities.value.write_ops || abilities.value.write_task_details))
 const search = ref('')
+const statusFilter = ref('all')
 const showModal = ref(false)
 const editing = ref(null)
 const form = useForm({
@@ -28,15 +32,54 @@ const form = useForm({
 })
 
 const assignees = computed(() => (props.members.length ? props.members : props.users))
-const tasks = computed(() => props.tasks.filter((task) => task.title.toLowerCase().includes(search.value.toLowerCase())))
+const statuses = [
+  { value: 'todo', label: 'To do' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'review', label: 'Review' },
+  { value: 'done', label: 'Done' },
+]
 
-const priorityClass = (priority) => ({
-  high: 'bg-danger/10 text-danger',
-  medium: 'bg-warning/10 text-warning',
-  low: 'bg-success/10 text-success',
-}[priority] || 'bg-secondary/10 text-secondary')
+const filteredTasks = computed(() => props.tasks.filter((task) => {
+  const matchesSearch = task.title.toLowerCase().includes(search.value.toLowerCase())
+  const matchesStatus = statusFilter.value === 'all' || task.status === statusFilter.value
 
-const openCreate = () => {
+  return matchesSearch && matchesStatus
+}))
+
+const counts = computed(() => ({
+  all: props.tasks.length,
+  todo: props.tasks.filter((task) => task.status === 'todo').length,
+  in_progress: props.tasks.filter((task) => task.status === 'in_progress').length,
+  review: props.tasks.filter((task) => task.status === 'review').length,
+  done: props.tasks.filter((task) => task.status === 'done').length,
+}))
+
+function canChangeStatus(task) {
+  return canManageTasks.value || task.user_id === currentUserId.value
+}
+
+function priorityClass(priority) {
+  return {
+    high: 'pm-task-pill pm-task-pill--high',
+    medium: 'pm-task-pill pm-task-pill--medium',
+    low: 'pm-task-pill pm-task-pill--low',
+  }[priority] || 'pm-task-pill'
+}
+
+function statusClass(status) {
+  return {
+    todo: 'pm-task-pill pm-task-pill--todo',
+    in_progress: 'pm-task-pill pm-task-pill--progress',
+    review: 'pm-task-pill pm-task-pill--review',
+    done: 'pm-task-pill pm-task-pill--done',
+  }[status] || 'pm-task-pill'
+}
+
+function statusLabel(status) {
+  return statuses.find((item) => item.value === status)?.label || status
+}
+
+function openCreate() {
   editing.value = null
   form.reset()
   form.status = 'todo'
@@ -46,7 +89,11 @@ const openCreate = () => {
   showModal.value = true
 }
 
-const openEdit = (task) => {
+function openEdit(task) {
+  if (!canManageTasks.value) {
+    return
+  }
+
   editing.value = task
   Object.assign(form, {
     title: task.title,
@@ -61,7 +108,7 @@ const openEdit = (task) => {
   showModal.value = true
 }
 
-const submit = () => {
+function submit() {
   const options = { onSuccess: () => { showModal.value = false; form.reset() } }
   const data = { ...form.data(), project_id: form.project_id || null, user_id: form.user_id || null }
   editing.value
@@ -69,7 +116,15 @@ const submit = () => {
     : form.transform(() => data).post('/tasks', options)
 }
 
-const remove = (task) => {
+function updateStatus(task, status) {
+  if (task.status === status || !canChangeStatus(task)) {
+    return
+  }
+
+  router.put(`/tasks/${task.id}`, { status }, { preserveScroll: true })
+}
+
+function remove(task) {
   if (confirm(`Delete “${task.title}”?`)) {
     router.delete(`/tasks/${task.id}`, { preserveScroll: true })
   }
@@ -79,53 +134,78 @@ const remove = (task) => {
 <template>
   <AppLayout :title="title">
     <div class="pm-dash">
-      <PageHeader :title="title" subtitle="Tasks stored in the tracker database">
-        <template #actions>
+      <PageHeader :title="title" subtitle="Assign work, then let people move their own status.">
+        <template v-if="canManageTasks" #actions>
           <button class="ti-btn ti-btn-primary" type="button" @click="openCreate">
             <i class="ri-add-line me-1"></i> Add Task
           </button>
         </template>
       </PageHeader>
-      <CreateHero :title="title" subtitle="Add a task or refine one already in the tracker." pill="Tasks" />
-      <div class="box">
-        <div class="box-header">
-          <input v-model="search" class="ti-form-control max-w-sm" placeholder="Search tasks">
-        </div>
-        <div class="box-body p-0">
-          <div v-if="!tasks.length" class="p-12 text-center text-textmuted">No tasks have been created yet.</div>
-          <table v-else class="table table-hover">
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>Project</th>
-                <th>Assignee</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Due</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="task in tasks" :key="task.id">
-                <td>{{ task.title }}</td>
-                <td>{{ task.project?.name || 'Unassigned' }}</td>
-                <td>{{ task.user?.name || 'Unassigned' }}</td>
-                <td><span class="badge bg-primary/10 text-primary">{{ task.status }}</span></td>
-                <td><span class="badge" :class="priorityClass(task.priority)">{{ task.priority }}</span></td>
-                <td>{{ task.due_date || '—' }}</td>
-                <td>
-                  <div class="flex gap-1">
-                    <button class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" type="button" @click="openEdit(task)"><i class="ri-edit-line"></i></button>
-                    <button class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm" type="button" @click="remove(task)"><i class="ri-delete-bin-line"></i></button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+      <div class="pm-task-toolbar">
+        <input v-model="search" class="ti-form-control pm-task-search" placeholder="Search tasks">
+        <div class="pm-task-filters">
+          <button
+            type="button"
+            class="pm-task-filter"
+            :class="{ 'is-active': statusFilter === 'all' }"
+            @click="statusFilter = 'all'"
+          >
+            All {{ counts.all }}
+          </button>
+          <button
+            v-for="status in statuses"
+            :key="status.value"
+            type="button"
+            class="pm-task-filter"
+            :class="{ 'is-active': statusFilter === status.value }"
+            @click="statusFilter = status.value"
+          >
+            {{ status.label }} {{ counts[status.value] }}
+          </button>
         </div>
       </div>
 
-      <div v-if="showModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
+      <div v-if="!filteredTasks.length" class="pm-task-empty">
+        No tasks match this view yet.
+      </div>
+
+      <div v-else class="pm-task-grid">
+        <article v-for="task in filteredTasks" :key="task.id" class="pm-task-card">
+          <div class="pm-task-card__top">
+            <span :class="priorityClass(task.priority)">{{ task.priority }}</span>
+            <div v-if="canManageTasks" class="pm-task-card__actions">
+              <button class="pm-table-action pm-table-action--primary" type="button" title="Edit" @click="openEdit(task)">
+                <i class="ri-pencil-line"></i>
+              </button>
+              <button class="pm-table-action pm-table-action--danger" type="button" title="Delete" @click="remove(task)">
+                <i class="ri-delete-bin-line"></i>
+              </button>
+            </div>
+          </div>
+          <h3 class="pm-task-card__title">{{ task.title }}</h3>
+          <p v-if="task.description" class="pm-task-card__copy">{{ task.description }}</p>
+          <div class="pm-task-card__meta">
+            <span>{{ task.project?.name || 'Unassigned project' }}</span>
+            <span>{{ task.user?.name || 'Unassigned' }}</span>
+            <span>{{ task.due_date || 'No due date' }}</span>
+          </div>
+          <label class="pm-task-status">
+            <span class="sr-only">Status</span>
+            <select
+              v-if="canChangeStatus(task)"
+              class="ti-form-select"
+              :value="task.status"
+              @change="updateStatus(task, $event.target.value)"
+            >
+              <option v-for="status in statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
+            </select>
+            <span v-else :class="statusClass(task.status)">{{ statusLabel(task.status) }}</span>
+          </label>
+        </article>
+      </div>
+
+      <div v-if="showModal && canManageTasks" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
         <form class="bg-white dark:bg-bodybg2 rounded-xl shadow-xl w-full max-w-lg mx-4" @submit.prevent="submit">
           <div class="px-6 py-4 border-b border-defaultborder/60 flex items-center justify-between">
             <h3 class="text-base font-semibold">{{ editing ? 'Edit Task' : 'Add Task' }}</h3>
@@ -158,10 +238,7 @@ const remove = (task) => {
               <div>
                 <label class="ti-form-label text-sm mb-1">Status</label>
                 <select v-model="form.status" class="ti-form-select">
-                  <option value="todo">To do</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="review">Review</option>
-                  <option value="done">Done</option>
+                  <option v-for="status in statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
                 </select>
               </div>
               <div>

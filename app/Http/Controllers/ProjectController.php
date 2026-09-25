@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Currency;
+use App\Enums\WorkspaceRole;
+use App\Http\Requests\Project\StoreProjectRequest;
+use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Models\Document;
 use App\Models\Project;
+use App\Notifications\ProjectCreated;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Response;
 
 class ProjectController extends Controller
@@ -41,48 +44,26 @@ class ProjectController extends Controller
         return $this->inertiaPage('Projects/Create', 'Create Project');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreProjectRequest $request): RedirectResponse
     {
-        $this->authorize('create', Project::class);
-        abort_unless($this->currentWorkspaceId(), 403, 'No workspace selected.');
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', 'in:planning,active,on_hold,completed'],
-            'team' => ['nullable', 'string', 'max:255'],
-            'client' => ['nullable', 'string', 'max:255'],
-            'priority' => ['nullable', 'in:low,medium,high'],
-            'project_type' => ['nullable', 'in:hybrid,predictive,agile'],
-            'start_date' => ['nullable', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'budget' => ['nullable', 'numeric', 'min:0'],
-            'spent' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['nullable', 'string', Rule::enum(Currency::class)],
-            'settings' => ['nullable', 'array'],
-            'documents' => ['nullable', 'array'],
-            'documents.*' => Document::uploadRules(required: false),
-            'document_category' => Document::categoryRules(required: false),
-        ]);
-
+        $validated = $request->validated();
         $validated['currency'] ??= $this->workspace()->workspace()?->currency?->value ?? Currency::Usd->value;
         $documentCategory = $validated['document_category'] ?? 'other';
         $projectAttributes = collect($validated)->except(['documents', 'document_category'])->all();
+        $uploaded = $validated['documents'] ?? [];
 
-        $project = DB::transaction(function () use ($request, $projectAttributes, $documentCategory): Project {
+        $project = DB::transaction(function () use ($request, $projectAttributes, $documentCategory, $uploaded): Project {
             $project = Project::query()->create([
                 'workspace_id' => $this->currentWorkspaceId(),
                 ...$projectAttributes,
             ]);
-
-            $uploaded = $request->file('documents', []);
 
             if ($uploaded instanceof UploadedFile) {
                 $uploaded = [$uploaded];
             }
 
             foreach ($uploaded ?? [] as $file) {
-                if ($file) {
+                if ($file instanceof UploadedFile) {
                     Document::storeUploaded(
                         $file,
                         $project->id,
@@ -98,6 +79,15 @@ class ProjectController extends Controller
         $routeParameters = $project->documents()->exists()
             ? ['project' => $project, 'tab' => 'files']
             : $project;
+
+        $workspace = $project->workspace ?? $this->workspace()->workspace();
+
+        if ($workspace) {
+            Notification::send(
+                $workspace->users()->wherePivot('role', WorkspaceRole::WorkspaceAdmin->value)->get(),
+                new ProjectCreated($project->loadMissing('workspace')),
+            );
+        }
 
         return redirect()->route('projects.show', $routeParameters)->with('message', 'Project created successfully.');
     }
@@ -118,26 +108,11 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function update(Request $request, Project $project): RedirectResponse
+    public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($project);
-        $this->authorize('update', $project);
 
-        $project->update($request->validate([
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', 'required', 'in:planning,active,on_hold,completed'],
-            'team' => ['nullable', 'string', 'max:255'],
-            'client' => ['nullable', 'string', 'max:255'],
-            'priority' => ['nullable', 'in:low,medium,high'],
-            'project_type' => ['nullable', 'in:hybrid,predictive,agile'],
-            'start_date' => ['nullable', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'budget' => ['nullable', 'numeric', 'min:0'],
-            'spent' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['nullable', 'string', Rule::enum(Currency::class)],
-            'settings' => ['nullable', 'array'],
-        ]));
+        $project->update($request->validated());
 
         return redirect()->route('projects.show', $project)->with('message', 'Project updated successfully.');
     }

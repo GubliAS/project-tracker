@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Quality\StoreQualityCheckRequest;
+use App\Http\Requests\Quality\UpdateQualityCheckRequest;
 use App\Models\QualityCheck;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class QualityController extends Controller
@@ -28,37 +29,17 @@ class QualityController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreQualityCheckRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'check_type' => ['required', 'in:code_review,testing,security_audit,compliance'],
-            'status' => ['required', 'in:pending,passed,failed'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        $this->authorizer()->authorizeWriteQuality();
-        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
-        QualityCheck::query()->create($validated);
+        QualityCheck::query()->create($request->validated());
 
         return redirect()->route('quality.index')->with('message', 'Quality check logged successfully.');
     }
 
-    public function update(Request $request, QualityCheck $qualityCheck): RedirectResponse
+    public function update(UpdateQualityCheckRequest $request, QualityCheck $qualityCheck): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($qualityCheck);
-        $this->authorizer()->authorizeWriteQuality();
-        $validated = $request->validate([
-            'project_id' => ['sometimes', 'nullable', 'exists:projects,id'],
-            'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'check_type' => ['sometimes', 'required', 'in:code_review,testing,security_audit,compliance'],
-            'status' => ['sometimes', 'required', 'in:pending,passed,failed'],
-            'notes' => ['sometimes', 'nullable', 'string'],
-        ]);
-
-        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
-        $qualityCheck->update($validated);
+        $qualityCheck->update($request->validated());
 
         return redirect()->route('quality.index')->with('message', 'Quality check updated successfully.');
     }

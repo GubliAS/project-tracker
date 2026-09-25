@@ -180,13 +180,13 @@ const { formatCurrency } = useCurrency()
                   <td>{{ formatDate(project.dueDate) }}</td>
                   <td>
                     <div class="flex gap-1">
-                      <Link :href="`/projects/${project.id}`" class="ti-btn ti-btn-soft-primary ti-btn-icon ti-btn-sm">
+                      <Link :href="`/projects/${project.id}`" class="pm-table-action pm-table-action--primary" title="View">
                         <i class="ri-eye-line"></i>
                       </Link>
-                      <Link :href="`/projects/${project.id}`" class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm">
-                        <i class="ri-edit-line"></i>
+                      <Link :href="`/projects/${project.id}`" class="pm-table-action pm-table-action--primary" title="Edit">
+                        <i class="ri-pencil-line"></i>
                       </Link>
-                      <button type="button" class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm">
+                      <button type="button" class="pm-table-action pm-table-action--danger" title="Delete">
                         <i class="ri-delete-bin-line"></i>
                       </button>
                     </div>

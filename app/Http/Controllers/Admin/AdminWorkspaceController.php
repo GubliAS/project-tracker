@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\WorkspaceRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreAdminWorkspaceRequest;
 use App\Models\AuditLog;
 use App\Models\Invitation;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class AdminWorkspaceController extends Controller
@@ -50,11 +50,9 @@ class AdminWorkspaceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreAdminWorkspaceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $workspace = Workspace::query()->create([
             'name' => $validated['name'],

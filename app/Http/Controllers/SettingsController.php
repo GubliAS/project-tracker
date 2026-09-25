@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Currency;
+use App\Http\Requests\Workspace\UpdateSettingsRequest;
 use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Response;
 
 class SettingsController extends Controller
@@ -27,16 +26,13 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateSettingsRequest $request): RedirectResponse
     {
         $workspace = $this->workspace()->workspace();
 
         abort_unless($workspace, 403, 'No workspace selected.');
-        $this->authorize('update', $workspace);
 
-        $validated = $request->validate([
-            'currency' => ['required', 'string', Rule::enum(Currency::class)],
-        ]);
+        $validated = $request->validated();
 
         $workspace->update([
             'currency' => $validated['currency'],

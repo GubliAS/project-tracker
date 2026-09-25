@@ -109,7 +109,7 @@ class WorkspaceSwitchTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('canSwitchWorkspaces', false)
+                ->where('canSwitchWorkspaces', true)
                 ->has('workspaces', 1)
                 ->where('workspaces.0.name', 'Home'));
     }

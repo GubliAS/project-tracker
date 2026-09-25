@@ -34,6 +34,7 @@ Route::post('/invitations/{token}', [InvitationController::class, 'store'])
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/workspace/switch', [WorkspaceController::class, 'switch'])->name('workspace.switch');
+    Route::post('/workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
 
     Route::middleware('platform')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminWorkspaceController::class, 'overview'])->name('index');

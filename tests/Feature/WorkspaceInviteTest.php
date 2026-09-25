@@ -205,6 +205,33 @@ class WorkspaceInviteTest extends TestCase
                 ->where('projects.0.name', 'Home Project'));
     }
 
+    public function test_duplicate_invite_email_returns_a_validation_error(): void
+    {
+        $this->signInAs(WorkspaceRole::WorkspaceAdmin);
+        $existing = User::factory()->create(['email' => 'taken@example.com']);
+        $this->workspace?->users()->attach($existing->id, ['role' => WorkspaceRole::Member->value]);
+
+        $this->from('/workspace/members')->post('/workspace/members/invite', [
+            'email' => 'taken@example.com',
+            'name' => 'Someone Else',
+            'role' => WorkspaceRole::Member->value,
+        ])->assertRedirect('/workspace/members')->assertSessionHasErrors('email');
+    }
+
+    public function test_duplicate_invite_name_returns_a_validation_error(): void
+    {
+        $this->signInAs(WorkspaceRole::WorkspaceAdmin);
+        User::factory()->create(['name' => 'Ama Mensah']);
+
+        $this->from('/workspace/members')->post('/workspace/members/invite', [
+            'email' => 'ama.new@example.com',
+            'name' => 'Ama Mensah',
+            'role' => WorkspaceRole::Member->value,
+        ])->assertRedirect('/workspace/members')->assertSessionHasErrors('name');
+
+        $this->assertDatabaseMissing('users', ['email' => 'ama.new@example.com']);
+    }
+
     #[DataProvider('rolesThatCannotInvite')]
     public function test_non_admin_roles_cannot_invite(WorkspaceRole $role): void
     {

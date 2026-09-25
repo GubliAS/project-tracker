@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\WorkspaceRole;
+use App\Http\Requests\InviteWorkspaceMemberRequest;
+use App\Http\Requests\Workspace\UpdateWorkspaceMemberRequest;
 use App\Models\AuditLog;
 use App\Models\Invitation;
 use App\Models\User;
@@ -12,7 +14,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Response;
 
 class WorkspaceMemberController extends Controller
@@ -53,24 +54,14 @@ class WorkspaceMemberController extends Controller
         ]);
     }
 
-    public function invite(Request $request): RedirectResponse
+    public function invite(InviteWorkspaceMemberRequest $request): RedirectResponse
     {
         $workspace = $this->workspace()->workspace();
 
         abort_unless($workspace, 403, 'No workspace selected.');
-        $this->authorize('manageMembers', $workspace);
 
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-            'name' => ['nullable', 'string', 'max:255'],
-            'role' => ['required', Rule::enum(WorkspaceRole::class)],
-        ]);
-
+        $validated = $request->validated();
         $email = Str::lower($validated['email']);
-
-        if ($workspace->users()->where('users.email', $email)->exists()) {
-            return back()->withErrors(['email' => 'That user is already a member of this workspace.']);
-        }
 
         $invitation = DB::transaction(function () use ($request, $workspace, $validated, $email): Invitation {
             $user = User::query()->where('email', $email)->first();
@@ -122,16 +113,13 @@ class WorkspaceMemberController extends Controller
         return back()->with('message', $this->inviteShareMessage($email, 'sent'));
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(UpdateWorkspaceMemberRequest $request, User $user): RedirectResponse
     {
         $workspace = $this->workspace()->workspace();
 
         abort_unless($workspace, 403, 'No workspace selected.');
-        $this->authorize('manageMembers', $workspace);
 
-        $validated = $request->validate([
-            'role' => ['required', Rule::enum(WorkspaceRole::class)],
-        ]);
+        $validated = $request->validated();
 
         abort_unless($user->belongsToWorkspace($workspace), 404);
 

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Quality\StoreRiskRequest;
+use App\Http\Requests\Quality\UpdateRiskRequest;
 use App\Models\Risk;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class RiskController extends Controller
@@ -37,23 +38,17 @@ class RiskController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreRiskRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteQuality();
-        $data = $this->validated($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        Risk::query()->create($data);
+        Risk::query()->create($request->validated());
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk created successfully.');
     }
 
-    public function update(Request $request, Risk $risk): RedirectResponse
+    public function update(UpdateRiskRequest $request, Risk $risk): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($risk);
-        $this->authorizer()->authorizeWriteQuality();
-        $data = $this->validated($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        $risk->update($data);
+        $risk->update($request->validated());
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk updated successfully.');
     }
@@ -65,20 +60,5 @@ class RiskController extends Controller
         $risk->delete();
 
         return redirect()->route('quality.risks.index')->with('message', 'Risk deleted successfully.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validated(Request $request): array
-    {
-        return $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'impact' => ['required', 'in:low,medium,high'],
-            'probability' => ['required', 'in:low,medium,high'],
-            'status' => ['required', 'in:open,monitoring,mitigated,closed'],
-            'mitigation_plan' => ['nullable', 'string'],
-            'project_id' => ['nullable', 'exists:projects,id'],
-        ]);
     }
 }

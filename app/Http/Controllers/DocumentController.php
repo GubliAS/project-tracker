@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Document\DestroyDocumentRequest;
+use App\Http\Requests\Document\StoreDocumentRequest;
 use App\Models\Document;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -36,28 +38,22 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDocumentRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'file' => Document::uploadRules(),
-            'category' => Document::categoryRules(),
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
-            'return_to_project' => ['sometimes', 'boolean'],
-        ]);
-
+        $validated = $request->validated();
+        $file = $validated['file'];
         $projectId = isset($validated['project_id']) ? (int) $validated['project_id'] : null;
 
-        $this->authorizer()->authorizeWriteDocuments();
-        $this->authorizer()->ensureProjectIdInWorkspace($projectId);
+        abort_unless($file instanceof UploadedFile, 422);
 
         $document = Document::storeUploaded(
-            $request->file('file'),
+            $file,
             $projectId,
             $validated['category'],
             $request->user()?->id,
         );
 
-        if ($request->boolean('return_to_project') && $document->project_id) {
+        if (($validated['return_to_project'] ?? false) && $document->project_id) {
             return redirect()
                 ->route('projects.show', ['project' => $document->project_id, 'tab' => 'files'])
                 ->with('message', 'Document uploaded successfully.');
@@ -84,17 +80,17 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, Document $document): RedirectResponse
+    public function destroy(DestroyDocumentRequest $request, Document $document): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($document);
-        $this->authorizer()->authorizeWriteOps();
 
         $projectId = $document->project_id;
+        $validated = $request->validated();
 
         Storage::disk('public')->delete($document->file_path);
         $document->delete();
 
-        if ($request->boolean('return_to_project') && $projectId) {
+        if (($validated['return_to_project'] ?? false) && $projectId) {
             return redirect()
                 ->route('projects.show', ['project' => $projectId, 'tab' => 'files'])
                 ->with('message', 'Document deleted successfully.');

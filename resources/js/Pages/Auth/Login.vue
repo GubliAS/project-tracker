@@ -44,7 +44,7 @@ defineProps({
 
         <p class="pm-auth__switch">
             New to the workspace?
-            <Link href="/register" class="pm-auth__link">Create an account</Link>
+            <a href="/register" class="pm-auth__link">Create an account</a>
         </p>
     </AuthLayout>
 </template>

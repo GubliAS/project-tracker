@@ -50,21 +50,22 @@ class AuthorizesWorkspace
 
     public function authorizeCreateTask(): void
     {
-        abort_unless($this->workspace->canWriteMemberContent(), 403);
+        abort_unless($this->workspace->canWriteOps(), 403);
     }
 
     public function authorizeUpdateTask(Task $task, User $user): void
+    {
+        abort_unless($this->workspace->canWriteOps(), 403);
+    }
+
+    public function authorizeUpdateTaskStatus(Task $task, User $user): void
     {
         if ($this->workspace->canWriteOps()) {
             return;
         }
 
         abort_unless($this->workspace->canWriteMemberContent(), 403);
-
-        $assignedToUser = $task->user_id === $user->id;
-        $unassigned = $task->user_id === null;
-
-        abort_unless($assignedToUser || $unassigned, 403);
+        abort_unless($task->user_id === $user->id, 403);
     }
 
     public function authorizeDeleteTask(): void

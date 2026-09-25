@@ -1,6 +1,7 @@
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3'
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import CreateWorkspaceModal from '@/Components/ui/CreateWorkspaceModal.vue'
 
 defineProps({
   dark: {
@@ -32,6 +33,7 @@ const userInitials = computed(() => {
 const isSearchOpen = ref(false)
 const searchQuery = ref('')
 const isProfileDropdownOpen = ref(false)
+const isCreateWorkspaceOpen = ref(false)
 
 const toggleSearch = () => {
   isSearchOpen.value = !isSearchOpen.value
@@ -58,6 +60,11 @@ const switchWorkspace = (workspaceId) => {
   router.post('/workspace/switch', { workspace_id: workspaceId }, { preserveScroll: true })
 }
 
+const openCreateWorkspace = () => {
+  isWorkspaceSwitcherOpen.value = false
+  isCreateWorkspaceOpen.value = true
+}
+
 const closeProfileOnOutsideClick = (event) => {
   const profileDropdown = document.getElementById('headerProfileDropdown')
   if (profileDropdown && !profileDropdown.closest('.header-element')?.contains(event.target)) {
@@ -81,12 +88,7 @@ onBeforeUnmount(() => {
         <div class="header-element">
           <div class="horizontal-logo">
             <Link class="header-logo" href="/">
-              <img alt="KEDEBEAH ERP Logo" class="desktop-logo" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBEAH ERP Logo" class="toggle-dark" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBEAH ERP Logo" class="desktop-dark" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBEAH ERP Logo" class="desktop-white" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBEAH ERP Logo" class="toggle-logo" src="/assets/img/Kedebah Logo.png"/>
-              <img alt="KEDEBEAH ERP Logo" class="toggle-white" src="/assets/img/Kedebah Logo.png"/>
+              <img alt="KEDEBEAH ERP Logo" class="pm-header-logo" src="/assets/img/Kedebah Logo.png"/>
             </Link>
           </div>
         </div>
@@ -104,7 +106,7 @@ onBeforeUnmount(() => {
           </a>
         </div>
 
-        <div class="header-element header-search pm-header-search md:!block !hidden my-auto auto-complete-search">
+        <div class="header-element header-search pm-header-search my-auto auto-complete-search">
           <i class="ri-search-line pm-header-search__icon" aria-hidden="true"></i>
           <input
             v-model="searchQuery"
@@ -117,23 +119,22 @@ onBeforeUnmount(() => {
       </div>
 
       <ul class="header-content-right">
-        <li v-if="currentWorkspace || canSwitchWorkspaces" class="header-element relative">
+        <li v-if="user" class="header-element relative pm-workspace-switcher-wrap">
           <button
-            v-if="canSwitchWorkspaces"
             type="button"
-            class="header-link"
+            class="pm-workspace-switcher"
+            :title="currentWorkspace?.name || 'Workspace'"
+            :aria-label="`Switch workspace (current: ${currentWorkspace?.name || 'Workspace'})`"
+            :aria-expanded="isWorkspaceSwitcherOpen"
             @click.stop="toggleWorkspaceSwitcher"
           >
-            <i class="ri-building-2-line header-link-icon"></i>
-            <span class="hidden md:inline text-sm font-medium ms-1">{{ currentWorkspace?.name || 'Workspace' }}</span>
+            <i class="ri-building-2-line" aria-hidden="true"></i>
+            <span class="pm-workspace-switcher__name">{{ currentWorkspace?.name || 'Workspace' }}</span>
+            <i class="ri-arrow-down-s-line pm-workspace-switcher__caret" aria-hidden="true"></i>
           </button>
-          <span v-else class="header-link pointer-events-none">
-            <i class="ri-building-2-line header-link-icon"></i>
-            <span class="hidden md:inline text-sm font-medium ms-1">{{ currentWorkspace?.name || 'Workspace' }}</span>
-          </span>
           <ul
-            v-show="canSwitchWorkspaces && isWorkspaceSwitcherOpen"
-            class="main-header-dropdown hs-dropdown-menu ti-dropdown-menu pt-0 overflow-hidden header-profile-dropdown"
+            v-show="isWorkspaceSwitcherOpen"
+            class="main-header-dropdown hs-dropdown-menu ti-dropdown-menu pt-0 overflow-hidden header-profile-dropdown pm-workspace-switcher__menu"
           >
             <li v-for="workspace in workspaces" :key="workspace.id">
               <button
@@ -146,16 +147,30 @@ onBeforeUnmount(() => {
               </button>
             </li>
             <li v-if="abilities.manage_workspace || abilities.manage_members" class="border-t">
-              <Link class="ti-dropdown-item flex items-center" href="/workspace">Workspace</Link>
+              <Link class="ti-dropdown-item flex items-center" href="/workspace">Workspace settings</Link>
             </li>
-            <li v-if="abilities.is_platform_admin">
-              <Link class="ti-dropdown-item flex items-center" href="/admin">Admin</Link>
+            <li class="border-t">
+              <button
+                type="button"
+                class="ti-dropdown-item flex items-center w-full text-start"
+                @click="openCreateWorkspace"
+              >
+                <i class="ri-add-line me-2" aria-hidden="true"></i>
+                Create workspace
+              </button>
             </li>
           </ul>
         </li>
 
+        <li v-if="abilities.is_platform_admin" class="header-element pm-admin-link-wrap">
+          <Link class="pm-admin-link" href="/admin" aria-label="Admin">
+            <i class="ri-shield-user-line" aria-hidden="true"></i>
+            <span>Admin</span>
+          </Link>
+        </li>
+
         <li class="header-element pm-header-search-toggle">
-          <a class="header-link" href="javascript:void(0);" @click="toggleSearch">
+          <a class="header-link" href="javascript:void(0);" aria-label="Search" @click="toggleSearch">
             <i class="ri-search-line header-link-icon"></i>
           </a>
         </li>
@@ -225,7 +240,7 @@ onBeforeUnmount(() => {
       </ul>
     </div>
 
-    <div v-show="isSearchOpen" class="pm-header-search-mobile md:!hidden">
+    <div v-show="isSearchOpen" class="pm-header-search-mobile">
       <i class="ri-search-line" aria-hidden="true"></i>
       <input
         v-model="searchQuery"
@@ -235,5 +250,7 @@ onBeforeUnmount(() => {
         type="text"
       />
     </div>
+
+    <CreateWorkspaceModal v-model="isCreateWorkspaceOpen" />
   </header>
 </template>

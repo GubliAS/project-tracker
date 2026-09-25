@@ -213,10 +213,10 @@ const deleteCheck = (check) => {
                                 <td class="max-w-[240px] truncate">{{ check.notes || '—' }}</td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <button type="button" class="ti-btn ti-btn-soft-info ti-btn-icon ti-btn-sm" @click="openEditModal(check)">
-                                            <i class="ri-edit-line"></i>
+                                        <button type="button" class="pm-table-action pm-table-action--primary" title="Edit" @click="openEditModal(check)">
+                                            <i class="ri-pencil-line"></i>
                                         </button>
-                                        <button type="button" class="ti-btn ti-btn-soft-danger ti-btn-icon ti-btn-sm" @click="deleteCheck(check)">
+                                        <button type="button" class="pm-table-action pm-table-action--danger" title="Delete" @click="deleteCheck(check)">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
                                     </div>

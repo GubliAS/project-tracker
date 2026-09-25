@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Task\StoreTaskRequest;
+use App\Http\Requests\Task\StoreWorkflowRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Http\Requests\Task\UpdateWorkflowRequest;
 use App\Models\Task;
+use App\Models\User;
 use App\Models\Workflow;
+use App\Notifications\TaskAssigned;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Response;
 
 class TaskController extends Controller
@@ -16,28 +20,32 @@ class TaskController extends Controller
         return $this->inertiaPage('Tasks/Index', 'Task List', $this->taskPageData());
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTaskRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeCreateTask();
-        $data = $this->taskData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+        $data = $this->normalizedTaskData($request->validated());
 
-        Task::query()->create([
+        $task = Task::query()->create([
             'status' => 'todo',
             ...$data,
         ]);
 
+        $this->notifyAssignee($task);
+
         return back()->with('message', 'Task created successfully.');
     }
 
-    public function update(Request $request, Task $task): RedirectResponse
+    public function update(UpdateTaskRequest $request, Task $task): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($task);
-        $this->authorizer()->authorizeUpdateTask($task, $request->user());
-        $data = $this->taskData($request, true);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
+
+        $previousAssigneeId = $task->user_id;
+        $data = $this->normalizedTaskData($request->validated());
 
         $task->update($data);
+
+        if (array_key_exists('user_id', $data) && $data['user_id'] !== $previousAssigneeId) {
+            $this->notifyAssignee($task->fresh(['project']));
+        }
 
         return back()->with('message', 'Task updated successfully.');
     }
@@ -45,7 +53,7 @@ class TaskController extends Controller
     public function destroy(Task $task): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($task);
-        $this->authorizer()->authorizeDeleteTask();
+        $this->authorize('delete', $task);
         $task->delete();
 
         return back()->with('message', 'Task deleted successfully.');
@@ -63,24 +71,20 @@ class TaskController extends Controller
         ]);
     }
 
-    public function storeWorkflow(Request $request): RedirectResponse
+    public function storeWorkflow(StoreWorkflowRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        abort_unless($this->currentWorkspaceId(), 403);
-
         Workflow::query()->create([
             'workspace_id' => $this->currentWorkspaceId(),
-            ...$this->workflowData($request),
+            ...$request->validated(),
         ]);
 
         return redirect()->route('tasks.workflows')->with('message', 'Workflow created successfully.');
     }
 
-    public function updateWorkflow(Request $request, Workflow $workflow): RedirectResponse
+    public function updateWorkflow(UpdateWorkflowRequest $request, Workflow $workflow): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($workflow);
-        $this->authorizer()->authorizeWriteOps();
-        $workflow->update($this->workflowData($request, true));
+        $workflow->update($request->validated());
 
         return redirect()->route('tasks.workflows')->with('message', 'Workflow updated successfully.');
     }
@@ -113,28 +117,11 @@ class TaskController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $validated
      * @return array<string, mixed>
      */
-    private function taskData(Request $request, bool $partial = false): array
+    private function normalizedTaskData(array $validated): array
     {
-        $validated = $request->validate([
-            'title' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'description' => ['sometimes', 'nullable', 'string'],
-            'project_id' => ['sometimes', 'nullable', 'exists:projects,id'],
-            'user_id' => [
-                'sometimes',
-                'nullable',
-                Rule::exists('workspace_user', 'user_id')->where(
-                    'workspace_id',
-                    $this->currentWorkspaceId() ?? 0,
-                ),
-            ],
-            'status' => [$partial ? 'sometimes' : 'nullable', 'in:todo,in_progress,review,done'],
-            'priority' => [$partial ? 'sometimes' : 'required', 'in:low,medium,high'],
-            'weight' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:8'],
-            'due_date' => ['sometimes', 'nullable', 'date'],
-        ]);
-
         if (array_key_exists('weight', $validated) && $validated['weight'] === null) {
             $validated['weight'] = 1;
         }
@@ -142,29 +129,14 @@ class TaskController extends Controller
         return $validated;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function workflowData(Request $request, bool $partial = false): array
+    private function notifyAssignee(Task $task): void
     {
-        $validated = $request->validate([
-            'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'stages' => [$partial ? 'sometimes' : 'required'],
-        ]);
-
-        if (array_key_exists('stages', $validated)) {
-            $stages = $validated['stages'];
-
-            if (is_string($stages)) {
-                $stages = preg_split('/\s*,\s*/', $stages, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-            }
-
-            $validated['stages'] = array_values(array_filter(array_map(
-                fn (mixed $stage): string => trim((string) $stage),
-                is_array($stages) ? $stages : [],
-            )));
+        if (! $task->user_id) {
+            return;
         }
 
-        return $validated;
+        $assignee = $task->relationLoaded('user') ? $task->user : User::query()->find($task->user_id);
+
+        $assignee?->notify(new TaskAssigned($task->loadMissing('project')));
     }
 }

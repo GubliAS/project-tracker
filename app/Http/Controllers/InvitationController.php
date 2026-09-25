@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\WorkspaceRole;
+use App\Http\Requests\Auth\AcceptInvitationRequest;
 use App\Models\AuditLog;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +42,7 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function store(Request $request, string $token): RedirectResponse
+    public function store(AcceptInvitationRequest $request, string $token): RedirectResponse
     {
         $invitation = $this->invitationByToken($token);
 
@@ -54,9 +53,7 @@ class InvitationController extends Controller
         abort_unless($workspace, 404);
 
         if ($user->must_set_password) {
-            $validated = $request->validate([
-                'password' => ['required', 'confirmed', Password::defaults()],
-            ]);
+            $validated = $request->validated();
 
             $user->forceFill([
                 'password' => $validated['password'],

@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Resource\StoreBudgetItemRequest;
+use App\Http\Requests\Resource\StoreMilestoneRequest;
+use App\Http\Requests\Resource\StoreResourceRequest;
+use App\Http\Requests\Resource\StoreTimeEntryRequest;
+use App\Http\Requests\Resource\UpdateBudgetItemRequest;
+use App\Http\Requests\Resource\UpdateMilestoneRequest;
+use App\Http\Requests\Resource\UpdateResourceRequest;
 use App\Models\BudgetItem;
 use App\Models\Milestone;
 use App\Models\Resource;
 use App\Models\Task;
 use App\Models\TimeEntry;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class ResourceController extends Controller
@@ -20,24 +26,20 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreResourceRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        abort_unless($this->currentWorkspaceId(), 403);
-
         Resource::query()->create([
             'workspace_id' => $this->currentWorkspaceId(),
-            ...$this->resourceData($request),
+            ...$request->validated(),
         ]);
 
         return redirect()->route('resources.index')->with('message', 'Resource created successfully.');
     }
 
-    public function update(Request $request, Resource $resource): RedirectResponse
+    public function update(UpdateResourceRequest $request, Resource $resource): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($resource);
-        $this->authorizer()->authorizeWriteOps();
-        $resource->update($this->resourceData($request, true));
+        $resource->update($request->validated());
 
         return redirect()->route('resources.index')->with('message', 'Resource updated successfully.');
     }
@@ -68,12 +70,9 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function storeTime(Request $request): RedirectResponse
+    public function storeTime(StoreTimeEntryRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteTime();
-        $data = $this->timeData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        TimeEntry::query()->create($data);
+        TimeEntry::query()->create($request->validated());
 
         return redirect()->route('resources.time-tracking')->with('message', 'Time entry added successfully.');
     }
@@ -105,23 +104,17 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function storeBudget(Request $request): RedirectResponse
+    public function storeBudget(StoreBudgetItemRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->budgetData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        BudgetItem::query()->create($data);
+        BudgetItem::query()->create($request->validated());
 
         return redirect()->route('resources.budget')->with('message', 'Budget item created successfully.');
     }
 
-    public function updateBudget(Request $request, BudgetItem $budgetItem): RedirectResponse
+    public function updateBudget(UpdateBudgetItemRequest $request, BudgetItem $budgetItem): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($budgetItem);
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->budgetData($request, true);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        $budgetItem->update($data);
+        $budgetItem->update($request->validated());
 
         return redirect()->route('resources.budget')->with('message', 'Budget item updated successfully.');
     }
@@ -143,23 +136,17 @@ class ResourceController extends Controller
         ]);
     }
 
-    public function storeMilestone(Request $request): RedirectResponse
+    public function storeMilestone(StoreMilestoneRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->milestoneData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        Milestone::query()->create($data);
+        Milestone::query()->create($request->validated());
 
         return redirect()->route('resources.milestones')->with('message', 'Milestone created successfully.');
     }
 
-    public function updateMilestone(Request $request, Milestone $milestone): RedirectResponse
+    public function updateMilestone(UpdateMilestoneRequest $request, Milestone $milestone): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($milestone);
-        $this->authorizer()->authorizeWriteOps();
-        $data = $this->milestoneData($request);
-        $this->authorizer()->ensureProjectIdInWorkspace($data['project_id'] ?? null);
-        $milestone->update($data);
+        $milestone->update($request->validated());
 
         return redirect()->route('resources.milestones')->with('message', 'Milestone updated successfully.');
     }
@@ -179,42 +166,5 @@ class ResourceController extends Controller
             'tasks' => $this->workspace()->scopeViaProject(Task::query())->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(),
             'milestones' => $this->workspace()->scopeViaProject(Milestone::query())->with('project:id,name')->whereNotNull('due_date')->orderBy('due_date')->get(),
         ]);
-    }
-
-    private function resourceData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'type' => [$partial ? 'sometimes' : 'required', 'in:human,hardware,software,material'],
-            'role_or_category' => ['nullable', 'string', 'max:255'],
-            'cost_per_hour' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
-            'availability_status' => [$partial ? 'sometimes' : 'required', 'in:available,allocated,unavailable'],
-            'availability_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function budgetData(Request $request, bool $partial = false): array
-    {
-        return $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'category' => [$partial ? 'sometimes' : 'required', 'string', 'max:255'],
-            'allocated' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
-            'spent' => [$partial ? 'sometimes' : 'required', 'numeric', 'min:0'],
-            'status' => [$partial ? 'sometimes' : 'required', 'in:on-track,under,over'],
-        ]);
-    }
-
-    private function timeData(Request $request): array
-    {
-        return $request->validate(['project_id' => ['nullable', 'exists:projects,id'], 'resource_id' => ['nullable', 'exists:resources,id'], 'task_id' => ['nullable', 'exists:tasks,id'], 'entry_date' => ['required', 'date'], 'hours' => ['required', 'numeric', 'min:0.25', 'max:24'], 'description' => ['nullable', 'string']]);
-    }
-
-    private function milestoneData(Request $request): array
-    {
-        return $request->validate(['project_id' => ['nullable', 'exists:projects,id'], 'title' => ['required', 'string', 'max:255'], 'due_date' => ['nullable', 'date'], 'status' => ['required', 'in:upcoming,in_progress,completed,delayed']]);
     }
 }

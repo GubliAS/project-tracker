@@ -103,6 +103,7 @@ class WorkspaceContext
             'write_projects' => $this->canWriteProjects(),
             'write_ops' => $this->canWriteOps(),
             'write_member' => $this->canWriteMemberContent(),
+            'write_task_details' => $this->canWriteOps(),
             'is_viewer' => $this->isViewer(),
             'is_platform_admin' => $this->isPlatformAdmin(),
         ];

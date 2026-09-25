@@ -24,6 +24,13 @@ export default defineConfig({
             '@': path.resolve('resources/js'),
         },
     },
+    server: {
+        host: '127.0.0.1',
+        strictPort: true,
+        hmr: {
+            host: '127.0.0.1',
+        },
+    },
     build: {
         cssMinify: false,
     },

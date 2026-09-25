@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 import StatsCard from '@/Components/ui/StatsCard.vue'
+import CreateWorkspaceModal from '@/Components/ui/CreateWorkspaceModal.vue'
 
 defineProps({
   title: { type: String, default: 'Workspace' },
@@ -16,6 +17,7 @@ defineProps({
 
 const page = usePage()
 const abilities = computed(() => page.props.abilities || {})
+const isCreateWorkspaceOpen = ref(false)
 
 const statusLabels = {
   planning: 'Planning',
@@ -83,6 +85,10 @@ function actionLabel(action) {
     <div class="pm-dash">
       <PageHeader :title="workspace?.name || title" subtitle="Projects, people, and recent activity in this workspace">
         <template #actions>
+          <button type="button" class="ti-btn ti-btn-light btn-wave" @click="isCreateWorkspaceOpen = true">
+            <i class="ri-add-line me-1" aria-hidden="true"></i>
+            Create workspace
+          </button>
           <Link v-if="abilities.manage_members" href="/workspace/members" class="ti-btn ti-btn-primary btn-wave">
             <i class="ri-user-add-line me-1"></i> Members
           </Link>
@@ -172,5 +178,7 @@ function actionLabel(action) {
         </div>
       </div>
     </div>
+
+    <CreateWorkspaceModal v-model="isCreateWorkspaceOpen" />
   </AppLayout>
 </template>

@@ -73,7 +73,7 @@ onMounted(() => {
                 <img class="pm-auth__logo" src="/assets/img/Kedebah Logo.png" alt="KEDEBEAH ERP" />
                 <span class="pm-focus-pill">Project Tracker</span>
                 <h1>Plan, track, and deliver every engagement in one workspace.</h1>
-                <p>Sign in to manage projects, sprints, quality, and the team from the same purple glass desk you already use.</p>
+                <p>Manage projects, sprints, quality, and the team from the same purple glass desk you already use.</p>
 
                 <ul class="pm-auth__chips">
                     <li><i class="ri-folder-chart-line"></i> Projects</li>

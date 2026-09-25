@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Chat\StoreChatMessageRequest;
 use App\Models\ChatMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,15 +31,9 @@ class ChatController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreChatMessageRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'project_id' => ['required', 'exists:projects,id'],
-            'message' => ['required', 'string', 'max:5000'],
-        ]);
-
-        $this->authorizer()->authorizeWriteChat();
-        $this->authorizer()->ensureProjectIdInWorkspace($validated['project_id'] ?? null);
+        $validated = $request->validated();
 
         ChatMessage::query()->create([
             ...$validated,

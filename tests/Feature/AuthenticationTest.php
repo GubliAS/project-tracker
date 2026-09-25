@@ -72,6 +72,12 @@ class AuthenticationTest extends TestCase
             'name' => 'Ama Mensah',
             'email_verified_at' => null,
         ]);
+
+        $user = User::query()->where('email', 'ama@example.com')->firstOrFail();
+        $this->assertFalse($user->is_platform_admin);
+        $this->assertSame(1, $user->workspaces()->count());
+        $this->assertTrue($user->workspaces()->where('name', "Ama Mensah's workspace")->exists());
+        $this->assertSame('workspace_admin', $user->workspaces()->first()?->pivot?->role);
     }
 
     public function test_unverified_users_are_redirected_from_the_dashboard(): void

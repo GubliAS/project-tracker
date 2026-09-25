@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Quality\StoreChangelogRequest;
+use App\Http\Requests\Quality\UpdateChangelogRequest;
 use App\Models\Changelog;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class ChangelogController extends Controller
@@ -35,23 +36,20 @@ class ChangelogController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreChangelogRequest $request): RedirectResponse
     {
-        $this->authorizer()->authorizeWriteOps();
-        abort_unless($this->currentWorkspaceId(), 403);
         Changelog::query()->create([
             'workspace_id' => $this->currentWorkspaceId(),
-            ...$this->validated($request),
+            ...$request->validated(),
         ]);
 
         return redirect()->route('quality.changelog')->with('message', 'Change record created successfully.');
     }
 
-    public function update(Request $request, Changelog $changelog): RedirectResponse
+    public function update(UpdateChangelogRequest $request, Changelog $changelog): RedirectResponse
     {
         $this->authorizer()->ensureRecordInWorkspace($changelog);
-        $this->authorizer()->authorizeWriteOps();
-        $changelog->update($this->validated($request));
+        $changelog->update($request->validated());
 
         return redirect()->route('quality.changelog')->with('message', 'Change record updated successfully.');
     }
@@ -63,19 +61,5 @@ class ChangelogController extends Controller
         $changelog->delete();
 
         return redirect()->route('quality.changelog')->with('message', 'Change record deleted successfully.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validated(Request $request): array
-    {
-        return $request->validate([
-            'version' => ['required', 'string', 'max:50'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'type' => ['required', 'in:feature,improvement,fix,security'],
-            'release_date' => ['required', 'date'],
-        ]);
     }
 }
