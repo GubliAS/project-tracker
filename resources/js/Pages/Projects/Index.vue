@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
 import { useCurrency } from '@/composables/useCurrency'
@@ -75,6 +75,12 @@ const formatDate = (dateStr) => {
 }
 
 const { formatCurrency } = useCurrency()
+
+const deleteProject = (project) => {
+  if (confirm(`Delete “${project.name}”? This cannot be undone.`)) {
+    router.delete(`/projects/${project.id}`, { preserveScroll: true })
+  }
+}
 </script>
 
 <template>
@@ -186,7 +192,12 @@ const { formatCurrency } = useCurrency()
                       <Link :href="`/projects/${project.id}`" class="pm-table-action pm-table-action--primary" title="Edit">
                         <i class="ri-pencil-line"></i>
                       </Link>
-                      <button type="button" class="pm-table-action pm-table-action--danger" title="Delete">
+                      <button
+                        type="button"
+                        class="pm-table-action pm-table-action--danger"
+                        title="Delete"
+                        @click.stop="deleteProject(project)"
+                      >
                         <i class="ri-delete-bin-line"></i>
                       </button>
                     </div>

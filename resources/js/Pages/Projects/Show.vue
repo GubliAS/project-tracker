@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Link, router, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PageHeader from '@/Components/ui/PageHeader.vue'
@@ -18,9 +18,12 @@ const abilities = computed(() => page.props.abilities || {})
 const canUploadDocuments = computed(() => Boolean(abilities.value.write_member))
 const canDeleteDocuments = computed(() => Boolean(abilities.value.write_ops))
 const documents = computed(() => props.project.documents || [])
-const tabFromUrl = typeof window !== 'undefined'
-  ? new URL(window.location.href).searchParams.get('tab')
-  : null
+const tabFromUrl = computed(() => {
+  const url = page.url || ''
+  const query = url.includes('?') ? url.slice(url.indexOf('?') + 1) : ''
+
+  return new URLSearchParams(query).get('tab')
+})
 const isDragging = ref(false)
 
 const statusLabels = {
@@ -61,7 +64,13 @@ const tasks = computed(() => (props.project.tasks || []).map((task) => ({
   label: taskStatusLabels[task.status] || task.status,
 })))
 
-const activeTab = ref(tabFromUrl === 'files' ? 'files' : 'overview')
+const activeTab = ref(tabFromUrl.value === 'files' ? 'files' : 'overview')
+
+watch(tabFromUrl, (tab) => {
+  if (tab === 'files') {
+    activeTab.value = 'files'
+  }
+})
 const uploadForm = useForm({
   file: null,
   category: 'other',
@@ -372,7 +381,7 @@ const deleteDocument = (document) => {
                         >
                         <i class="ri-upload-cloud-2-line" aria-hidden="true"></i>
                         <p>{{ uploadForm.file ? uploadForm.file.name : 'Drag & drop a file here or click to browse' }}</p>
-                        <span class="pm-project-form__drop-hint">PDF, Office, images, or zip — up to 20 MB</span>
+                        <span class="pm-project-form__drop-hint">PDF, Office, images, text, CSV, or zip — up to 20 MB</span>
                       </label>
                       <p v-if="uploadForm.errors.file" class="pm-project-form__error">{{ uploadForm.errors.file }}</p>
                     </div>

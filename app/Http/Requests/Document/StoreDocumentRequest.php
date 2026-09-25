@@ -6,6 +6,7 @@ use App\Http\Requests\Concerns\AuthorizesWorkspaceWrite;
 use App\Models\Document;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Validator;
 
 class StoreDocumentRequest extends FormRequest
@@ -27,6 +28,28 @@ class StoreDocumentRequest extends FormRequest
             'category' => Document::categoryRules(),
             'project_id' => $this->projectIdRules(),
             'return_to_project' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return Document::uploadMessagesFor('file');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        $file = $this->file('file');
+
+        return [
+            'file' => $file instanceof UploadedFile && $file->getClientOriginalName() !== ''
+                ? $file->getClientOriginalName()
+                : 'This file',
         ];
     }
 

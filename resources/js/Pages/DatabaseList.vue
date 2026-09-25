@@ -125,6 +125,7 @@ function remove(item) {
               <label class="ti-form-label text-sm mb-1">{{ field.label }}</label>
               <input v-if="field.type === 'text' || field.type === 'date'" v-model="formState[field.name]" :type="field.type" class="ti-form-control" :required="field.required">
               <input v-else-if="field.type === 'file'" type="file" class="ti-form-control" :required="field.required && !editing" @input="formState[field.name] = $event.target.files[0]">
+              <p v-if="isDocumentList && field.type === 'file'" class="text-xs text-textmuted mt-1">PDF, Office, images, text, CSV, or zip — up to 20 MB</p>
               <textarea v-else-if="field.type === 'textarea'" v-model="formState[field.name]" class="ti-form-control" rows="3" :required="field.required"></textarea>
               <select v-else-if="field.type === 'select'" v-model="formState[field.name]" class="ti-form-select" :required="field.required">
                 <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>

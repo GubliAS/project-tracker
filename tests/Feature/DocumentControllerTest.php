@@ -93,6 +93,24 @@ class DocumentControllerTest extends TestCase
         $this->assertDatabaseCount('documents', 0);
     }
 
+    public function test_rejected_file_type_names_the_file_instead_of_the_field_key(): void
+    {
+        Storage::fake('public');
+        $this->signIn();
+
+        $this->from('/reports/documents')
+            ->post('/reports/documents', [
+                'file' => UploadedFile::fake()->create('notes.exe', 20),
+                'category' => 'planning',
+            ])
+            ->assertRedirect('/reports/documents')
+            ->assertSessionHasErrors([
+                'file' => 'notes.exe is not an allowed file type. Use PDF, Word, Excel, PowerPoint, images, text, CSV, or zip.',
+            ]);
+
+        $this->assertDatabaseCount('documents', 0);
+    }
+
     public function test_creating_a_project_stores_attached_documents(): void
     {
         Storage::fake('public');

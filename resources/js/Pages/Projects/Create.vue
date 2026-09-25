@@ -26,7 +26,6 @@ const form = useForm({
   status: 'planning',
   team: '',
   client: '',
-  documents: [],
   document_category: 'other',
   settings: {
     phases: '',
@@ -42,21 +41,38 @@ const form = useForm({
 })
 
 const isDragging = ref(false)
+const selectedDocuments = ref([])
 const showPredictiveFields = computed(() => form.project_type === 'predictive')
 const showAgileFields = computed(() => form.project_type === 'agile')
 const showHybridFields = computed(() => form.project_type === 'hybrid')
+const documentError = computed(() => {
+  if (form.errors.documents) {
+    return form.errors.documents
+  }
+
+  const indexed = Object.keys(form.errors)
+    .filter((key) => key.startsWith('documents.'))
+    .map((key) => form.errors[key])
+
+  return indexed[0] || ''
+})
 
 const addDocuments = (fileList) => {
-  const incoming = Array.from(fileList || [])
-  form.documents = [...form.documents, ...incoming]
+  const incoming = Array.from(fileList || []).filter((file) => file instanceof File)
+  selectedDocuments.value = [...selectedDocuments.value, ...incoming]
 }
 
 const removeDocument = (index) => {
-  form.documents = form.documents.filter((_, current) => current !== index)
+  selectedDocuments.value = selectedDocuments.value.filter((_, current) => current !== index)
 }
 
 const handleSubmit = () => {
-  form.post('/projects', { forceFormData: true })
+  form
+    .transform((data) => ({
+      ...data,
+      documents: selectedDocuments.value,
+    }))
+    .post('/projects', { forceFormData: true })
 }
 
 const handleCancel = () => {
@@ -273,11 +289,11 @@ const handleCancel = () => {
                     >
                     <i class="ri-upload-cloud-2-line" aria-hidden="true"></i>
                     <p>Drag &amp; drop files here or click to browse</p>
-                    <span class="pm-project-form__drop-hint">PDF, Office, images, or zip — up to 20 MB each</span>
+                    <span class="pm-project-form__drop-hint">PDF, Office, images, text, CSV, or zip — up to 20 MB each</span>
                   </label>
-                  <p v-if="form.errors.documents" class="pm-project-form__error">{{ form.errors.documents }}</p>
-                  <ul v-if="form.documents.length" class="pm-project-form__files">
-                    <li v-for="(file, index) in form.documents" :key="`${file.name}-${index}`">
+                  <p v-if="documentError" class="pm-project-form__error">{{ documentError }}</p>
+                  <ul v-if="selectedDocuments.length" class="pm-project-form__files">
+                    <li v-for="(file, index) in selectedDocuments" :key="`${file.name}-${index}`">
                       <span>{{ file.name }}</span>
                       <button type="button" class="ti-btn ti-btn-sm ti-btn-icon ti-btn-light" @click="removeDocument(index)">
                         <i class="ri-close-line"></i>

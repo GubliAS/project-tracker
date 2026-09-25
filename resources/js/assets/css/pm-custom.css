@@ -2385,6 +2385,12 @@ html.dark body {
    PROJECT FORM — card-radius fields, not site-wide pills
    ============================================ */
 
+.pm-project-form,
+.pm-project-form .box-title {
+    letter-spacing: 0;
+    word-spacing: normal;
+}
+
 .pm-project-form .ti-form-label {
     display: block;
     margin-bottom: 0.4rem;
@@ -2410,6 +2416,8 @@ html.dark body {
     font-size: 0.75rem;
     line-height: 1.4;
     letter-spacing: 0;
+    word-spacing: normal;
+    white-space: normal;
 }
 
 .pm-project-form__hint {
@@ -2586,6 +2594,8 @@ html.dark body {
 
 .pm-project-form__drop-hint {
     font-size: 0.72rem;
+    letter-spacing: 0;
+    word-spacing: normal;
     color: #8b83ab;
 }
 
@@ -2607,6 +2617,8 @@ html.dark body {
     border-radius: 0.5rem;
     background: rgb(92 103 247 / 0.06);
     font-size: 0.8rem;
+    letter-spacing: 0;
+    word-spacing: normal;
 }
 
 .pm-project-form__drop i {
@@ -2618,6 +2630,7 @@ html.dark body {
     margin: 0;
     font-size: 0.8rem;
     letter-spacing: 0;
+    word-spacing: normal;
     color: #6b6490;
 }
 

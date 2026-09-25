@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\Currency;
+use App\Enums\WorkspaceRole;
+use App\Models\Document;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
@@ -123,6 +127,93 @@ class ProjectControllerTest extends TestCase
                 ->has('currencies'));
     }
 
+    public function test_creating_a_project_with_an_uploaded_file_stores_the_document(): void
+    {
+        Storage::fake('public');
+        $user = $this->signIn();
+
+        $response = $this->post('/projects', [
+            'name' => 'Client Portal',
+            'status' => 'planning',
+            'document_category' => 'planning',
+            'documents' => [
+                UploadedFile::fake()->createWithContent(
+                    'charter.pdf',
+                    "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF",
+                ),
+            ],
+        ]);
+
+        $project = Project::query()->firstOrFail();
+        $document = Document::query()->firstOrFail();
+
+        $response->assertRedirect(route('projects.show', ['project' => $project, 'tab' => 'files']))
+            ->assertSessionHas('message');
+
+        $this->assertDatabaseHas('documents', [
+            'id' => $document->id,
+            'name' => 'charter.pdf',
+            'category' => 'planning',
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+        ]);
+        Storage::disk('public')->assertExists($document->file_path);
+    }
+
+    public function test_creating_a_project_stores_an_uploaded_svg(): void
+    {
+        Storage::fake('public');
+        $user = $this->signIn();
+
+        $response = $this->post('/projects', [
+            'name' => 'Client Portal',
+            'status' => 'planning',
+            'document_category' => 'design',
+            'documents' => [
+                UploadedFile::fake()->createWithContent(
+                    'icon.svg',
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>',
+                ),
+            ],
+        ]);
+
+        $project = Project::query()->firstOrFail();
+        $document = Document::query()->firstOrFail();
+
+        $response->assertRedirect(route('projects.show', ['project' => $project, 'tab' => 'files']));
+
+        $this->assertDatabaseHas('documents', [
+            'id' => $document->id,
+            'name' => 'icon.svg',
+            'category' => 'design',
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+        ]);
+        Storage::disk('public')->assertExists($document->file_path);
+    }
+
+    public function test_rejected_document_type_names_the_file_instead_of_the_array_index(): void
+    {
+        Storage::fake('public');
+        $this->signIn();
+
+        $this->from('/projects/create')
+            ->post('/projects', [
+                'name' => 'Client Portal',
+                'status' => 'planning',
+                'documents' => [
+                    UploadedFile::fake()->create('notes.exe', 20),
+                ],
+            ])
+            ->assertRedirect('/projects/create')
+            ->assertSessionHasErrors([
+                'documents.0' => 'notes.exe is not an allowed file type. Use PDF, Word, Excel, PowerPoint, images, text, CSV, or zip.',
+            ]);
+
+        $this->assertDatabaseCount('projects', 0);
+        $this->assertDatabaseCount('documents', 0);
+    }
+
     public function test_empty_payload_fails_validation_and_does_not_create_a_project(): void
     {
         $this->signIn();
@@ -157,5 +248,30 @@ class ProjectControllerTest extends TestCase
             ->assertRedirectToRoute('projects.index');
 
         $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+    }
+
+    public function test_authorized_user_can_delete_a_project_from_the_destroy_route(): void
+    {
+        $this->signIn();
+        $project = Project::factory()->create(['name' => 'Doomed Portal']);
+
+        $this->delete(route('projects.destroy', $project))
+            ->assertRedirectToRoute('projects.index')
+            ->assertSessionHas('message');
+
+        $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+    }
+
+    public function test_member_cannot_delete_a_project(): void
+    {
+        $this->signInAs(WorkspaceRole::Member);
+        $project = Project::factory()->create(['name' => 'Locked']);
+
+        $this->delete(route('projects.destroy', $project))->assertForbidden();
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Locked',
+        ]);
     }
 }

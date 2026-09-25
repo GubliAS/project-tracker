@@ -21,8 +21,20 @@ class Document extends Model
         return [
             $required ? 'required' : 'nullable',
             'file',
-            'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,txt,csv,zip',
+            'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,svg,txt,csv,zip',
             'max:20480',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function uploadMessagesFor(string $attribute): array
+    {
+        return [
+            "{$attribute}.mimes" => ':attribute is not an allowed file type. Use PDF, Word, Excel, PowerPoint, images, text, CSV, or zip.',
+            "{$attribute}.max" => ':attribute is too large. Each file must be 20 MB or smaller.',
+            "{$attribute}.file" => ':attribute is not a valid file.',
         ];
     }
 
